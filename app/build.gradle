@@ -16,10 +16,14 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.txt'
         }
     }
+
+    dexOptions {
+        preDexLibraries = false
+    }
 }
 
 dependencies {
-    compile files('libs/android-support-v13.jar')
     compile files('libs/eventbus-3.0.0-beta1.jar')
-    compile 'com.android.support:appcompat-v7:23.3.0'
+    compile 'com.android.support:appcompat-v7:22.2.1'
+    compile 'com.android.support:support-v13:22.2.1'
 }
