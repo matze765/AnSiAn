@@ -47,3 +47,41 @@ Temporary Items
 .idea
 *.iml
 build/
+
+# Vim swap files
+*.swp
+
+# Core latex/pdflatex auxiliary files:
+*.aux
+*.lof
+*.log
+*.lot
+*.fls
+*.out
+*.toc
+*.fmt
+*.fot
+*.cb
+*.cb2
+
+# Bibliography auxiliary files (bibtex/biblatex/biber):
+*.bbl
+*.bcf
+*.blg
+*-blx.aux
+*-blx.bib
+*.brf
+*.run.xml
+
+# Glossaries
+*.acn
+*.acr
+*.glg
+*.glo
+*.gls
+*.glsdefs
+
+# other tex stuff
+*.lol
+*.alg
+*.ist
