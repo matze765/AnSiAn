@@ -53,6 +53,7 @@ build/
 
 # Core latex/pdflatex auxiliary files:
 *.aux
+*.auxlock
 *.lof
 *.log
 *.lot
