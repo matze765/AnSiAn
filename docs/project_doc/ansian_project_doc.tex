@@ -51,8 +51,7 @@
 \newcommand{\myName}{Dennis Mantz and Max Engelhardt\xspace}
 \newcommand{\myProf}{Prof. Dr.-Ing. Matthias Hollick\xspace}
 %\newcommand{\myOtherProf}{Second advisor\xspace}
-\newcommand{\mySupervisor}{Marc Werner and Matthias Schulz\xspace}
-\newcommand{\myThesiscode}{SEEMOO-MSC-$0000$\xspace} % You will get this from your supervisor
+\newcommand{\mySupervisor}{Jiska Classen}
 \newcommand{\myFaculty}{Department of Computer Science\xspace}
 \newcommand{\myDepartment}{Secure Mobile Networking Lab\xspace}
 \newcommand{\myUni}{\protect{Technische Universität Darmstadt}\xspace}
@@ -96,14 +95,9 @@
 %********************************************************************
 % Frontmatter
 %*******************************************************
-%\include{FrontBackmatter/DirtyTitlepage}
 \include{FrontBackmatter/Titlepage}
 \include{FrontBackmatter/Titleback}
-%\cleardoublepage\include{FrontBackmatter/Dedication}
-%\cleardoublepage\include{FrontBackmatter/Foreword}
 \cleardoublepage\include{FrontBackmatter/Abstract}
-%\cleardoublepage\include{FrontBackmatter/Publication}
-%\cleardoublepage\include{FrontBackmatter/Acknowledgments}
 \pagestyle{scrheadings}
 \cleardoublepage\include{FrontBackmatter/Contents}
 %********************************************************************
@@ -114,34 +108,23 @@
 % use \cleardoublepage here to avoid problems with pdfbookmark
 \cleardoublepage
 
-\ctparttext{The first chapter of this part gives an introduction and a motivation to this thesis, followed by a presentation of related work found in the area of physical layer security. In the third chapter, we present some definitions and background information to make it easier for the reader to quickly understand the subsequent parts of this thesis.}
-\part{Introduction}
+\part{Project Report}
 \include{Parts/Part01}
-
-\cleardoublepage
-\ctparttext{The contribution starts with a design chapter, where we mathematically describe the design of the physical layer security system, as well as the adaptive filter of the attacker. After the design follows the implementation on WARP nodes. Here we give an insight into the challenges of implementing the designed MIMO communication system. The last chapter concentrates on evaluating the performance of our proposed attack in simulation and practice.}
-\part{Contribution}
-\include{Parts/Part02}
-
-\cleardoublepage
-\ctparttext{After the evaluation, we further discuss the results and give an outlook. In addition, we finish this work with conclusions.}
-\part{Discussion and Conclusions}
-\include{Parts/Part03}
+%\include{Parts/Part02}
+%\include{Parts/Part03}
 
 % ********************************************************************
 % Backmatter
 %*******************************************************
 \appendix
-\cleardoublepage
-%\ctparttext{The appendix contains some additional developments, that strongly supported us in the design of our communication system. Furthermore, it contains solutions to some problems.}
-\part{Appendix}
-\include{Parts/Part04}
-%\include{Chapters/Part04_Chapter04_OOWARPLab}
+%\cleardoublepage
+%\part{Appendix}
+%\include{Parts/Part04}
+
 %********************************************************************
 % Other Stuff in the Back
 %*******************************************************
-\cleardoublepage\include{FrontBackmatter/Bibliography}%\bibliography{Bibliography}
-%\cleardoublepage\include{FrontBackmatter/Colophon}
+\cleardoublepage\include{FrontBackmatter/Bibliography}
 \cleardoublepage\include{FrontBackmatter/Declaration}
 % ********************************************************************
 % Game Over: Restore, Restart, or Quit?
