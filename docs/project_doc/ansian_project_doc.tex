@@ -97,7 +97,8 @@
 %*******************************************************
 \include{FrontBackmatter/Titlepage}
 \include{FrontBackmatter/Titleback}
-\cleardoublepage\include{FrontBackmatter/Abstract}
+% no abstract while this is only a project definition
+%\cleardoublepage\include{FrontBackmatter/Abstract}
 \pagestyle{scrheadings}
 \cleardoublepage\include{FrontBackmatter/Contents}
 %********************************************************************
@@ -108,7 +109,9 @@
 % use \cleardoublepage here to avoid problems with pdfbookmark
 \cleardoublepage
 
-\part{Project Report}
+% no need for parts yet while this is just a project definition. ADD BACK LATER!
+
+%\part{Project Report}
 \include{Parts/Part01}
 %\include{Parts/Part02}
 %\include{Parts/Part03}
@@ -124,7 +127,8 @@
 %********************************************************************
 % Other Stuff in the Back
 %*******************************************************
-\cleardoublepage\include{FrontBackmatter/Bibliography}
+% not yet. ADD BACK LATER!
+%\cleardoublepage\include{FrontBackmatter/Bibliography}
 \cleardoublepage\include{FrontBackmatter/Declaration}
 % ********************************************************************
 % Game Over: Restore, Restart, or Quit?
