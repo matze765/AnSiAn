@@ -62,7 +62,8 @@ public class SourceControlThread extends Thread {
 		stopRequested = false;
 		shownSamplerate = sourceSamplerate / cropDataFactor;
 		source.setSampleRate((int) sourceSamplerate);
-		((RtlsdrSource) SourceControl.getSource()).setManualGain(true);
+		if(SourceControl.getSource() instanceof RtlsdrSource)
+			((RtlsdrSource) SourceControl.getSource()).setManualGain(true);
 
 		while (!stopRequested) {
 			if (running && SourceControl.getSource().isTunerSettled()) {
@@ -84,7 +85,8 @@ public class SourceControlThread extends Thread {
 				}
 			}
 		}
-		((RtlsdrSource) SourceControl.getSource()).setManualGain(Preferences.MISC_PREFERENCE.isManualGain());
+		if(SourceControl.getSource() instanceof RtlsdrSource)
+			((RtlsdrSource) SourceControl.getSource()).setManualGain(Preferences.MISC_PREFERENCE.isManualGain());
 	}
 
 	public void setLowerFrequency(long lowerFrequency) {
