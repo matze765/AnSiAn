@@ -45,16 +45,10 @@ public class Decimator extends Thread {
 	private static final String LOGTAG = "Decimator";
 
 	private static final int OUTPUT_QUEUE_SIZE = 2; // Double Buffer
-	private ArrayBlockingQueue<SamplePacket> inputQueue; // queue that holds
-															// the
-															// incoming sample
-															// packets
-
-	private ArrayBlockingQueue<SamplePacket> outputQueue; // queue that will
-															// hold the
-															// decimated
-															// sample
-															// packets
+	private ArrayBlockingQueue<SamplePacket> inputQueue; // queue that holds the incoming sample packets
+	private ArrayBlockingQueue<SamplePacket> inputReturnQueue; // queue to return used buffers from the input queue
+	private ArrayBlockingQueue<SamplePacket> outputQueue; // queue that will hold the decimated sample packets
+	private ArrayBlockingQueue<SamplePacket> outputReturnQueue; // queue to return used buffers from the output queue
 
 	// DOWNSAMPLING:
 	private static final int INPUT_RATE = 1000000; // For now, this decimator
@@ -74,17 +68,22 @@ public class Decimator extends Thread {
 	 *            decimated
 	 * @param packetSize
 	 *            // packet size of the incoming sample packets
-	 * @param inputQueue2
+	 * @param inputQueue
 	 *            // queue that delivers incoming sample packets
 	 * @param inputReturnQueue
 	 *            // queue to return used input sample packets
 	 */
-	public Decimator(int outputSampleRate, int packetSize, ArrayBlockingQueue<SamplePacket> inputQueue2) {
+	public Decimator(int outputSampleRate, int packetSize, ArrayBlockingQueue<SamplePacket> inputQueue,
+					 ArrayBlockingQueue<SamplePacket> inputReturnQueue) {
 		this.outputSampleRate = outputSampleRate;
-		this.inputQueue = inputQueue2;
+		this.inputQueue = inputQueue;
+		this.inputReturnQueue = inputReturnQueue;
 
 		// Create output queues:
-		this.outputQueue = new ArrayBlockingQueue<SamplePacket>(OUTPUT_QUEUE_SIZE);
+		this.outputQueue = new ArrayBlockingQueue<>(OUTPUT_QUEUE_SIZE);
+		this.outputReturnQueue = new ArrayBlockingQueue<>(OUTPUT_QUEUE_SIZE);
+		for (int i = 0; i < OUTPUT_QUEUE_SIZE; i++)
+			outputReturnQueue.offer(new SamplePacket(packetSize));
 
 		// Create half band filters for downsampling:
 		this.inputFilter1 = new HalfBandLowPassFilter(8);
@@ -112,6 +111,10 @@ public class Decimator extends Thread {
 		}
 	}
 
+	public void returnDecimatedPacket(SamplePacket packet) {
+		outputReturnQueue.offer(packet);
+	}
+
 	@Override
 	public synchronized void start() {
 		this.stopRequested = false;
@@ -126,6 +129,7 @@ public class Decimator extends Thread {
 	public void run() {
 
 		SamplePacket inputSamples;
+		SamplePacket outputSamples;
 
 		Log.i(LOGTAG, "Decimator started. (Thread: " + this.getName() + ")");
 
@@ -154,9 +158,31 @@ public class Decimator extends Thread {
 				continue;
 			}
 
+			// Get a packet from the output queue:
+			try {
+				outputSamples = outputReturnQueue.poll(1000, TimeUnit.MILLISECONDS);
+			} catch (InterruptedException e) {
+				Log.e(LOGTAG, "run: Interrupted while waiting on output return queue! stop.");
+				this.stopRequested = true;
+				break;
+			}
+
+			// Verify the output sample packet is not null:
+			if (outputSamples == null) {
+				Log.d(LOGTAG, "run: Output sample is null. skip this round...");
+				// return inputSamples back to the input queue:
+				inputReturnQueue.offer(inputSamples);
+				continue;
+			}
+
 			// downsampling
+			downsampling(inputSamples, outputSamples);
+
+			// return inputSamples back to the input queue:
+			inputReturnQueue.offer(inputSamples);
+
 			// deliver the outputSamples to the output queue
-			outputQueue.offer(downsampling(inputSamples));
+			outputQueue.offer(outputSamples);
 		}
 
 		this.stopRequested = true;
@@ -173,8 +199,7 @@ public class Decimator extends Thread {
 	 *            outgoing (decimated) samples at output rate (quadrature rate)
 	 * @return
 	 */
-	private SamplePacket downsampling(SamplePacket input) {
-		SamplePacket output = new SamplePacket(input.size());
+	private SamplePacket downsampling(SamplePacket input, SamplePacket output) {
 		// Verify that the input filter 4 is still correct configured (gain):
 		if (inputFilter4 == null || inputFilter4.getGain() != 2 * (outputSampleRate / (double) input.getSampleRate())) {
 			// We have to (re-)create the filter:

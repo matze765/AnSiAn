@@ -3,8 +3,7 @@ package de.tu.darmstadt.seemoo.ansian.control.threads;
 import java.util.concurrent.ArrayBlockingQueue;
 
 import de.greenrobot.event.EventBus;
-import de.greenrobot.event.Subscribe;
-import de.tu.darmstadt.seemoo.ansian.control.events.DataEvent;
+import de.tu.darmstadt.seemoo.ansian.control.DataHandler;
 import de.tu.darmstadt.seemoo.ansian.control.events.FFTDataEvent;
 import de.tu.darmstadt.seemoo.ansian.model.FFT;
 import de.tu.darmstadt.seemoo.ansian.model.FFTSample;
@@ -23,24 +22,22 @@ public class FFTCalcThread extends Thread {
 
 	private FFT fftBlock;
 	private int oldFFTSize;
-	private int fftDivider = 1;
 	private int FFT_QUEUE_SIZE = 5;
-	private int counter = fftDivider;
 
 	boolean stopRequested = false;
-	private ArrayBlockingQueue<SamplePacket> inputQueue;
 	private ArrayBlockingQueue<FFTSample> outputQueue;
 
 	public FFTCalcThread() {
 		fftBlock = new FFT(oldFFTSize = Preferences.MISC_PREFERENCE.getFFTSize());
-		inputQueue = new ArrayBlockingQueue<SamplePacket>(FFT_QUEUE_SIZE);
 		outputQueue = new ArrayBlockingQueue<FFTSample>(FFT_QUEUE_SIZE);
 
 	}
 
 	@Override
 	public void run() {
-		EventBus.getDefault().register(this);
+		ArrayBlockingQueue<SamplePacket> inputQueue = DataHandler.getInstance().getFftInputQueue();
+		ArrayBlockingQueue<SamplePacket> inputReturnQueue = DataHandler.getInstance().getFftReturnQueue();
+
 		while (!stopRequested) {
 			int fFTSize = Preferences.MISC_PREFERENCE.getFFTSize();
 			if (oldFFTSize != fFTSize) {
@@ -89,18 +86,10 @@ public class FFTCalcThread extends Thread {
 				mag[targetIndex] = (float) (10 * Math.log10(Math.sqrt(realPower + imagPower)));
 			}
 			outputQueue.offer(new FFTSample(samples, mag));
+			inputReturnQueue.offer(samples);
 
 			EventBus.getDefault().post(new FFTDataEvent(outputQueue.poll()));
 		}
-		EventBus.getDefault().unregister(this);
-
-	}
-
-	@Subscribe
-	public void onEvent(DataEvent event) {
-		if (counter % fftDivider == 0)
-			inputQueue.offer(event.getSample());
-		counter++;
 	}
 
 	public void stopFFTCalcThread() {

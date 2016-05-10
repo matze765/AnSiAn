@@ -89,13 +89,14 @@ public class Demodulator extends Thread {
 	 *
 	 * @param inputQueue
 	 *            Queue that delivers received baseband signals
-	 * @param outputQueue
+	 * @param returnQueue
 	 *            Queue to return used buffers from the inputQueue
 	 * @param packetSize
 	 *            Size of the packets in the input queue
-	 * @param ansianService
+	 * @param type
 	 */
-	public Demodulator(ArrayBlockingQueue<SamplePacket> inputQueue, int packetSize, DemoType type) {
+	public Demodulator(ArrayBlockingQueue<SamplePacket> inputQueue, ArrayBlockingQueue<SamplePacket> returnQueue,
+					   int packetSize, DemoType type) {
 		preferences = Preferences.MISC_PREFERENCE;
 		demodulation = Demodulation.getDemodulation(type);
 
@@ -114,7 +115,7 @@ public class Demodulator extends Thread {
 		// Note that the decimator directly reads from the inputQueue and also
 		// returns processed packets to the
 		// output queue.
-		decimator = new Decimator(demodulation.getQuadratureRate(), packetSize, inputQueue);
+		decimator = new Decimator(demodulation.getQuadratureRate(), packetSize, inputQueue, returnQueue);
 
 	}
 
@@ -179,8 +180,7 @@ public class Demodulator extends Thread {
 
 			// Verify the input sample packet is not null:
 			if (inputSamples == null) {
-				// Log.d(LOGTAG,
-				// "run: Decimated sample is null. skip this round...");
+				//Log.d(LOGTAG, "run: Decimated sample is null. skip this round...");
 				continue;
 			}
 
@@ -190,10 +190,12 @@ public class Demodulator extends Thread {
 																// stored in
 																// quadratureSamples
 
+			// return input samples to the decimator block:
+			decimator.returnDecimatedPacket(inputSamples);
+
+
 			// get buffer from audio sink
-			// TODO why was it 1000 before? maybe set back
-			audioBuffer = new SamplePacket(quadratureSamples.getRe().length);
-			// audioBuffer = new SamplePacket(1000);
+			audioBuffer = audioSink.getPacketBuffer(1000);
 
 			// demodulate [sample rate is QUADRATURE_RATE]
 			demodulation.demodulate(quadratureSamples, audioBuffer);

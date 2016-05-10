@@ -5,8 +5,7 @@ import java.util.concurrent.ArrayBlockingQueue;
 import android.util.Log;
 import de.greenrobot.event.EventBus;
 import de.greenrobot.event.Subscribe;
-import de.tu.darmstadt.seemoo.ansian.control.events.DataEvent;
-import de.tu.darmstadt.seemoo.ansian.control.events.DemodDataEvent;
+import de.tu.darmstadt.seemoo.ansian.control.DataHandler;
 import de.tu.darmstadt.seemoo.ansian.control.events.RecordingEvent;
 import de.tu.darmstadt.seemoo.ansian.model.Recording;
 import de.tu.darmstadt.seemoo.ansian.model.SamplePacket;
@@ -50,49 +49,20 @@ import de.tu.darmstadt.seemoo.ansian.model.sources.IQSourceInterface;
  *         02110-1301 USA
  */
 public class Scheduler extends Thread {
-	int fftUsed = 0;
-	int ffts = 0;
 	private boolean stopRequested = true;
 
 	private IQSourceInterface source = null; // Reference to the source of the
 												// IQ samples
-
-	private ArrayBlockingQueue<SamplePacket> demodQueue = null; // Queue
-																// that
-																// delivers
-																// samples
-																// to
-																// the
-																// Demodulator
-																// block
-
 	private MiscPreferences preferences;
 	private Recording recording;
 	public static SamplePacket samples;
-
-	// Define the size of the fft output and input Queues. By setting this value
-	// to 2 we basically end up
-	// with double buffering. Maybe the two queues are overkill, but it works
-	// pretty well like this and
-	// it handles the synchronization between the scheduler thread and the
-	// processing loop for us.
-	// Note that setting the size to 1 will not work well and any number higher
-	// than 2 will cause
-	// higher delays when switching frequencies.
-
-	private static final int DEMOD_QUEUE_SIZE = 20;
 	private static final String LOGTAG = "Scheduler";
 
 	public Scheduler(IQSourceInterface source) {
 		setPriority(MAX_PRIORITY);
 		preferences = Preferences.MISC_PREFERENCE;
 		this.source = source;
-
-		// Create the demod input- and output queues and allocate the buffer
-		// packets.
-		demodQueue = new ArrayBlockingQueue<SamplePacket>(DEMOD_QUEUE_SIZE);
 		EventBus.getDefault().register(this);
-
 	}
 
 	public void stopScheduler() {
@@ -126,6 +96,15 @@ public class Scheduler extends Thread {
 		long timestamp = System.currentTimeMillis();
 		long count = 0;
 
+		SamplePacket fftBuffer = null;
+		SamplePacket tmpFlushBuffer = null;	// Just a tmp buffer to flush a queue if necessary
+		ArrayBlockingQueue<SamplePacket> demodInputQueue = DataHandler.getInstance().getDemodInputQueue();
+		ArrayBlockingQueue<SamplePacket> demodReturnQueue = DataHandler.getInstance().getDemodReturnQueue();
+		ArrayBlockingQueue<SamplePacket> wfInputQueue = DataHandler.getInstance().getWfInputQueue();
+		ArrayBlockingQueue<SamplePacket> wfReturnQueue = DataHandler.getInstance().getWfReturnQueue();
+		ArrayBlockingQueue<SamplePacket> fftInputQueue = DataHandler.getInstance().getFftInputQueue();
+		ArrayBlockingQueue<SamplePacket> fftReturnQueue = DataHandler.getInstance().getFftReturnQueue();
+
 		while (!stopRequested) {
 			// Get a new packet from the source:
 			byte[] packet = source.getPacket(1000);
@@ -157,35 +136,66 @@ public class Scheduler extends Thread {
 			// /// Demodulation
 			// /////////////////////////////////////////////////////////////////////
 			if (isDemodulationActivated()) {
-				SamplePacket demodBuffer = new SamplePacket(source.getPacketSize());
-				source.mixPacketIntoSamplePacket(packet, demodBuffer, Preferences.GUI_PREFERENCE.getDemodFrequency());
-				EventBus.getDefault().post(new DemodDataEvent(demodBuffer));
-				if (Preferences.GUI_PREFERENCE.isSquelchSatisfied()) {
-					if (demodQueue.offer(demodBuffer)) {
-						// deliver packet
-					} else {
-						Log.d(LOGTAG, "run: Flush the demod queue because demodulator is too slow!");
+				SamplePacket demodBuffer = demodReturnQueue.poll();
+				if(demodBuffer != null) {
+					demodBuffer.setSize(0);    // mark buffer as empty
+					source.mixPacketIntoSamplePacket(packet, demodBuffer, Preferences.GUI_PREFERENCE.getDemodFrequency());
+
+					// Provide a copy to the waveform view
+					SamplePacket wfBuffer = wfReturnQueue.poll();
+					if(wfBuffer != null) {
+						demodBuffer.copyTo(wfBuffer);
+						wfInputQueue.offer(wfBuffer);
 					}
+
+					if(Preferences.GUI_PREFERENCE.isSquelchSatisfied())
+						demodInputQueue.offer(demodBuffer);
+					else
+						demodReturnQueue.offer(demodBuffer);	// squelch not satisfied. put buffer back to the pool.
+				} else {
+					Log.d(LOGTAG, "run: Flush the demod queue because demodulator is too slow!");
+					while ((tmpFlushBuffer = demodInputQueue.poll()) != null)
+						demodReturnQueue.offer(tmpFlushBuffer);
 				}
 			}
 
 			// /// FFT
 			// //////////////////////////////////////////////////////////////////////////////
-			// If buffer is null we request a new buffer from the fft input
-			// queue:
+			// If buffer is null we request a new buffer from the fft input queue:
+			if(fftBuffer == null) {
+				fftBuffer = fftReturnQueue.poll();
+				if(fftBuffer != null)
+					fftBuffer.setSize(0);	// mark buffer as empty
+			}
 
-			SamplePacket temp = new SamplePacket(preferences.getFFTSize());
-			source.fillPacketIntoSamplePacket(packet, temp);
-			EventBus.getDefault().post(new DataEvent(temp));
+			// If we got a buffer, fill it!
+			if(fftBuffer != null)
+			{
+				// fill the packet into the buffer:
+				source.fillPacketIntoSamplePacket(packet,fftBuffer);
 
-			// otherwise we would just go for another round...
-
+				// check if the buffer is now full and if so: deliver it to the output queue
+				if(fftBuffer.capacity() == fftBuffer.size()) {
+					fftInputQueue.offer(fftBuffer);
+					fftBuffer = null;
+				}
+				// otherwise we would just go for another round...
+			}
 			// If buffer was null we currently have no buffer available, which
 			// means we
 			// simply throw the samples away (this will happen most of the
 			// time).
-			ffts++;
-			// Log.d(LOGTAG, "FFT Usage: " + (float) fftUsed / ffts);
+
+			// Waveform Buffer
+			if(!isDemodulationActivated()) {
+				SamplePacket wfBuffer = wfReturnQueue.poll();
+				if (wfBuffer != null) {
+					wfBuffer.setSize(0);
+					source.fillPacketIntoSamplePacket(packet, wfBuffer);    // TODO this could possibly be made more efficient
+					wfInputQueue.offer(wfBuffer);
+				}
+			}
+
 			// In both cases: Return the packet back to the source buffer pool:
 			source.returnPacket(packet);
 		}
@@ -197,10 +207,6 @@ public class Scheduler extends Thread {
 		}
 		Log.i(LOGTAG, "Scheduler stopped. (Thread: " + this.getName() + ")");
 
-	}
-
-	public ArrayBlockingQueue<SamplePacket> getDemodQueue() {
-		return demodQueue;
 	}
 
 	@Subscribe

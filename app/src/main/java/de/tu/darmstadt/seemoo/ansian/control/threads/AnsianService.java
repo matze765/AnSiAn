@@ -12,6 +12,7 @@ import android.widget.Toast;
 import de.greenrobot.event.EventBus;
 import de.greenrobot.event.Subscribe;
 import de.tu.darmstadt.seemoo.ansian.MainActivity;
+import de.tu.darmstadt.seemoo.ansian.control.DataHandler;
 import de.tu.darmstadt.seemoo.ansian.control.SourceControl;
 import de.tu.darmstadt.seemoo.ansian.control.StateHandler;
 import de.tu.darmstadt.seemoo.ansian.control.events.ChangeChannelWidthEvent;
@@ -64,8 +65,7 @@ public class AnsianService extends Service {
 	 * Will start AnSiAn. This includes creating a source (if null), open a
 	 * source (if not open), starting the scheduler (which starts the source)
 	 * and starting the processing loop.
-	 * 
-	 * @param recording
+	 *
 	 * @param demodulation
 	 * @return
 	 */
@@ -101,7 +101,8 @@ public class AnsianService extends Service {
 			fftCalc.start();
 
 			// Start the demodulator thread:
-			demodulator = new Demodulator(scheduler.getDemodQueue(), getSource().getPacketSize(), demodulation);
+			demodulator = new Demodulator(DataHandler.getInstance().getDemodInputQueue(),
+					DataHandler.getInstance().getDemodReturnQueue(), getSource().getPacketSize(), demodulation);
 			demodulator.start();
 
 			// Prevent the screen from turning off:
