@@ -1,9 +1,14 @@
 package de.tu.darmstadt.seemoo.ansian.control.threads;
 
+import android.util.Log;
+
 import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.LinkedBlockingDeque;
+import java.util.concurrent.TimeUnit;
 
 import de.greenrobot.event.EventBus;
 import de.tu.darmstadt.seemoo.ansian.control.DataHandler;
+import de.tu.darmstadt.seemoo.ansian.control.StateHandler;
 import de.tu.darmstadt.seemoo.ansian.control.events.FFTDataEvent;
 import de.tu.darmstadt.seemoo.ansian.model.FFT;
 import de.tu.darmstadt.seemoo.ansian.model.FFTSample;
@@ -25,41 +30,63 @@ public class FFTCalcThread extends Thread {
 	private int FFT_QUEUE_SIZE = 5;
 
 	boolean stopRequested = false;
-	private ArrayBlockingQueue<FFTSample> outputQueue;
 
 	public FFTCalcThread() {
 		fftBlock = new FFT(oldFFTSize = Preferences.MISC_PREFERENCE.getFFTSize());
-		outputQueue = new ArrayBlockingQueue<FFTSample>(FFT_QUEUE_SIZE);
-
 	}
 
 	@Override
 	public void run() {
 		ArrayBlockingQueue<SamplePacket> inputQueue = DataHandler.getInstance().getFftInputQueue();
 		ArrayBlockingQueue<SamplePacket> inputReturnQueue = DataHandler.getInstance().getFftReturnQueue();
+		LinkedBlockingDeque<FFTSample> outputDeque = DataHandler.getInstance().getFftDrawDeque();
+		ArrayBlockingQueue<FFTSample> outputReturnQueue = DataHandler.getInstance().getFftDrawReturnQueue();;
+		SamplePacket samples = null;
+		FFTSample fftSample = null;
+		float[] re, im, mag;
 
 		while (!stopRequested) {
 			int fFTSize = Preferences.MISC_PREFERENCE.getFFTSize();
 			if (oldFFTSize != fFTSize) {
 				fftBlock = new FFT(oldFFTSize = fFTSize);
 			}
-			SamplePacket samples = null;
 
-			while (inputQueue.isEmpty()) {
+			boolean scanning = StateHandler.isScanning();
+
+			// Grab a output buffer:
+			if(!scanning) {
 				try {
-					sleep(10);
+					fftSample = outputReturnQueue.poll(100, TimeUnit.MILLISECONDS);
+					if(fftSample == null)
+						continue;
 				} catch (InterruptedException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
+					Log.e(LOGTAG, "run: Interrupted while polling from output return queue. stop.");
+					this.stopFFTCalcThread();
+					break;
 				}
 			}
+			else {
+				fftSample = new FFTSample(fFTSize);
+			}
 
-			float[] mag = new float[fFTSize];
-			float[] re, im;
+			// fetch the next samples from the queue:
+			try {
+				samples = inputQueue.poll(100, TimeUnit.MILLISECONDS);
+				if (samples == null) {
+					Log.d(LOGTAG, "run: Timeout while waiting on input data. skip.");
+					if(!scanning)
+						outputReturnQueue.offer(fftSample);
+					continue;
+				}
+			} catch (InterruptedException e) {
+				Log.e(LOGTAG, "run: Interrupted while polling from input queue. stop.");
+				this.stopFFTCalcThread();
+				break;
+			}
 
-			samples = inputQueue.poll();
-			re = samples.getRe().clone();
-			im = samples.getIm().clone();
+			mag = fftSample.getMagnitudes();
+			re = samples.getRe();
+			im = samples.getIm();
 
 			// Multiply the samples with a Window function:
 			fftBlock.applyWindow(re, im);
@@ -85,10 +112,18 @@ public class FFTCalcThread extends Thread {
 				imagPower = imagPower * imagPower;
 				mag[targetIndex] = (float) (10 * Math.log10(Math.sqrt(realPower + imagPower)));
 			}
-			outputQueue.offer(new FFTSample(samples, mag));
+
+			fftSample.setCenterFrequency(samples.getFrequency());
+			fftSample.setTimestamp(samples.getTimestamp());
+			fftSample.setSamplerate(samples.getSampleRate());
+
+			if(!scanning)
+				outputDeque.offerFirst(fftSample);
+			else
+				DataHandler.getInstance().getScannerBuffer().addSample(fftSample);
 			inputReturnQueue.offer(samples);
 
-			EventBus.getDefault().post(new FFTDataEvent(outputQueue.poll()));
+			EventBus.getDefault().post(new FFTDataEvent(outputDeque.peek()));
 		}
 	}
 

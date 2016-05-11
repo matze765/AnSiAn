@@ -20,9 +20,10 @@ import de.tu.darmstadt.seemoo.ansian.model.preferences.Preferences;
 
 public class WaterfallDrawable extends MyDrawable {
 
-	MiscPreferences preferences;
-	GuiPreferences guiPreferences;
-	Bitmap[] waterfallLines;
+	private MiscPreferences preferences;
+	private GuiPreferences guiPreferences;
+	private Bitmap[] waterfallLines;
+	private FFTSample[] ffts = new FFTSample[0];
 	private int waterfallLinesTopIndex;
 	private int rowHeight = 1;
 	private int yPos;
@@ -86,19 +87,24 @@ public class WaterfallDrawable extends MyDrawable {
 	public void draw(Canvas canvas) {
 		if (Preferences.GUI_PREFERENCE.isWaterfallPaused() && StateHandler.isPaused()) {
 			if (isChanged()) {
-				FFTSample[] ffts = DataHandler.getInstance().getSamples(height - yPos);
-				for (FFTSample fft : ffts)
-					if (fft != null)
-						drawNewWaterfallLine(fft.getDrawData(width));
+				ffts = DataHandler.getInstance().getSamples(ffts);
+				for (int i = 0; i < height - yPos; i++) {
+					if (ffts[i] != null && ffts[i].getSamplerate() != 0)
+						drawNewWaterfallLine(ffts[i].getDrawData(width));
+					else
+						break;
+				}
 			} else
 				drawOldWaterfallBitmaps(canvas);
 		} else {
 			drawOldWaterfallBitmaps(canvas);
-			FFTDrawData fftDrawData;
+			FFTDrawData fftDrawData = null;
 			if (StateHandler.isScanning()) {
 				fftDrawData = DataHandler.getInstance().getScannerDrawData(width);
 			} else {
-				fftDrawData = DataHandler.getInstance().getWaterfallDrawData(width);
+				FFTSample fftSample = DataHandler.getInstance().getLastFFTSample();
+				if(fftSample != null)
+					fftDrawData = fftSample.getDrawData(width);
 			}
 			drawNewWaterfallLine(fftDrawData);
 		}

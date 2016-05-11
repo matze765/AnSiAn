@@ -5,6 +5,7 @@ import android.util.Log;
 import de.tu.darmstadt.seemoo.ansian.control.DataHandler;
 import de.tu.darmstadt.seemoo.ansian.control.StateHandler;
 import de.tu.darmstadt.seemoo.ansian.model.FFTDrawData;
+import de.tu.darmstadt.seemoo.ansian.model.FFTSample;
 import de.tu.darmstadt.seemoo.ansian.model.preferences.ColorPreference;
 import de.tu.darmstadt.seemoo.ansian.model.preferences.MiscPreferences;
 import de.tu.darmstadt.seemoo.ansian.model.preferences.Preferences;
@@ -39,12 +40,17 @@ public class FftSpectrumDrawable extends MyDrawable {
 	@Override
 	public void draw(Canvas canvas) {
 
-		FFTDrawData fftDrawData;
+		FFTDrawData fftDrawData = null;
 		if (StateHandler.isScanning()) {
 			fftDrawData = DataHandler.getInstance().getScannerDrawData(fftWidth);
 
 		} else {
-			fftDrawData = DataHandler.getInstance().getFrequencyDrawData(fftWidth);
+			FFTSample fftSample = DataHandler.getInstance().getLastFFTSample();
+			if(fftSample != null)
+				fftDrawData = fftSample.getDrawData(fftWidth);
+
+			// Request new FFT data for the next time drawing:
+			DataHandler.getInstance().requestNewFFTSample();
 		}
 		float[] mag = null;
 		int startX = 0;

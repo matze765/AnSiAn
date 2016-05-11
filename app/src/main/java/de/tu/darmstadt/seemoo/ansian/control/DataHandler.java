@@ -3,6 +3,7 @@ package de.tu.darmstadt.seemoo.ansian.control;
 import java.util.Arrays;
 import java.util.Hashtable;
 import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.LinkedBlockingDeque;
 
 import de.greenrobot.event.EventBus;
 import de.greenrobot.event.Subscribe;
@@ -29,11 +30,9 @@ import de.tu.darmstadt.seemoo.ansian.model.preferences.Preferences;
 public class DataHandler {
 
 	private static DataHandler instance;
-	private static ObjectRingBuffer<FFTSample> fftBuffer;
 	private ScannerBuffer scannerBuffer;
 	private Hashtable<Long, FFTSample> lastHash;
-	private FFTSample last;
-	private FFTSample[] ffts;
+	private State state = State.MONITORING;
 
 	// Define the size of the fft output and input Queues. By setting this value
 	// to 2 we basically end up
@@ -46,6 +45,7 @@ public class DataHandler {
 	// higher delays when switching frequencies.
 	private static final int WF_QUEUE_SIZE = 2;
 	private static final int FFT_QUEUE_SIZE = 2;
+	private static final int FFTDRAW_DEQUE_SIZE = 500;
 	private static final int DEMOD_QUEUE_SIZE = 20;
 	private ArrayBlockingQueue<SamplePacket> wfInputQueue;
 	private ArrayBlockingQueue<SamplePacket> wfReturnQueue;
@@ -53,6 +53,8 @@ public class DataHandler {
 	private ArrayBlockingQueue<SamplePacket> fftReturnQueue;
 	private ArrayBlockingQueue<SamplePacket> demodInputQueue;
 	private ArrayBlockingQueue<SamplePacket> demodReturnQueue;
+	private LinkedBlockingDeque<FFTSample> fftDrawDeque;
+	private ArrayBlockingQueue<FFTSample> fftDrawReturnQueue;
 	private boolean initialized = false;
 
 	public static DataHandler getInstance() {
@@ -62,7 +64,6 @@ public class DataHandler {
 	}
 
 	private DataHandler() {
-		fftBuffer = new ObjectRingBuffer<FFTSample>(FFTSample.class);
 		scannerBuffer = new ScannerBuffer();
 		wfInputQueue = new ArrayBlockingQueue<>(WF_QUEUE_SIZE);
 		wfReturnQueue = new ArrayBlockingQueue<>(WF_QUEUE_SIZE);
@@ -70,6 +71,8 @@ public class DataHandler {
 		fftReturnQueue = new ArrayBlockingQueue<>(FFT_QUEUE_SIZE);
 		demodInputQueue = new ArrayBlockingQueue<>(DEMOD_QUEUE_SIZE);
 		demodReturnQueue = new ArrayBlockingQueue<>(DEMOD_QUEUE_SIZE);
+		fftDrawDeque = new LinkedBlockingDeque<>(FFTDRAW_DEQUE_SIZE);
+		fftDrawReturnQueue = new ArrayBlockingQueue<>(1);	// Only to sync with the FFTCalcThread
 		EventBus.getDefault().register(this);
 	}
 
@@ -89,6 +92,8 @@ public class DataHandler {
 			fftReturnQueue.offer(new SamplePacket(Preferences.MISC_PREFERENCE.getFFTSize()));
 		for(int i = 0; i < DEMOD_QUEUE_SIZE; i++)
 			demodReturnQueue.offer(new SamplePacket(packetSize));
+		for(int i = 0; i < FFTDRAW_DEQUE_SIZE; i++)
+			fftDrawDeque.offer(new FFTSample(Preferences.MISC_PREFERENCE.getFFTSize()));
 	}
 
 	public FFTDrawData getScannerDrawData(int pixelWidth) {
@@ -98,18 +103,27 @@ public class DataHandler {
 			return scannerBuffer.getDrawData(pixelWidth);
 	}
 
-	public FFTSample[] getSamples(int i) {
-		if (ffts != null)
-			return Arrays.copyOf(ffts, i);
-		return fftBuffer.getLast(i);
-	}
-
 	public FFTSample getLastFFTSample() {
-		return fftBuffer.getLast();
+		return fftDrawDeque.peek();
 	}
 
-	public FFTSample[] getSamples() {
-		return fftBuffer.getSamples();
+	/*
+	 * Will remove the oldest FFTSample from the buffer and give it to the FFTCalcThread
+	 * (only if state is not paused)
+	 *
+	 * This method should be called at least once every time the FFT is drawn to the surface,
+	 * in order to request new data for the next time to draw.
+	 */
+	public void requestNewFFTSample() {
+		if(state != State.PAUSED && fftDrawReturnQueue.remainingCapacity() > 0) {
+			FFTSample fftSample = fftDrawDeque.pollLast();
+			if(fftSample != null)
+				fftDrawReturnQueue.offer(fftSample);
+		}
+	}
+
+	public FFTSample[] getSamples(FFTSample[] array) {
+		return fftDrawDeque.toArray(array);
 	}
 
 	@Subscribe
@@ -119,52 +133,20 @@ public class DataHandler {
 		}
 	}
 
-	@Subscribe
-	public void onEvent(FFTDataEvent event) {
-		FFTSample sample = event.getSample();
-		fftBuffer.add(sample);
-		scannerBuffer.addSample(sample);
-	}
-
 	@SuppressWarnings("unchecked")
 	@Subscribe
 	public void onEvent(StateEvent event) {
-		if (event.getState() == State.PAUSED) {
+		state = event.getState();
+		if (state == State.PAUSED) {
 			lastHash = (Hashtable<Long, FFTSample>) scannerBuffer.getScannerSamples().clone();
-			last = getLastFFTSample();
-			ffts = getSamples();
 		} else {
 			lastHash = null;
-			last = null;
-			ffts = null;
 		}
 	}
 
 	@Subscribe
 	public void onEvent(SourceEvent event) {
 		this.initQueues(event.getSource().getPacketSize());
-	}
-
-	public FFTDrawData getFrequencyDrawData(int width) {
-		if (last != null)
-			return last.getDrawData(width);
-		else
-			return getDrawData(width);
-	}
-
-	public FFTDrawData getWaterfallDrawData(int width) {
-		if (last != null && Preferences.GUI_PREFERENCE.isWaterfallPaused())
-			return last.getDrawData(width);
-		else
-			return getDrawData(width);
-	}
-
-	private FFTDrawData getDrawData(int width) {
-		FFTSample sample = getLastFFTSample();
-		if (sample != null)
-			return getLastFFTSample().getDrawData(width);
-		else
-			return null;
 	}
 
 	public ArrayBlockingQueue<SamplePacket> getWfInputQueue() {
@@ -189,5 +171,17 @@ public class DataHandler {
 
 	public ArrayBlockingQueue<SamplePacket> getDemodReturnQueue() {
 		return demodReturnQueue;
+	}
+
+	public LinkedBlockingDeque<FFTSample> getFftDrawDeque() {
+		return fftDrawDeque;
+	}
+
+	public ArrayBlockingQueue<FFTSample> getFftDrawReturnQueue() {
+		return fftDrawReturnQueue;
+	}
+
+	public ScannerBuffer getScannerBuffer() {
+		return scannerBuffer;
 	}
 }
