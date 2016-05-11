@@ -93,15 +93,13 @@ the sprints, labeled Alpha, Beta and Final Version. They each add an independent
 and self-contained set of features to the application:
 
 \begin{itemize}
+	\item Software Design (due 12.05.)
 	\item Sprint 1: Alpha Version (due 09.06.)
 	\begin{itemize}
 		\item RDS demodulation
 		\item PSK31 demodulation
 		\item Extraction of RDS-, Morse- and PSK31-data to logfiles
 	\end{itemize}
-\end{itemize}
-
-\begin{itemize}
 	\item Sprint 2: Beta Version (due 21.07.)
 	\begin{itemize}
 		\item Support for the rad1o badge
@@ -112,9 +110,6 @@ and self-contained set of features to the application:
 			\item FM-modulate and send audio from a file
 		\end{itemize}
 	\end{itemize}
-\end{itemize}
-
-\begin{itemize}
 	\item Sprint 3: Final Version (due 25.08.)
 	\begin{itemize}
 		\item Complete leftovers from previous sprints
@@ -123,6 +118,29 @@ and self-contained set of features to the application:
 	\end{itemize}
 \end{itemize}
 
+\section{Software Design}
+
+The software design is done separately in front of every sprint.
+This procedure goes along well with the Agile Manifesto which
+encourages the design of a complex system in small incremental parts.
+
+\subsection{Sprint 1: PSK31 and RDS demodulation}
+
+In order to pass information from the demodulators to the graphical
+user interface the EventBus library is used. The architecture is
+shown in \autoref{fig:demod_text_eventbus}.
+
+\begin{figure}
+	\centering
+	\includegraphics[width=1\linewidth]{gfx/demod_text_eventbus.png}
+	\caption{Schema of the Events passed between demodulation and GUI}
+	\label{fig:demod_text_eventbus}
+\end{figure}
+
+
+\section{Cleanup Tasks}
+
+\subsection{Memory Optimizations}
 
 
 %%*****************************************
