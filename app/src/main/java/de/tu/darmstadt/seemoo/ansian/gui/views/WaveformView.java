@@ -13,7 +13,7 @@ import android.view.ScaleGestureDetector;
 import de.greenrobot.event.Subscribe;
 import de.tu.darmstadt.seemoo.ansian.control.SourceControl;
 import de.tu.darmstadt.seemoo.ansian.control.StateHandler;
-import de.tu.darmstadt.seemoo.ansian.control.events.DataEvent;
+import de.tu.darmstadt.seemoo.ansian.control.events.WaveFormScaleEvent;
 import de.tu.darmstadt.seemoo.ansian.model.WaveformDrawDataAdapter;
 import de.tu.darmstadt.seemoo.ansian.model.preferences.ColorPreference;
 import de.tu.darmstadt.seemoo.ansian.model.preferences.Preferences;
@@ -36,7 +36,6 @@ import de.tu.darmstadt.seemoo.ansian.model.sources.IQSourceInterface;
  */
 public class WaveformView extends MySurfaceView {
 
-	private WaveformDrawDataAdapter drawDataAdapter;
 	private Paint mPaintRe;
 	private Paint mPaintIm;
 	private float shownDataAmount = 1;
@@ -97,9 +96,6 @@ public class WaveformView extends MySurfaceView {
 	 * Updates the waveform view with a new "frame" of samples and renders it.
 	 * The new frame gets added to the front of the rendering queue, pushing the
 	 * previous frames back, causing them to be faded out visually.
-	 *
-	 * @param packet
-	 *            the most recent buffer of audio samples
 	 */
 	public synchronized void draw() {
 		// Draw:
@@ -137,9 +133,7 @@ public class WaveformView extends MySurfaceView {
 		// Clear the screen each time because SurfaceView won't do this for us.
 		canvas.drawColor(Color.BLACK);
 
-		if (drawDataAdapter == null || !StateHandler.isPaused()) {
-			// drawDataAdapter = new
-			// WaveformDrawDataAdapter(DataHandler.getInstance().getWaveformDrawData(shownDataAmount));
+		if (!StateHandler.isPaused()) {
 			freq = Preferences.GUI_PREFERENCE.getFrequency();
 		}
 		int width = getWidth();
@@ -163,12 +157,12 @@ public class WaveformView extends MySurfaceView {
 			canvas.drawText(text, leftBorder, yPos, ColorPreference.TEXT_SMALL_PAINT);
 		}
 
-		wfDrawDataAdapter = new WaveformDrawDataAdapter();
+		if(wfDrawDataAdapter == null)
+			wfDrawDataAdapter = new WaveformDrawDataAdapter();
 		float[] drawArrayRe = wfDrawDataAdapter.getDrawArrayRe(width, shownDataAmount, yAmplifier);
 
-		int arReLength = drawArrayRe.length;
-		if (drawArrayRe != null && arReLength > 0) {
-			for (int x = 0; x < arReLength - 1; x++) {
+		if (drawArrayRe != null && drawArrayRe.length > 0) {
+			for (int x = 0; x < drawArrayRe.length - 1; x++) {
 				canvas.drawLine(x, centerY + yAmplifier * drawArrayRe[x], x + 1,
 						centerY + yAmplifier * drawArrayRe[x + 1], mPaintRe);
 
@@ -252,8 +246,7 @@ public class WaveformView extends MySurfaceView {
 	}
 
 	@Subscribe
-	public void onEvent(DataEvent event) {
-		//
+	public void onEvent(WaveFormScaleEvent event) {
+		// NOT USED
 	}
-
 }

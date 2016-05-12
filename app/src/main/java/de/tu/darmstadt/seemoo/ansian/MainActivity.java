@@ -12,6 +12,7 @@ import android.view.View;
 import android.widget.Toast;
 import de.greenrobot.event.EventBus;
 import de.greenrobot.event.Subscribe;
+import de.tu.darmstadt.seemoo.ansian.control.DataHandler;
 import de.tu.darmstadt.seemoo.ansian.control.SourceControl;
 import de.tu.darmstadt.seemoo.ansian.control.StateHandler;
 import de.tu.darmstadt.seemoo.ansian.control.events.DemodulationEvent;
@@ -87,6 +88,9 @@ public class MainActivity extends AppCompatActivity {
 				this);
 		viewPager.setAdapter(pagerAdapter);
 		viewPager.setCurrentItem(1);
+
+		// Make sure the DataHandler instance is created in order for it to catch the new-source-event
+		DataHandler.getInstance();
 
 		// Give the SlidingTabLayout the ViewPager
 		slidingTabLayout = (SlidingTabLayout) findViewById(R.id.sliding_tabs);

@@ -75,11 +75,27 @@ public class ArrayHelper {
 		return calcAverage(temp);
 	}
 
-	private float calcAverage(float[] temp) {
+	public static float calcAverage(float[] temp) {
 		return calcAverage(temp, 0, temp.length);
 	}
 
-	private float calcAverage(float[] values, int from, int till) {
+	public static float calcAverage(float[] values, float from, float till) {
+		float avg = 0;
+		int fromFloor = (int)Math.floor(from);
+		int tillFloor = (int)Math.floor(till);
+
+		// Special case: both borders lie in the same value
+		if(fromFloor == tillFloor)
+			return values[fromFloor];
+
+		avg += (fromFloor+1-from) * values[fromFloor];
+		avg += calcAverage(values, fromFloor+1, tillFloor);
+		avg += (till-tillFloor) * values[tillFloor];
+
+		return avg / (till-from);
+	}
+
+	public static float calcAverage(float[] values, int from, int till) {
 		float avg = 0;
 		if (from == till) {
 			return values[from];

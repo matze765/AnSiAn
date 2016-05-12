@@ -43,14 +43,12 @@ public class AudioSink extends Thread {
 											// pass audio samples to the Android
 											// system
 	private boolean stopRequested = true;
-	private ArrayBlockingQueue<SamplePacket> queue = null; // Queue that
-															// holds
-															// incoming
-															// samples
+	private ArrayBlockingQueue<SamplePacket> inputQueue = null;		// Queue that holds incoming samples
+	private ArrayBlockingQueue<SamplePacket> outputQueue = null;	// Queue that holds available buffers
 
 	private int packetSize; // packet size of the incoming sample packets
 	private int sampleRate; // audio sample rate of the AudioSink
-	private static final int QUEUE_SIZE = 5; // This results in a double buffer.
+	private static final int QUEUE_SIZE = 2; // This results in a double buffer.
 												// see Scheduler...
 	private static final String LOGTAG = "AudioSink";
 	private FirFilter audioFilter1 = null; // Filter used to decimate the
@@ -74,7 +72,10 @@ public class AudioSink extends Thread {
 		setPriority(MAX_PRIORITY);
 
 		// Create the queues and fill them with
-		queue = new ArrayBlockingQueue<SamplePacket>(QUEUE_SIZE);
+		inputQueue = new ArrayBlockingQueue<SamplePacket>(QUEUE_SIZE);
+		outputQueue = new ArrayBlockingQueue<SamplePacket>(QUEUE_SIZE);
+		for (int i = 0; i < QUEUE_SIZE; i++)
+			outputQueue.offer(new SamplePacket(packetSize));
 
 		// Create an instance of the AudioTrack class:
 		int bufferSize = AudioTrack.getMinBufferSize(sampleRate, AudioFormat.CHANNEL_OUT_MONO,
@@ -114,6 +115,22 @@ public class AudioSink extends Thread {
 	}
 
 	/**
+	 * The AudioSink allocates the buffers for audio playback. Use this method to request
+	 * a free buffer. This method will block if no buffer is available.
+	 *
+	 * @param timeout	max time this method will block
+	 * @return free buffer or null if no buffer available
+	 */
+	public SamplePacket getPacketBuffer(int timeout) {
+		try {
+			return outputQueue.poll(timeout, TimeUnit.MILLISECONDS);
+		} catch (InterruptedException e) {
+			Log.e(LOGTAG,"getPacketBuffer: Interrupted. return null...");
+			return null;
+		}
+	}
+
+	/**
 	 * Enqueues a packet buffer for being played on the audio track.
 	 *
 	 * @param packet
@@ -125,7 +142,7 @@ public class AudioSink extends Thread {
 			Log.e(LOGTAG, "enqueuePacket: Packet is null.");
 			return false;
 		}
-		if (!queue.offer(packet)) {
+		if (!inputQueue.offer(packet)) {
 			Log.e(LOGTAG, "enqueuePacket: Queue is full.");
 			return false;
 		}
@@ -149,7 +166,7 @@ public class AudioSink extends Thread {
 		while (!stopRequested) {
 			try {
 				// Get the next packet from the queue
-				packet = queue.poll(1000, TimeUnit.MILLISECONDS);
+				packet = inputQueue.poll(1000, TimeUnit.MILLISECONDS);
 
 				if (packet == null) {
 					// Log.d(LOGTAG, "run: Queue is empty. skip this round");
@@ -178,6 +195,9 @@ public class AudioSink extends Thread {
 				// Log.d(LOGTAG, "timeBetweenAudioWrites: " + (timestamp -
 				// oldTimestamp));
 				// oldTimestamp = timestamp;
+
+				// Return the buffer to the output queue
+				outputQueue.offer(packet);
 
 			} catch (InterruptedException e) {
 				Log.e(LOGTAG, "run: Interrupted while polling from queue. stop");

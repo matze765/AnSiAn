@@ -20,6 +20,15 @@ public class FFTSample {
 
 	private boolean morseBit;
 
+	public FFTSample(int fftSize) {
+		timestamp = 0;
+		centerFrequency = 0;
+		samplerate = 0;
+		magnitude = new float[fftSize];
+		length = magnitude.length;
+		center = length / 2;
+	}
+
 	public FFTSample(SamplePacket samples, float[] mag) {
 		this.timestamp = samples.getTimestamp();
 		centerFrequency = samples.getFrequency();
@@ -56,6 +65,22 @@ public class FFTSample {
 
 	public long getCenterFrequency() {
 		return centerFrequency;
+	}
+
+	public int getSamplerate() {
+		return samplerate;
+	}
+
+	public void setSamplerate(int samplerate) {
+		this.samplerate = samplerate;
+	}
+
+	public void setCenterFrequency(long centerFrequency) {
+		this.centerFrequency = centerFrequency;
+	}
+
+	public void setTimestamp(long timestamp) {
+		this.timestamp = timestamp;
 	}
 
 	public FFTDrawData getDrawData(int pixel) {

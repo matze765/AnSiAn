@@ -41,7 +41,6 @@ public class SamplePacket {
 	 *
 	 * @param size
 	 *            Number of samples in this packet
-	 * @param timestamp
 	 */
 	public SamplePacket(int size) {
 		this.timestamp = System.currentTimeMillis();
@@ -148,5 +147,17 @@ public class SamplePacket {
 
 	public long getTimestamp() {
 		return timestamp;
+	}
+
+	public boolean copyTo(SamplePacket dest) {
+		if(dest == null || dest.capacity() < this.size)
+			return false;
+		System.arraycopy(this.re, 0, dest.re, 0, this.size);
+		System.arraycopy(this.im, 0, dest.im, 0, this.size);
+		dest.frequency = this.frequency;
+		dest.sampleRate = this.sampleRate;
+		dest.size = this.size;
+		dest.timestamp = this.timestamp;
+		return true;
 	}
 }
