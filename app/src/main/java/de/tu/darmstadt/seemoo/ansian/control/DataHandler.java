@@ -14,7 +14,6 @@ import de.tu.darmstadt.seemoo.ansian.control.events.SourceEvent;
 import de.tu.darmstadt.seemoo.ansian.control.events.StateEvent;
 import de.tu.darmstadt.seemoo.ansian.model.FFTDrawData;
 import de.tu.darmstadt.seemoo.ansian.model.FFTSample;
-import de.tu.darmstadt.seemoo.ansian.model.ObjectRingBuffer;
 import de.tu.darmstadt.seemoo.ansian.model.SamplePacket;
 import de.tu.darmstadt.seemoo.ansian.model.ScannerBuffer;
 import de.tu.darmstadt.seemoo.ansian.model.preferences.Preferences;
