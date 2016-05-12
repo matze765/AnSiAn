@@ -140,7 +140,65 @@ shown in \autoref{fig:demod_text_eventbus}.
 
 \section{Cleanup Tasks}
 
+Outside the scope of the two sprints, some cleanup tasks were necessary
+to prepare the implementation of the features listed in
+\autoref{sec:project_definition}.
+
 \subsection{Memory Optimizations}
+
+The original RF Analyzer application has an architecture based on
+blocking queues that synchronizes the various signal processing threads
+and also efficiently manages memory buffers. Unfortunately this
+architecture was partly dropped by the developers of AnSiAn when
+changing to a new concept based on EventBus. As a result, memory
+allocation management does not work efficient with the current version
+of AnSiAn.
+
+Instead of using cycling buffers between threads, the app now uses
+EventBus to deliver data and buffers are always allocated freshly
+and discarted after use. This results in a high activity of the
+\ac{GC} and therefore in a bad overall performance of the app.
+
+\autoref{lst:before_mem_optimization} shows a logcat output of the
+app before any optimizations. The \ac{GC} kicks in about 8 times a second
+and the slow performance results in stuttering audio demodulation on
+older hardware.
+
+\begin{lstlisting}[label=lst:before_mem_optimization, caption=Logcat output
+before memory optimizations]
+05-12 17:55:04.060 D/dalvikvm: GC_FOR_ALLOC freed 4347K, 14% free 54695K/62984K, paused 28ms, total 28ms
+05-12 17:55:04.180 D/dalvikvm: GC_FOR_ALLOC freed 4321K, 14% free 54737K/62984K, paused 26ms, total 26ms
+05-12 17:55:04.300 D/dalvikvm: GC_FOR_ALLOC freed 4507K, 14% free 54705K/62984K, paused 32ms, total 32ms
+05-12 17:55:04.420 D/dalvikvm: GC_FOR_ALLOC freed 4454K, 14% free 54759K/62984K, paused 30ms, total 30ms
+\end{lstlisting}
+
+In order to fix the performance issue, the architecture is reverted
+back to using blocking queues in places where large memory buffers are passed
+between threads. EventBus will still be used for delivering information
+which is not tied to large buffers. A schema of the new architecture
+can be seen in \autoref{fig:queue_architecture}. 
+
+As can be seen, the buffers are cycling between the threads. The reusage
+of buffers helps to reduce the memory allocation and garbage collection
+overhead to a minimum. \autoref{lst:after_mem_optimization} shows the
+logcat output after the architecture changes have been applied. The \ac{GC}
+only kicks in every 10 to 20 seconds.
+
+\begin{lstlisting}[label=lst:after_mem_optimization, caption=Logcat output
+after memory optimizations]
+05-12 17:27:29.230 D/dalvikvm: GC_FOR_ALLOC freed 3233K, 15% free 19706K/23000K, paused 32ms, total 33ms
+05-12 17:27:40.780 D/dalvikvm: GC_FOR_ALLOC freed 3528K, 16% free 20235K/23824K, paused 30ms, total 31ms
+05-12 17:28:00.110 D/dalvikvm: GC_FOR_ALLOC freed 4130K, 18% free 20338K/24528K, paused 36ms, total 37ms
+05-12 17:28:24.520 D/dalvikvm: GC_FOR_ALLOC freed 4263K, 18% free 20341K/24664K, paused 49ms, total 49ms
+\end{lstlisting}
+
+\begin{figure}
+	\centering
+	\includegraphics[width=1\linewidth]{gfx/queue_arch}
+	\caption{Signal processing architecture with blocking queues}
+	\label{fig:queue_architecture}
+\end{figure}
+
 
 
 %%*****************************************
