@@ -53,7 +53,7 @@ second sprint:
 		text shall be written to a log file specified by the user.
 	\item Support for the rad1o badge \\
 		The rad1o badge, which is a modified low-cost replica of the HackRF,
-		shall be supported as a signal source by AnSiAn.
+		shall be supported as a signal source by \ac{AnSiAn}.
 	\item Transmission support for HackRF and rad1o \\
 		If \ac{AnSiAn} is used with an \ac{SDR} capable of transmitting signals,
 		it shall offer options to send signals in the following ways:
@@ -72,12 +72,12 @@ in order to compensate for delays on the mandatory features. The optional featur
 listed in the order of priority:
 \begin{itemize}
 	\item Walkie-Talkie Mode \\
-		The user shall have the possibility to put AnSiAn into a Walkie-
+		The user shall have the possibility to put \ac{AnSiAn} into a Walkie-
 		Talkie mode. In this mode, the application will demodulate an FM channel
 		and the user can quickly switch between demodulation and transmission
 		of audio recorded from the internal microphone.
 	\item Packet Radio demodulation\\
-		A new mode \emph{Packet Radio} shall be added to AnSiAn. Once selected, it shall allow the user
+		A new mode \emph{Packet Radio} shall be added to \ac{AnSiAn}. Once selected, it shall allow the user
 		to tune to a Packet Radio channel and display information about 
 		demodulated packets on the screen. If time permits, it might even
 		be possible to implement a transmission feature for Packet Radio.
@@ -189,12 +189,12 @@ to prepare the implementation of the features listed in
 The original RF Analyzer application's architecture is based on
 blocking queues that synchronize the various signal processing threads
 and efficiently manage memory buffers. Unfortunately, this
-architecture was partly dropped by the developers of AnSiAn when
+architecture was partly dropped by the developers of \ac{AnSiAn} when
 changing to a new architecture based on the EventBus library. As a result, memory
 allocation management does not work as efficiently with the current version
-of AnSiAn.
+of \ac{AnSiAn}.
 
-Instead of using cycling buffers for inter-thread-communication, AnSiAn uses
+Instead of using cycling buffers for inter-thread-communication, \ac{AnSiAn} uses
 EventBus to deliver data. Buffers are always allocated freshly
 and discarded after use. This results in a high activity of the
 \ac{GC} and therefore in a bad overall performance of the app.
