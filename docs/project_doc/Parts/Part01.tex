@@ -158,7 +158,7 @@ and \ac{AM} demodulation essentially performs envelope detection, \texttt{PSK31}
 uses an instance of \texttt{AM} for envelope detection.
 
 \ac{RDS} transmits metadata for \ac{FM} radio channels. It is therefore desirable for the 
-\ac{RDS} demodulaton mode to not only display this metadata, but to also play the 
+\ac{RDS} demodulation mode to not only display this metadata, but to also play the 
 \ac{FM}-modulated audio at the same time. The \texttt{RDS} class uses an
 instance of \texttt{FM} for this purpose.
 
@@ -196,7 +196,7 @@ of AnSiAn.
 
 Instead of using cycling buffers between threads, the app now uses
 EventBus to deliver data. Buffers are always allocated freshly
-and discarted after use. This results in a high activity of the
+and discarded after use. This results in a high activity of the
 \ac{GC} and therefore in a bad overall performance of the app.
 
 \autoref{lst:before_mem_optimization} shows a logcat output of the
@@ -218,7 +218,7 @@ between threads. EventBus will still be used for delivering information
 which is not tied to large buffers. A schema of the new architecture
 can be seen in \autoref{fig:queue_architecture}. 
 
-In this architecture, the buffers are cycling between the threads. The reusage
+In this architecture, the buffers are cycling between the threads. The re-usage
 of buffers helps to reduce the memory allocation and garbage collection
 overhead to a minimum. \autoref{lst:after_mem_optimization} shows the
 logcat output after the architecture changes have been applied. The \ac{GC}
