@@ -42,13 +42,13 @@ second sprint:
 		the app shall try to detect and demodulate any existing \ac{RDS}
 		signal along with the audio demodulation. The extracted information
 		shall be displayed on the screen.
-	\item PSK31 demodulation \\
+	\item \ac{PSK31} demodulation \\
 		If the user selects either of the single side band demodulation modes
 		(\ac{USB} and \ac{LSB}), he or she shall have the option to enable
-		PSK31 demodulation along with or instead of the audio demodulation.
+		\ac{PSK31} demodulation along with or instead of the audio demodulation.
 		The demodulated text string shall appear and scroll through the
 		analyzer window.
-	\item Extraction of RDS-, Morse- and PSK31-data to logfiles \\
+	\item Extraction of RDS-, Morse- and \ac{PSK31}-data to logfiles \\
 		If the user selects to demodulate any digital mode, the demodulated
 		text shall be written to a log file specified by the user.
 	\item Support for the rad1o badge \\
@@ -96,9 +96,9 @@ and self-contained set of features to the application:
 	\item Software Design (due 12.05.)
 	\item Sprint 1: Alpha Version (due 09.06.)
 	\begin{itemize}
-		\item RDS demodulation
-		\item PSK31 demodulation
-		\item Extraction of RDS-, Morse- and PSK31-data to logfiles
+		\item \ac{RDS} demodulation
+		\item \ac{PSK31} demodulation
+		\item Extraction of \ac{RDS}-, Morse- and \ac{PSK31}-data to logfiles
 	\end{itemize}
 	\item Sprint 2: Beta Version (due 21.07.)
 	\begin{itemize}
@@ -120,47 +120,87 @@ and self-contained set of features to the application:
 
 \section{Software Design}
 
-The software design is done separately in front of every sprint.
+The software design for each sprint is done ahead of the respective sprint.
 This procedure goes along well with the Agile Manifesto which
 encourages the design of a complex system in small incremental parts.
 
 \subsection{Sprint 1: PSK31 and RDS demodulation}
 
-In order to pass information from the demodulators to the graphical
-user interface the EventBus library is used. The architecture is
-shown in \autoref{fig:demod_text_eventbus}.
+The existing architecture of \ac{AnSiAn} features individual threads for scheduling, 
+downsampling, demodulation and audio output. The \texttt{De\-mo\-du\-la\-tor} thread demodulates 
+quadrature samples by calling the \texttt{demodulate()} method on an instance of
+\texttt{Demodulation}. \texttt{Demodulation} is an abstract class that is implemented by concrete 
+demodulation methods such as \texttt{AM}, \texttt{FM} and \texttt{Morse}. 
+
+\ac{AnSiAn} utilizes the EventBus library in order to pass demodulated morse text
+to the \ac{GUI}. Demodulated audio data is passed to the
+\texttt{AudioSink} thread by enqueueing it into its input queue.
+This mechanism is explained in more detail in \autoref{sec:cleanup.mem}.
+
+
+In order to extend \ac{AnSiAn} with demodulation functionality for \ac{PSK31} and \ac{RDS}, 
+the existing architecture needs to be extended. The extended architecture is
+depicted in \autoref{fig:demod_text_eventbus} and explained in the following.
 
 \begin{figure}
 	\centering
 	\includegraphics[width=1\linewidth]{gfx/demod_text_eventbus.png}
-	\caption{Schema of the Events passed between demodulation and GUI}
+	\caption{Architecture of the extended demodulation logic and communication with the GUI}
 	\label{fig:demod_text_eventbus}
 \end{figure}
 
+Two new classes \texttt{PSK31} and \texttt{RDS}, that inherit from
+\texttt{Demodulation}, need to be implemented to represent the new demodulation 
+mechanisms.
 
-\section{Cleanup Tasks}
+As \ac{PSK31} demodulation works on the envelope of the received signal
+and \ac{AM} demodulation essentially performs envelope detection, \texttt{PSK31}
+uses an instance of \texttt{AM} for envelope detection.
 
-Outside the scope of the two sprints, some cleanup tasks were necessary
+\ac{RDS} transmits metadata for \ac{FM} radio channels. It is therefore desirable for the 
+\ac{RDS} demodulaton mode to not only display this metadata, but to also play the 
+\ac{FM}-modulated audio at the same time. The \texttt{RDS} class uses an
+instance of \texttt{FM} for this purpose.
+
+Like the existing architecture, the new architecture will use the EventBus
+library to pass the demodulated text to the \ac{GUI}. The existing View
+\texttt{MorseReceiveView} is refactored into a universal
+\texttt{De\-mo\-du\-la\-tion\-In\-fo\-View} that displays the text output of any selected 
+demodulator. Demodulators pass \texttt{DemodTextEvent}s and 
+\texttt{DemodInfoEvent}s via the EventBus to the \texttt{De\-mo\-du\-la\-tion\-In\-fo\-View}, 
+which contain demodulated text and further information (e.g. baud rates or raw 
+dits and dahs) and are displayed in separate lines.
+
+\section{Cleanup Tasks\label{sec:cleanup}}
+
+Outside the scope of the planned sprints, some cleanup tasks were necessary
 to prepare the implementation of the features listed in
 \autoref{sec:project_definition}.
 
-\subsection{Memory Optimizations}
+\subsection{Memory Optimizations\label{sec:cleanup.mem}}
+
+\begin{figure}
+	\centering
+	\includegraphics[width=1\linewidth]{gfx/queue_arch}
+	\caption{Signal processing architecture with blocking queues}
+	\label{fig:queue_architecture}
+\end{figure}
 
 The original RF Analyzer application has an architecture based on
-blocking queues that synchronizes the various signal processing threads
-and also efficiently manages memory buffers. Unfortunately this
+blocking queues that synchronize the various signal processing threads
+and also efficiently manage memory buffers. Unfortunately this
 architecture was partly dropped by the developers of AnSiAn when
 changing to a new concept based on EventBus. As a result, memory
 allocation management does not work efficient with the current version
 of AnSiAn.
 
 Instead of using cycling buffers between threads, the app now uses
-EventBus to deliver data and buffers are always allocated freshly
+EventBus to deliver data. Buffers are always allocated freshly
 and discarted after use. This results in a high activity of the
 \ac{GC} and therefore in a bad overall performance of the app.
 
 \autoref{lst:before_mem_optimization} shows a logcat output of the
-app before any optimizations. The \ac{GC} kicks in about 8 times a second
+app before any optimizations were applied. The \ac{GC} kicks in about 8 times a second
 and the slow performance results in stuttering audio demodulation on
 older hardware.
 
@@ -178,7 +218,7 @@ between threads. EventBus will still be used for delivering information
 which is not tied to large buffers. A schema of the new architecture
 can be seen in \autoref{fig:queue_architecture}. 
 
-As can be seen, the buffers are cycling between the threads. The reusage
+In this architecture, the buffers are cycling between the threads. The reusage
 of buffers helps to reduce the memory allocation and garbage collection
 overhead to a minimum. \autoref{lst:after_mem_optimization} shows the
 logcat output after the architecture changes have been applied. The \ac{GC}
@@ -191,14 +231,6 @@ after memory optimizations]
 05-12 17:28:00.110 D/dalvikvm: GC_FOR_ALLOC freed 4130K, 18% free 20338K/24528K, paused 36ms, total 37ms
 05-12 17:28:24.520 D/dalvikvm: GC_FOR_ALLOC freed 4263K, 18% free 20341K/24664K, paused 49ms, total 49ms
 \end{lstlisting}
-
-\begin{figure}
-	\centering
-	\includegraphics[width=1\linewidth]{gfx/queue_arch}
-	\caption{Signal processing architecture with blocking queues}
-	\label{fig:queue_architecture}
-\end{figure}
-
 
 
 %%*****************************************
