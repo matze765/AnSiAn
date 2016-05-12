@@ -132,9 +132,9 @@ quadrature samples by calling the \texttt{demodulate()} method on an instance of
 \texttt{Demodulation}. \texttt{Demodulation} is an abstract class that is implemented by concrete 
 demodulation methods such as \texttt{AM}, \texttt{FM} and \texttt{Morse}. 
 
-\ac{AnSiAn} utilizes the EventBus library in order to pass demodulated morse text
+\ac{AnSiAn} utilizes the EventBus library in order to pass demodulated Morse text
 to the \ac{GUI}. Demodulated audio data is passed to the
-\texttt{AudioSink} thread by enqueueing it into its input queue.
+\texttt{AudioSink} thread by enqueuing it into its input queue.
 This mechanism is explained in more detail in \autoref{sec:cleanup.mem}.
 
 
@@ -186,46 +186,47 @@ to prepare the implementation of the features listed in
 	\label{fig:queue_architecture}
 \end{figure}
 
-The original RF Analyzer application has an architecture based on
+The original RF Analyzer application's architecture is based on
 blocking queues that synchronize the various signal processing threads
-and also efficiently manage memory buffers. Unfortunately this
+and efficiently manage memory buffers. Unfortunately, this
 architecture was partly dropped by the developers of AnSiAn when
-changing to a new concept based on EventBus. As a result, memory
-allocation management does not work efficient with the current version
+changing to a new architecture based on the EventBus library. As a result, memory
+allocation management does not work as efficiently with the current version
 of AnSiAn.
 
-Instead of using cycling buffers between threads, the app now uses
+Instead of using cycling buffers for inter-thread-communication, AnSiAn uses
 EventBus to deliver data. Buffers are always allocated freshly
 and discarded after use. This results in a high activity of the
 \ac{GC} and therefore in a bad overall performance of the app.
 
 \autoref{lst:before_mem_optimization} shows a logcat output of the
-app before any optimizations were applied. The \ac{GC} kicks in about 8 times a second
+app before any optimizations were applied. The \ac{GC} runs approximately 8 times per second
 and the slow performance results in stuttering audio demodulation on
 older hardware.
 
 \begin{lstlisting}[label=lst:before_mem_optimization, caption=Logcat output
-before memory optimizations]
+before memory optimizations, language=none]
 05-12 17:55:04.060 D/dalvikvm: GC_FOR_ALLOC freed 4347K, 14% free 54695K/62984K, paused 28ms, total 28ms
 05-12 17:55:04.180 D/dalvikvm: GC_FOR_ALLOC freed 4321K, 14% free 54737K/62984K, paused 26ms, total 26ms
 05-12 17:55:04.300 D/dalvikvm: GC_FOR_ALLOC freed 4507K, 14% free 54705K/62984K, paused 32ms, total 32ms
 05-12 17:55:04.420 D/dalvikvm: GC_FOR_ALLOC freed 4454K, 14% free 54759K/62984K, paused 30ms, total 30ms
 \end{lstlisting}
 
-In order to fix the performance issue, the architecture is reverted
-back to using blocking queues in places where large memory buffers are passed
-between threads. EventBus will still be used for delivering information
+In order to fix this performance issue, the architecture is reverted
+to using blocking queues and cycling buffers in places where large memory buffers are passed
+between threads. EventBus is still used for delivering information
 which is not tied to large buffers. A schema of the new architecture
-can be seen in \autoref{fig:queue_architecture}. 
+is depicted in \autoref{fig:queue_architecture}. 
 
-In this architecture, the buffers are cycling between the threads. The re-usage
+In this architecture, the buffers cycle between the threads. The re-usage
 of buffers helps to reduce the memory allocation and garbage collection
 overhead to a minimum. \autoref{lst:after_mem_optimization} shows the
 logcat output after the architecture changes have been applied. The \ac{GC}
-only kicks in every 10 to 20 seconds.
+only needs to run every 10 to 20 seconds.
+
 
 \begin{lstlisting}[label=lst:after_mem_optimization, caption=Logcat output
-after memory optimizations]
+after memory optimizations, language=none]
 05-12 17:27:29.230 D/dalvikvm: GC_FOR_ALLOC freed 3233K, 15% free 19706K/23000K, paused 32ms, total 33ms
 05-12 17:27:40.780 D/dalvikvm: GC_FOR_ALLOC freed 3528K, 16% free 20235K/23824K, paused 30ms, total 31ms
 05-12 17:28:00.110 D/dalvikvm: GC_FOR_ALLOC freed 4130K, 18% free 20338K/24528K, paused 36ms, total 37ms
