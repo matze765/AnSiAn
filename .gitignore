@@ -47,6 +47,8 @@ Temporary Items
 .idea
 *.iml
 build/
+local.properties
+captures/
 
 # Vim swap files
 *.swp
