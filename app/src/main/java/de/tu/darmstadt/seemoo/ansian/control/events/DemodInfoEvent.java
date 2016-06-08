@@ -1,4 +1,4 @@
-package de.tu.darmstadt.seemoo.ansian.control.events.morse;
+package de.tu.darmstadt.seemoo.ansian.control.events;
 
 
 public class DemodInfoEvent {

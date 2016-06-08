@@ -34,7 +34,7 @@ public class ErrorBitSet extends BitSet {
 	}
 
 	public float getSuccessRate() {
-		Log.d("ERROR", "c: " + bits.cardinality() + " size: " + size + " index: " + index);
+		//Log.d("ERROR", "c: " + bits.cardinality() + " size: " + size + " index: " + index);
 		if (filled)
 			return (float) bits.cardinality() / size;
 		else
