@@ -30,6 +30,13 @@ public abstract class Demodulation {
 
 	private int userFilterCutOff = -1;
 
+	/**
+	 * This method does the demodulation of the given input samples and
+	 * returns the result in the output buffer.
+	 *
+	 * @param input		input samples (quadrature rate)
+	 * @param output	output sample packet
+     */
 	public abstract void demodulate(SamplePacket input, SamplePacket output);
 
 	public static Demodulation getDemodulation(DemoType type) {
@@ -98,6 +105,20 @@ public abstract class Demodulation {
 	}
 
 	public boolean isUpperBandShown() {
+		return true;
+	}
+
+	/**
+	 * This method will tell the Demodulator if the samples shall
+	 * be filtered by the user filter prior to the call to
+	 * demodulate().
+	 *
+	 * Default is yes (do filtering) but subclasses can override
+	 * the method to deactivate filtering!
+	 *
+	 * @return	true if filtering shall be done and false if not.
+     */
+	public boolean needsUserFilter() {
 		return true;
 	}
 

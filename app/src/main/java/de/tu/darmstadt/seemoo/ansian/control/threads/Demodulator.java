@@ -184,21 +184,22 @@ public class Demodulator extends Thread {
 				continue;
 			}
 
-			// filtering [sample rate is QUADRATURE_RATE]
-			applyUserFilter(inputSamples, quadratureSamples); // The result from
-																// filtering is
-																// stored in
-																// quadratureSamples
-
-			// return input samples to the decimator block:
-			decimator.returnDecimatedPacket(inputSamples);
-
-
 			// get buffer from audio sink
 			audioBuffer = audioSink.getPacketBuffer(1000);
 
-			// demodulate [sample rate is QUADRATURE_RATE]
-			demodulation.demodulate(quadratureSamples, audioBuffer);
+			if(demodulation.needsUserFilter()) {
+				// filtering [sample rate is QUADRATURE_RATE]
+				applyUserFilter(inputSamples, quadratureSamples); // The result from filtering is stored in quadratureSamples
+
+				// demodulate [sample rate is QUADRATURE_RATE]
+				demodulation.demodulate(quadratureSamples, audioBuffer);
+			} else {
+				// demodulate [sample rate is QUADRATURE_RATE]
+				demodulation.demodulate(inputSamples, audioBuffer);
+			}
+
+			// return input samples to the decimator block:
+			decimator.returnDecimatedPacket(inputSamples);
 
 			// play audio [sample rate is QUADRATURE_RATE]
 			audioSink.enqueuePacket(audioBuffer);
