@@ -11,11 +11,11 @@
         android:layout_height="wrap_content" >
     </de.tu.darmstadt.seemoo.ansian.gui.tabs.SlidingTabLayout>
 
-    <de.tu.darmstadt.seemoo.ansian.gui.views.morse.MorseReceiveView
+    <de.tu.darmstadt.seemoo.ansian.gui.views.DemodulationInfoView
         android:id="@+id/ubiquitousMorseTicker"
         android:layout_width="match_parent"
         android:layout_height="wrap_content" >
-    </de.tu.darmstadt.seemoo.ansian.gui.views.morse.MorseReceiveView>
+    </de.tu.darmstadt.seemoo.ansian.gui.views.DemodulationInfoView>
   
     <de.tu.darmstadt.seemoo.ansian.gui.tabs.MyViewPager
         android:id="@+id/viewpager"

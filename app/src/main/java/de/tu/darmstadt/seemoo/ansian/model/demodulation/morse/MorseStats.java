@@ -5,6 +5,7 @@ import java.util.Arrays;
 import android.util.Log;
 import de.greenrobot.event.EventBus;
 import de.greenrobot.event.Subscribe;
+import de.tu.darmstadt.seemoo.ansian.control.events.morse.DemodInfoEvent;
 import de.tu.darmstadt.seemoo.ansian.control.events.morse.MorseCodeEvent;
 import de.tu.darmstadt.seemoo.ansian.control.events.morse.MorseDitEvent;
 import de.tu.darmstadt.seemoo.ansian.control.events.morse.MorseSymbolEvent;
@@ -116,6 +117,8 @@ public class MorseStats {
 		Log.d(LOGTAG, high + " time in ms: " + l + " code: " + code);
 		EventBus.getDefault()
 				.postSticky(new MorseCodeEvent(code, high, l, codeSuccess.getSuccessRate(), getThreshold()));
+
+		EventBus.getDefault().postSticky(DemodInfoEvent.newAppendStringEvent(code));
 
 		// check if new symbol
 		if (code == " ") {

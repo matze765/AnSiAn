@@ -71,10 +71,10 @@ public class MorseStatusView extends MyMorseView {
 
 	public void update() {
 		// init();
-		onEventMainThread(EventBus.getDefault().getStickyEvent(MorseCodeEvent.class));
-		onEventMainThread(EventBus.getDefault().getStickyEvent(MorseSymbolEvent.class));
-		onEventMainThread(EventBus.getDefault().getStickyEvent(MorseStateEvent.class));
-		onEventMainThread(EventBus.getDefault().getStickyEvent(MorseDitEvent.class));
+		onEvent(EventBus.getDefault().getStickyEvent(MorseCodeEvent.class));
+		onEvent(EventBus.getDefault().getStickyEvent(MorseSymbolEvent.class));
+		onEvent(EventBus.getDefault().getStickyEvent(MorseStateEvent.class));
+		onEvent(EventBus.getDefault().getStickyEvent(MorseDitEvent.class));
 		// morseStateText.setText(Morse.getState().toString());
 		// morseSymbolSuccessRate.setText(Preferences.MORSE_PREFERENCE.getSymbolSuccessRate());
 		// morseCodeSuccessRate.setText(Preferences.MORSE_PREFERENCE.getCodeSuccessRate());
@@ -82,7 +82,7 @@ public class MorseStatusView extends MyMorseView {
 	}
 
 	@Subscribe
-	public void onEventMainThread(final MorseStateEvent event) {
+	public void onEvent(final MorseStateEvent event) {
 		if (event != null)
 			MainActivity.instance.runOnUiThread(new Runnable() {
 				@Override
@@ -94,7 +94,7 @@ public class MorseStatusView extends MyMorseView {
 	}
 
 	@Subscribe
-	public void onEventMainThread(final MorseCodeEvent event) {
+	public void onEvent(final MorseCodeEvent event) {
 		if (event != null)
 			MainActivity.instance.runOnUiThread(new Runnable() {
 
@@ -111,7 +111,7 @@ public class MorseStatusView extends MyMorseView {
 	}
 
 	@Subscribe
-	public void onEventMainThread(final MorseSymbolEvent event) {
+	public void onEvent(final MorseSymbolEvent event) {
 		if (event != null)
 			MainActivity.instance.runOnUiThread(new Runnable() {
 
@@ -126,7 +126,7 @@ public class MorseStatusView extends MyMorseView {
 	}
 
 	@Subscribe
-	public void onEventMainThread(final MorseDitEvent event) {
+	public void onEvent(final MorseDitEvent event) {
 		if (event != null)
 			MainActivity.instance.runOnUiThread(new Runnable() {
 

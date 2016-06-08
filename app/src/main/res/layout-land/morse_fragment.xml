@@ -14,11 +14,11 @@
         android:layout_weight="1"
         android:orientation="vertical" >
 
-        <de.tu.darmstadt.seemoo.ansian.gui.views.morse.MorseReceiveView
+        <de.tu.darmstadt.seemoo.ansian.gui.views.DemodulationInfoView
             android:id="@+id/morseReceiveView"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"  >
-  </de.tu.darmstadt.seemoo.ansian.gui.views.morse.MorseReceiveView>
+  </de.tu.darmstadt.seemoo.ansian.gui.views.DemodulationInfoView>
 
         <ScrollView
             android:id="@+id/scrollView"
