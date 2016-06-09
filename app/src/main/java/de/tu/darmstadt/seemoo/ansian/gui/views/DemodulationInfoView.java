@@ -121,19 +121,6 @@ public class DemodulationInfoView extends LinearLayout {
         });
     }
 
-	@Subscribe
-	public void onEvent(final MorseStateEvent event) {
-		if (event.getState() == State.STOPPED) {
-			MainActivity.instance.runOnUiThread(new Runnable() {
-				@Override
-				public void run() {
-					infoBuffer = new StringBuilder();
-                    textBuffer = new StringBuilder();
-				}
-			});
-		}
-	}
-
 	@Override
 	protected void onDetachedFromWindow() {
 		super.onDetachedFromWindow();
