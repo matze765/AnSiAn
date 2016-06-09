@@ -122,8 +122,8 @@ public class SourceControl implements IQSourceInterface.Callback {
 			return false;
 		}
 
-		// inform the analyzer surface about the new source
-		EventBus.getDefault().post(new SourceEvent(source));
+		// inform other about the new source (not opened yet)
+		EventBus.getDefault().post(new SourceEvent(source, false));
 		return true;
 	}
 
@@ -202,6 +202,10 @@ public class SourceControl implements IQSourceInterface.Callback {
 	public void onIQSourceReady(IQSourceInterface source) { // is called after
 															// source.open()
 		Log.d(LOGTAG, "onIQSourceReady called");
+
+		// inform other about the new source (now opened)
+		EventBus.getDefault().post(new SourceEvent(source, true));
+
 		EventBus.getDefault().post(new RequestStateEvent(State.MONITORING));
 		// will start the
 		// processing loop,

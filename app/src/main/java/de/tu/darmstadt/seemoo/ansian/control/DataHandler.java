@@ -145,7 +145,12 @@ public class DataHandler {
 
 	@Subscribe
 	public void onEvent(SourceEvent event) {
-		this.initQueues(event.getSource().getPacketSize());
+		int packetsize = event.getSource().getPacketSize();
+
+		// Packetsize might be 0 because the source was created but not opened yet (e.g. HackRF)
+		// In this case just wait with the init until the next SourceEvent (after source has been opened)
+		if(packetsize > 0)
+			this.initQueues(packetsize);
 	}
 
 	public ArrayBlockingQueue<SamplePacket> getWfInputQueue() {
