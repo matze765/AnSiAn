@@ -41,7 +41,7 @@ public class FM extends Demodulation {
 			deviation = 75000;
 			quadratureRate = 8 * Demodulator.AUDIO_RATE;
 			rds = new RDS();
-			rdsFilter = FirFilter.createLowPass(4, 20, quadratureRate, 1000, 5000, 40);
+			rdsFilter = FirFilter.createLowPass(4, 20, quadratureRate, 1000, 3000, 40);
 			Log.d(LOGTAG, "FM: created new rdsFilter with " + rdsFilter.getNumberOfTaps()
 					+ " taps. Decimation=" + rdsFilter.getDecimation() + " Cut-Off="
 					+ rdsFilter.getCutOffFrequency() + " transition=" + rdsFilter.getTransitionWidth());

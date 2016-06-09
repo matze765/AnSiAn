@@ -95,13 +95,13 @@ public class RDS extends Demodulation {
     public String getStateString() {
         String af = "";
         if(!Float.isNaN(altFreq1))
-            af += String.format("%3.1f",altFreq1);
+            af += String.format("%5.1f",altFreq1);
         if(!Float.isNaN(altFreq2))
-            af += String.format(", %3.1f",altFreq2);
+            af += String.format(" %5.1f",altFreq2);
         if(af.length() > 0)
             af = "AF={"+af+"}";
 
-        String str = String.format("#%04d '%s' 0x%02X [TP=%c TA=%c MS=%c D=%c%c%c%c] %s",
+        String str = String.format("#%04d '%s' 0x%02X [TP=%c TA=%c MS=%c stereo=%c artHead=%c comp.=%c dynPTY=%c] %s",
                 groupCounter, new String(programName), programReferenceNumber, int2bit(TP), int2bit(TA), int2bit(MS),
                 int2bit(stereo), int2bit(artificialHead), int2bit(compressed), int2bit(dynPTY), af
                 );
@@ -282,19 +282,19 @@ public class RDS extends Demodulation {
 
         int segmentAddressCode = bits2Int(bits, idx+14, 2);
         switch (segmentAddressCode) {
-            case 0:
+            case 3:
                 stereo = bits[idx+13];
                 logtext += " stereo="+stereo;
                 break;
-            case 1:
+            case 2:
                 artificialHead = bits[idx+13];
                 logtext += " artificialHead="+artificialHead;
                 break;
-            case 2:
+            case 1:
                 compressed = bits[idx+13];
                 logtext += " compressed="+compressed;
                 break;
-            case 3:
+            case 0:
                 dynPTY = bits[idx+13];
                 logtext += " dynPTY="+dynPTY;
                 break;
