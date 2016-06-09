@@ -3,6 +3,9 @@ package de.tu.darmstadt.seemoo.ansian.model.demodulation;
 import android.provider.Settings;
 import android.util.Log;
 
+import de.greenrobot.event.EventBus;
+import de.tu.darmstadt.seemoo.ansian.control.events.DemodInfoEvent;
+import de.tu.darmstadt.seemoo.ansian.control.events.DemodTextEvent;
 import de.tu.darmstadt.seemoo.ansian.model.SamplePacket;
 import de.tu.darmstadt.seemoo.ansian.model.preferences.FloatEditTextPreference;
 
@@ -34,6 +37,7 @@ public class RDS extends Demodulation {
                                                             "Light Classics M", "Serious Classics", "Other Music"};
 
     // Current state
+    private int groupCounter;
     private int countryCode;
     private int programType;
     private int programReferenceNumber;
@@ -58,6 +62,7 @@ public class RDS extends Demodulation {
     }
 
     private void resetState() {
+        groupCounter = 0;
         countryCode = -1;
         programType = -1;
         programReferenceNumber = -1;
@@ -78,6 +83,29 @@ public class RDS extends Demodulation {
             programName[i] = ' ';
         for(int i = 0; i < radioText.length; i++)
             radioText[i] = ' ';
+    }
+
+    private char int2bit(int i) {
+        if(i < 0)
+            return '-';
+        else
+            return i == 0 ? '0' : '1';
+    }
+
+    public String getStateString() {
+        String af = "";
+        if(!Float.isNaN(altFreq1))
+            af += String.format("%3.1f",altFreq1);
+        if(!Float.isNaN(altFreq2))
+            af += String.format(", %3.1f",altFreq2);
+        if(af.length() > 0)
+            af = "AF={"+af+"}";
+
+        String str = String.format("#%04d '%s' 0x%02X [TP=%c TA=%c MS=%c D=%c%c%c%c] %s",
+                groupCounter, new String(programName), programReferenceNumber, int2bit(TP), int2bit(TA), int2bit(MS),
+                int2bit(stereo), int2bit(artificialHead), int2bit(compressed), int2bit(dynPTY), af
+                );
+        return str;
     }
 
     @Override
@@ -109,8 +137,13 @@ public class RDS extends Demodulation {
                     &&  checkBits(bitBuffer, bitBufferStart+BLOCKSIZE_W_CHECKWORD*2) == BLOCKD) {
                 // Found a decodeable group!
                 String logtext = decodeGroup(bitBuffer, bitBufferStart);
-                Log.i(LOGTAG, "demodulate: " + logtext);
+                Log.i(LOGTAG, "demodulate: Recv group #" + groupCounter + ": " + logtext);
                 Log.d(LOGTAG, "domodulate: ProgName="+new String(programName)+" RadioText="+new String(radioText));
+
+                EventBus.getDefault().postSticky(DemodInfoEvent.newReplaceStringEvent(
+                        getStateString()));
+                EventBus.getDefault().postSticky(DemodTextEvent.newReplaceStringEvent(
+                        "RadioText: ["+new String(radioText)+"]"));
 
                 // Next group:
                 bitBufferStart += BLOCKSIZE_W_CHECKWORD*3;
@@ -233,6 +266,8 @@ public class RDS extends Demodulation {
             default:
                 break;
         }
+
+        groupCounter++;
         return logtext;
     }
 

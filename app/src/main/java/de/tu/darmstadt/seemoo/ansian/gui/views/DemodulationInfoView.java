@@ -2,6 +2,8 @@ package de.tu.darmstadt.seemoo.ansian.gui.views;
 
 import android.content.Context;
 import android.graphics.Color;
+import android.graphics.Typeface;
+import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -47,10 +49,18 @@ public class DemodulationInfoView extends LinearLayout {
 		demodInfoText = (TextView) findViewById(R.id.demod_info_text);
         demodInfoText.setGravity(Gravity.RIGHT);
         demodInfoText.setHorizontallyScrolling(true);
+        demodInfoText.setSingleLine(true);
+        demodInfoText.setEllipsize(TextUtils.TruncateAt.MARQUEE);
+        demodInfoText.setTypeface(Typeface.MONOSPACE);
+        demodInfoText.setSelected(true);
 
 		demodTextText = (TextView) findViewById(R.id.demod_text_text);
         demodTextText.setGravity(Gravity.RIGHT);
         demodTextText.setHorizontallyScrolling(true);
+        demodTextText.setSingleLine(true);
+        demodTextText.setEllipsize(TextUtils.TruncateAt.MARQUEE);
+        demodTextText.setTypeface(Typeface.MONOSPACE);
+        demodTextText.setSelected(true);
 
 
         DemodTextEvent textEvent = EventBus.getDefault().getStickyEvent(DemodTextEvent.class);

@@ -145,7 +145,8 @@ public class MainActivity extends AppCompatActivity {
 			slidingTabLayout.setVisibility(View.VISIBLE);
 		// show/hide morse ticker if desired
 		if (Preferences.MORSE_PREFERENCE.isUbiquitousTicker()
-				&& StateHandler.getActiveDemodulationMode() == DemoType.MORSE) {
+				&& (StateHandler.getActiveDemodulationMode() == DemoType.MORSE
+					|| StateHandler.getActiveDemodulationMode() == DemoType.WFM)) {
 			findViewById(R.id.ubiquitousMorseTicker).setVisibility(View.VISIBLE);
 		} else {
 			findViewById(R.id.ubiquitousMorseTicker).setVisibility(View.GONE);
@@ -237,7 +238,8 @@ public class MainActivity extends AppCompatActivity {
 
 				@Override
 				public void run() {
-					if (event.getDemodulation() == DemoType.MORSE) {
+					if (event.getDemodulation() == DemoType.MORSE
+							|| event.getDemodulation() == DemoType.WFM) {
 						findViewById(R.id.ubiquitousMorseTicker).setVisibility(View.VISIBLE);
 						findViewById(R.id.morseReceiveView).setVisibility(View.GONE);
 					} else {
