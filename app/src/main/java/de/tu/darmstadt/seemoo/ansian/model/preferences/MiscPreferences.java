@@ -66,8 +66,7 @@ public class MiscPreferences extends MySharedPreferences {
 
 		// source
 		sourceType = SourceType.values()[getInt("source_type", 2)];
-		sourceSamplerate = getInt("source_samplerate", 2000000);
-
+		sourceSamplerate = getInt("source_samplerate", 1000000); // why was this 2000000?
 		// file source
 		filesourceFileFormat = getInt("filesource_format", 0);
 		filesourceRepeat = getBoolean("filesource_repeat", true);

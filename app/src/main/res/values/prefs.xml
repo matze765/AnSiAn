@@ -97,7 +97,8 @@
     <string name="pref_filesource_format_title">File format:</string>
     <string name="pref_filesource_frequency">pref_filesource_frequency</string>
     <string name="pref_filesource_frequency_summ">Baseband Frequency of the recorded file: %s Hz</string>
-    <string name="pref_filesource_frequency_title">Frequency (Hz)</string>
+    <string name="pref_filesource_frequency_default">97000000</string>
+    <string name="pref_filesource_frequency_title">File Source: Frequency (Hz)</string>
     <string name="pref_filesource_repeat">pref_filesource_repeat</string>
     <string name="pref_filesource_repeat_summ_off">Stop after end of file</string>
     <string name="pref_filesource_repeat_summ_on">Start from beginning after end of file</string>
