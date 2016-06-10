@@ -55,7 +55,6 @@ public class Scheduler extends Thread {
 												// IQ samples
 	private MiscPreferences preferences;
 	private Recording recording;
-	public static SamplePacket samples;
 	private static final String LOGTAG = "Scheduler";
 
 	public Scheduler(IQSourceInterface source) {
