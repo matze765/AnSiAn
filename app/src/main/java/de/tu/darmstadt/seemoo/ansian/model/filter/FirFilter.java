@@ -181,6 +181,7 @@ public class FirFilter {
 															// rate of the
 															// output sample
 															// packet
+		out.setFrequency(in.getFrequency());	// Frequency has not changed
 		return length; // We return the number of consumed samples from the
 						// input buffers
 	}
@@ -257,6 +258,7 @@ public class FirFilter {
 															// rate of the
 															// output sample
 															// packet
+		out.setFrequency(in.getFrequency());	// Frequency has not changed
 		return length; // We return the number of consumed samples from the
 						// input buffers
 	}

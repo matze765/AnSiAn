@@ -146,6 +146,7 @@ public class HalfBandLowPassFilter {
 		out.setSize(indexOut); // update size of output sample packet
 		out.setSampleRate(in.getSampleRate() / 2); // update the sample rate of
 													// the output sample packet
+		out.setFrequency(in.getFrequency());	// Frequency has not changed
 		return length; // We return the number of consumed samples from the
 						// input buffers
 	}
@@ -237,6 +238,7 @@ public class HalfBandLowPassFilter {
 		out.setSize(indexOut); // update size of output sample packet
 		out.setSampleRate(in.getSampleRate() / 2); // update the sample rate of
 													// the output sample packet
+		out.setFrequency(in.getFrequency());	// Frequency has not changed
 		return length; // We return the number of consumed samples from the
 						// input buffers
 	}
@@ -354,6 +356,7 @@ public class HalfBandLowPassFilter {
 		out.setSize(indexOut); // update size of output sample packet
 		out.setSampleRate(in.getSampleRate() / 2); // update the sample rate of
 													// the output sample packet
+		out.setFrequency(in.getFrequency());	// Frequency has not changed
 		return length; // We return the number of consumed samples from the
 						// input buffers
 	}
