@@ -93,6 +93,7 @@ public class FM extends Demodulation {
 			}
 			rdsBaseband.setSize(output.size());
 			rdsBaseband.setSampleRate(output.getSampleRate());
+			rdsBaseband.setFrequency(output.getFrequency());
 
 			// Step 3: Filter ( RDS signal is ~2400Hz wide )
 			if (rdsFiltered == null || rdsFiltered.capacity() < rdsBaseband.size() / rdsFilter.getDecimation()) {
@@ -149,6 +150,7 @@ public class FM extends Demodulation {
 		demodulatorHistory.getIm()[0] = imIn[inputSize - 1];
 		output.setSize(inputSize);
 		output.setSampleRate(quadratureRate);
+		output.setFrequency(input.getFrequency());
 	}
 
 }

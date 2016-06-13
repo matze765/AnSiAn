@@ -18,6 +18,7 @@ public class RDS extends Demodulation {
     private byte[] bitBuffer;
     private int bitBufferSize = 0;
     private int bitBufferStart = 0;
+    private long currentFrequency = -1;
 
     private static final int INVALIDBLOCK = -1;
     private static final int BLOCKA = 0;
@@ -93,13 +94,16 @@ public class RDS extends Demodulation {
     }
 
     public String getStateString() {
-        String af = "";
+        String af = "AF={";
         if(!Float.isNaN(altFreq1))
             af += String.format("%5.1f",altFreq1);
+        else
+            af += "     ";
         if(!Float.isNaN(altFreq2))
             af += String.format(" %5.1f",altFreq2);
-        if(af.length() > 0)
-            af = "AF={"+af+"}";
+        else
+            af += "      ";
+        af += "}";
 
         String str = String.format("#%04d '%s' 0x%02X [TP=%c TA=%c MS=%c stereo=%c artHead=%c comp.=%c dynPTY=%c] %s",
                 groupCounter, new String(programName), programReferenceNumber, int2bit(TP), int2bit(TA), int2bit(MS),
@@ -110,6 +114,16 @@ public class RDS extends Demodulation {
 
     @Override
     public void demodulate(SamplePacket input, SamplePacket output) {
+        // if the frequency has changed, we forget our state:
+        if(currentFrequency != input.getFrequency()) {
+            resetState();
+            currentFrequency = input.getFrequency();
+
+            // Clear screen:
+            EventBus.getDefault().postSticky(DemodInfoEvent.newReplaceStringEvent(""));
+            EventBus.getDefault().postSticky(DemodTextEvent.newReplaceStringEvent(""));
+        }
+
         // Demodulate the new samples
         bitBufferSize += bpsk.demodulate(input, bitBuffer, bitBufferSize);
 
