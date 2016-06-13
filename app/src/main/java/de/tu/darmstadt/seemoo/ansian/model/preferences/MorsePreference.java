@@ -15,6 +15,7 @@ public class MorsePreference extends MySharedPreferences {
 	private boolean ubiquitousTicker;
 	private boolean amDemod;
 	private int initTime;
+	private boolean fmRDS;
 
 	public MorsePreference(MainActivity activity) {
 		super(activity);
@@ -30,6 +31,7 @@ public class MorsePreference extends MySharedPreferences {
 		initTime = getInt("init_time", 5);
 		amDemod = getBoolean("am_demod", true);
 		ubiquitousTicker = getBoolean("ubiquitous_ticker", true);
+		fmRDS = getBoolean("fm_rds", true);
 	}
 
 	@Override
@@ -41,6 +43,7 @@ public class MorsePreference extends MySharedPreferences {
 		editor.putInt("morse_frequency", morseFrequency);
 		editor.putBoolean("fixed_dit", fixedDit);
 		editor.putBoolean("clear_text_after", clearTextAfter);
+		editor.putBoolean("fm_rds", fmRDS);
 		Log.d(LOGTAG, LOGTAG + " saved: " + editor.commit());
 	}
 
@@ -100,4 +103,11 @@ public class MorsePreference extends MySharedPreferences {
 		return automaticReinit;
 	}
 
+	public boolean isFmRDS() {
+		return fmRDS;
+	}
+
+	public void setFmRDS(boolean fmRDS) {
+		this.fmRDS = fmRDS;
+	}
 }

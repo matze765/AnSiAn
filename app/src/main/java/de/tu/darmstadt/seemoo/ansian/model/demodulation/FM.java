@@ -11,6 +11,7 @@ import java.io.IOException;
 import de.tu.darmstadt.seemoo.ansian.control.threads.Demodulator;
 import de.tu.darmstadt.seemoo.ansian.model.SamplePacket;
 import de.tu.darmstadt.seemoo.ansian.model.filter.FirFilter;
+import de.tu.darmstadt.seemoo.ansian.model.preferences.Preferences;
 
 public class FM extends Demodulation {
 
@@ -72,72 +73,39 @@ public class FM extends Demodulation {
 	@Override
 	public void demodulate(SamplePacket input, SamplePacket output) {
 		// Note: This will do the frequency demodulation and the
-		// demodulation of the RDS signal at 57kHz
+		// demodulation of the RDS signal at 57kHz (if activated)
 
 		// Step 1: Frequency demodulation:
 		fmDemodulate(input, output);
 
-		// Step 2: Downmixing (shift the RDS signal to baseband)
-		if(rdsBaseband == null || rdsBaseband.capacity() < input.size()) {
-			rdsBaseband = new SamplePacket(input.size());
-		}
-		float[] rdsBasebandRe = rdsBaseband.getRe();
-		float[] outRe = output.getRe();
-		double omega = 2*Math.PI*57000;
-		double samplePeriod = 1.0 / output.getSampleRate();
-		for(int i = 0; i < output.size(); i++) {
-			rdsBasebandRe[i] = outRe[i] * (float) Math.cos(omega * rdsTime);
-			rdsTime = (rdsTime + samplePeriod) % (float)(2*Math.PI);
-		}
-		rdsBaseband.setSize(output.size());
-		rdsBaseband.setSampleRate(output.getSampleRate());
-
-		// Step 3: Filter ( RDS signal is ~2400Hz wide )
-		if(rdsFiltered == null || rdsFiltered.capacity() < rdsBaseband.size() / rdsFilter.getDecimation()) {
-			rdsFiltered = new SamplePacket(rdsBaseband.size() / rdsFilter.getDecimation());
-		}
-		rdsFiltered.setSize(0);
-		if (rdsFilter.filterReal(rdsBaseband, rdsFiltered, 0, rdsBaseband.size()) < rdsBaseband.size()) {
-			Log.e(LOGTAG, "doPreFilterWork: [rdsFilter] could not filter all samples from input packet.");
-		}
-
-		// Step 4: Pass to RDS demodulator
-		rds.demodulate(rdsFiltered, null);
-
-		// DEBUG: write samples to file
-		/*
-		waitCounter++;
-		if(debugFile == null && waitCounter > 1000) {
-			debugFile = new File("/storage/sdcard0/Download/rdsDebug.iq");
-			try {
-				debugOutputStream = new BufferedOutputStream(new FileOutputStream(debugFile));
-				Log.d(LOGTAG, "doPreFilterWork: writing samples to " + debugFile.getAbsolutePath());
-			} catch (FileNotFoundException e) {
-				e.printStackTrace();
+		if(Preferences.MORSE_PREFERENCE.isFmRDS()) {
+			// Step 2: Downmixing (shift the RDS signal to baseband)
+			if (rdsBaseband == null || rdsBaseband.capacity() < input.size()) {
+				rdsBaseband = new SamplePacket(input.size());
 			}
-		}
-		int bytesToWrite=1500000;
-		if(debugBytesWritten < bytesToWrite && debugFile != null) {
-			float[] re = rdsFiltered.getRe();
-			float[] im = rdsFiltered.getIm();
-			try {
-				for (int i = 0; i < rdsFiltered.size(); i++) {
-					int sample = (int) ((re[i] + 1) * 128f);
-					debugOutputStream.write(sample);
-					sample = (int) ((im[i] + 1) * 128f);
-					debugOutputStream.write(sample);
-				}
-				debugBytesWritten += rdsFiltered.size() * 2;
-
-				if (debugBytesWritten >= bytesToWrite) {
-					debugOutputStream.close();
-					Log.d(LOGTAG, "doPreFilterWork: File closed!!");
-				}
-			} catch (IOException e) {
-				e.printStackTrace();
+			float[] rdsBasebandRe = rdsBaseband.getRe();
+			float[] outRe = output.getRe();
+			double omega = 2 * Math.PI * 57000;
+			double samplePeriod = 1.0 / output.getSampleRate();
+			for (int i = 0; i < output.size(); i++) {
+				rdsBasebandRe[i] = outRe[i] * (float) Math.cos(omega * rdsTime);
+				rdsTime = (rdsTime + samplePeriod) % (float) (2 * Math.PI);
 			}
+			rdsBaseband.setSize(output.size());
+			rdsBaseband.setSampleRate(output.getSampleRate());
+
+			// Step 3: Filter ( RDS signal is ~2400Hz wide )
+			if (rdsFiltered == null || rdsFiltered.capacity() < rdsBaseband.size() / rdsFilter.getDecimation()) {
+				rdsFiltered = new SamplePacket(rdsBaseband.size() / rdsFilter.getDecimation());
+			}
+			rdsFiltered.setSize(0);
+			if (rdsFilter.filterReal(rdsBaseband, rdsFiltered, 0, rdsBaseband.size()) < rdsBaseband.size()) {
+				Log.e(LOGTAG, "doPreFilterWork: [rdsFilter] could not filter all samples from input packet.");
+			}
+
+			// Step 4: Pass to RDS demodulator
+			rds.demodulate(rdsFiltered, null);
 		}
-		*/
 	}
 
 	@Override

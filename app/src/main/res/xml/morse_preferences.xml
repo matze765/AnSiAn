@@ -60,5 +60,13 @@
             android:summaryOn="@string/pref_morse_ubiquitous_ticker_summ_on"
             android:title="@string/pref_morse_ubiquitous_ticker_title" />
     </PreferenceCategory>
+    <PreferenceCategory android:title="FM" >
+        <SwitchPreference
+            android:defaultValue="true"
+            android:key="fm_rds"
+            android:summaryOff="@string/pref_fm_rds_summ_off"
+            android:summaryOn="@string/pref_fm_rds_summ_on"
+            android:title="@string/pref_fm_rds_title" />
+    </PreferenceCategory>
 
 </PreferenceScreen>
