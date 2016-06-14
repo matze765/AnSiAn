@@ -7,7 +7,6 @@ import android.util.Log;
 import de.greenrobot.event.EventBus;
 import de.greenrobot.event.Subscribe;
 import de.tu.darmstadt.seemoo.ansian.control.events.DemodInfoEvent;
-import de.tu.darmstadt.seemoo.ansian.control.events.DemodTextEvent;
 import de.tu.darmstadt.seemoo.ansian.control.events.morse.MorseCodeEvent;
 import de.tu.darmstadt.seemoo.ansian.control.events.morse.MorseDitEvent;
 import de.tu.darmstadt.seemoo.ansian.control.events.morse.MorseSymbolEvent;
@@ -119,7 +118,7 @@ public class MorseStats {
 
         codeSuccess.setBit(true);
 
-        EventBus.getDefault().postSticky(DemodInfoEvent.newAppendStringEvent(code));
+        EventBus.getDefault().postSticky(DemodInfoEvent.newAppendStringEvent(DemodInfoEvent.Position.TOP, code));
         EventBus.getDefault()
                 .postSticky(new MorseCodeEvent(codeSuccess.getSuccessRate(), getThreshold()));
 
@@ -143,7 +142,7 @@ public class MorseStats {
         EventBus.getDefault()
                 .postSticky(new MorseSymbolEvent(successRate));
         if (recognized)
-            EventBus.getDefault().postSticky(DemodTextEvent.newAppendStringEvent(symbol));
+            EventBus.getDefault().postSticky(DemodInfoEvent.newAppendStringEvent(DemodInfoEvent.Position.BOTTOM, symbol));
         currentSymbolCode = new StringBuilder();
     }
 

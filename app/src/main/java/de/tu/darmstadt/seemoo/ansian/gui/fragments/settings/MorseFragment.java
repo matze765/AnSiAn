@@ -19,21 +19,16 @@ public class MorseFragment extends MyPreferenceFragment {
 		}
 
 	@Override
-	public void onSharedPreferenceChanged(SharedPreferences sharedPreferences,
-			String key) {
+	public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
 		super.onSharedPreferenceChanged(sharedPreferences, key);	
-		 Preference pref = findPreference(key);
-		    if (key=="receive_mode") {
-		    	ListPreference listPref = (ListPreference) pref;
-		    	SwitchPreference switchPref= (SwitchPreference) findPreference("automatic_init");
-		    	if(listPref.getValue()=="2")	{
-		    		switchPref.setEnabled(false);
-		    	}	    	
-		    	 else switchPref.setEnabled(true);}
-		   
-		    }
-		    		
-	
-
-
+		Preference pref = findPreference(key);
+		if (key=="receive_mode") {
+			ListPreference listPref = (ListPreference) pref;
+			SwitchPreference switchPref= (SwitchPreference) findPreference("automatic_init");
+			if(listPref.getValue()=="2")
+				switchPref.setEnabled(false);
+			else
+				switchPref.setEnabled(true);
+		}
+	}
 }

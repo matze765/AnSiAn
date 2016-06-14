@@ -1,13 +1,9 @@
 package de.tu.darmstadt.seemoo.ansian.model.demodulation;
 
-import android.provider.Settings;
 import android.util.Log;
-
 import de.greenrobot.event.EventBus;
 import de.tu.darmstadt.seemoo.ansian.control.events.DemodInfoEvent;
-import de.tu.darmstadt.seemoo.ansian.control.events.DemodTextEvent;
 import de.tu.darmstadt.seemoo.ansian.model.SamplePacket;
-import de.tu.darmstadt.seemoo.ansian.model.preferences.FloatEditTextPreference;
 
 public class RDS extends Demodulation {
     private static final String LOGTAG = "RDS";
@@ -25,7 +21,8 @@ public class RDS extends Demodulation {
     private static final int BLOCKB = 1;
     private static final int BLOCKC = 2;
     private static final int BLOCKD = 3;
-    private static final String[] BLOCK_TYPE_NAME = {"A", "B", "C", "D"};
+    private static final int BLOCKC2= 4;
+    private static final String[] BLOCK_TYPE_NAME = {"A", "B", "C", "D", "C'"};
     private static final int BLOCKSIZE = 16;
     private static final int CHECKWORDSIZE = 10;
     private static final int BLOCKSIZE_W_CHECKWORD = BLOCKSIZE + CHECKWORDSIZE;
@@ -120,8 +117,8 @@ public class RDS extends Demodulation {
             currentFrequency = input.getFrequency();
 
             // Clear screen:
-            EventBus.getDefault().postSticky(DemodInfoEvent.newReplaceStringEvent(""));
-            EventBus.getDefault().postSticky(DemodTextEvent.newReplaceStringEvent(""));
+            EventBus.getDefault().postSticky(DemodInfoEvent.newReplaceStringEvent(DemodInfoEvent.Position.TOP, "", true));
+            EventBus.getDefault().postSticky(DemodInfoEvent.newReplaceStringEvent(DemodInfoEvent.Position.BOTTOM, "", true));
         }
 
         // Demodulate the new samples
@@ -137,27 +134,28 @@ public class RDS extends Demodulation {
                 continue;
             }
 
-            // If we found a BLOCK A, we can decode it on its own (it is independend of the rest of the group:
+            // If we found a BLOCK A, we can decode it on its own (it is independent of the rest of the group:
             if(blocktype == BLOCKA) {
                 String logtext = decodePI(bitBuffer, bitBufferStart);
                 bitBufferStart += BLOCKSIZE_W_CHECKWORD;
-                Log.i(LOGTAG, "demodulate: Found Block A " + logtext);
+                //Log.i(LOGTAG, "demodulate: Found Block A " + logtext);
                 continue;
             }
 
             // check if we found a decodeable group (Block B followed by C and D):
             if(blocktype == BLOCKB
-                    &&  checkBits(bitBuffer, bitBufferStart+BLOCKSIZE_W_CHECKWORD)   == BLOCKC
-                    &&  checkBits(bitBuffer, bitBufferStart+BLOCKSIZE_W_CHECKWORD*2) == BLOCKD) {
+                    &&  (  checkBits(bitBuffer, bitBufferStart+BLOCKSIZE_W_CHECKWORD) == BLOCKC
+                        || checkBits(bitBuffer, bitBufferStart+BLOCKSIZE_W_CHECKWORD) == BLOCKC2)
+                    &&  checkBits(bitBuffer, bitBufferStart+BLOCKSIZE_W_CHECKWORD*2)  == BLOCKD) {
                 // Found a decodeable group!
                 String logtext = decodeGroup(bitBuffer, bitBufferStart);
                 Log.i(LOGTAG, "demodulate: Recv group #" + groupCounter + ": " + logtext);
                 Log.d(LOGTAG, "domodulate: ProgName="+new String(programName)+" RadioText="+new String(radioText));
 
                 EventBus.getDefault().postSticky(DemodInfoEvent.newReplaceStringEvent(
-                        getStateString()));
-                EventBus.getDefault().postSticky(DemodTextEvent.newReplaceStringEvent(
-                        "RadioText: ["+new String(radioText)+"]"));
+                        DemodInfoEvent.Position.TOP, getStateString(), true));
+                EventBus.getDefault().postSticky(DemodInfoEvent.newReplaceStringEvent(
+                        DemodInfoEvent.Position.BOTTOM, "RadioText: ["+new String(radioText)+"]", true));
 
                 // Next group:
                 bitBufferStart += BLOCKSIZE_W_CHECKWORD*3;
@@ -228,7 +226,7 @@ public class RDS extends Demodulation {
         }
 
         // Now add each offset word and see if the checksum matches:
-        for(int blocktype = BLOCKA; blocktype <= BLOCKD; blocktype++) {
+        for(int blocktype = BLOCKA; blocktype <= BLOCKC2; blocktype++) {
             boolean match = true;
             for (int i = 0; i < checksum.length; i++) {
                 if( (checksum[i] + offsetWord[blocktype][i])%2 != bits[idx+BLOCKSIZE+i] ) {

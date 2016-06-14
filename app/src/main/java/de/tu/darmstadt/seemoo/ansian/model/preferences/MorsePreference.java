@@ -16,6 +16,7 @@ public class MorsePreference extends MySharedPreferences {
 	private boolean amDemod;
 	private int initTime;
 	private boolean fmRDS;
+	private int performanceSelector;
 
 	public MorsePreference(MainActivity activity) {
 		super(activity);
@@ -32,6 +33,7 @@ public class MorsePreference extends MySharedPreferences {
 		amDemod = getBoolean("am_demod", true);
 		ubiquitousTicker = getBoolean("ubiquitous_ticker", true);
 		fmRDS = getBoolean("fm_rds", true);
+		performanceSelector = Integer.parseInt(getString("performance_selector", "1"));
 	}
 
 	@Override
@@ -44,6 +46,7 @@ public class MorsePreference extends MySharedPreferences {
 		editor.putBoolean("fixed_dit", fixedDit);
 		editor.putBoolean("clear_text_after", clearTextAfter);
 		editor.putBoolean("fm_rds", fmRDS);
+		editor.putString("performance_selector", ""+performanceSelector);
 		Log.d(LOGTAG, LOGTAG + " saved: " + editor.commit());
 	}
 
@@ -109,5 +112,13 @@ public class MorsePreference extends MySharedPreferences {
 
 	public void setFmRDS(boolean fmRDS) {
 		this.fmRDS = fmRDS;
+	}
+
+	public int getPerformanceSelector() {
+		return performanceSelector;
+	}
+
+	public void setPerformanceSelector(int performanceSelector) {
+		this.performanceSelector = performanceSelector;
 	}
 }

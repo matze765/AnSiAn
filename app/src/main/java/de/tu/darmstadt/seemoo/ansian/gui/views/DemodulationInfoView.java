@@ -14,9 +14,6 @@ import de.greenrobot.event.Subscribe;
 import de.tu.darmstadt.seemoo.ansian.MainActivity;
 import de.tu.darmstadt.seemoo.ansian.R;
 import de.tu.darmstadt.seemoo.ansian.control.events.DemodInfoEvent;
-import de.tu.darmstadt.seemoo.ansian.control.events.DemodTextEvent;
-import de.tu.darmstadt.seemoo.ansian.control.events.morse.MorseStateEvent;
-import de.tu.darmstadt.seemoo.ansian.model.demodulation.morse.Morse.State;
 
 public class DemodulationInfoView extends LinearLayout {
 
@@ -47,64 +44,52 @@ public class DemodulationInfoView extends LinearLayout {
 		inflater.inflate(R.layout.demodulation_info_view, this);
 
 		demodInfoText = (TextView) findViewById(R.id.demod_info_text);
-        demodInfoText.setGravity(Gravity.RIGHT);
         demodInfoText.setHorizontallyScrolling(true);
         demodInfoText.setSingleLine(true);
-        demodInfoText.setEllipsize(TextUtils.TruncateAt.MARQUEE);
         demodInfoText.setTypeface(Typeface.MONOSPACE);
-        demodInfoText.setSelected(true);
+        demodInfoText.setTextSize(12);
 
 		demodTextText = (TextView) findViewById(R.id.demod_text_text);
-        demodTextText.setGravity(Gravity.RIGHT);
         demodTextText.setHorizontallyScrolling(true);
         demodTextText.setSingleLine(true);
-        demodTextText.setEllipsize(TextUtils.TruncateAt.MARQUEE);
         demodTextText.setTypeface(Typeface.MONOSPACE);
         demodTextText.setSelected(true);
+        demodTextText.setTextSize(12);
 
-
-        DemodTextEvent textEvent = EventBus.getDefault().getStickyEvent(DemodTextEvent.class);
-        if(textEvent != null && textEvent.getMode() != DemodTextEvent.Mode.REPLACE_CHAR) {
-            textBuffer = new StringBuilder(textEvent.getText());
-            demodTextText.setText(textBuffer.toString());
-        } else {
-            textBuffer = new StringBuilder();
-        }
 
         DemodInfoEvent infoEvent  = EventBus.getDefault().getStickyEvent(DemodInfoEvent.class);
         if(infoEvent != null && infoEvent.getMode() != DemodInfoEvent.Mode.REPLACE_CHAR) {
-            infoBuffer = new StringBuilder(textEvent.getText());
-            demodInfoText.setText(textBuffer.toString());
+            if(infoEvent.getTextPosition() == DemodInfoEvent.Position.TOP) {
+                infoBuffer = new StringBuilder(infoEvent.getText());
+                demodInfoText.setText(textBuffer.toString());
+                textBuffer = new StringBuilder();
+                if(infoEvent.isMarquee()) {
+                    demodInfoText.setGravity(Gravity.LEFT);
+                    demodInfoText.setEllipsize(TextUtils.TruncateAt.MARQUEE);
+                    demodInfoText.setSelected(true);
+                } else {
+                    demodInfoText.setGravity(Gravity.RIGHT);
+                    demodInfoText.setEllipsize(TextUtils.TruncateAt.END);
+                }
+            } else {
+                infoBuffer = new StringBuilder();
+                textBuffer = new StringBuilder(infoEvent.getText());
+                demodTextText.setText(textBuffer.toString());
+                if(infoEvent.isMarquee()) {
+                    demodTextText.setGravity(Gravity.LEFT);
+                    demodTextText.setEllipsize(TextUtils.TruncateAt.MARQUEE);
+                    demodTextText.setSelected(true);
+
+                } else {
+                    demodTextText.setGravity(Gravity.RIGHT);
+                    demodTextText.setEllipsize(TextUtils.TruncateAt.END);
+                }
+            }
         } else {
+            textBuffer = new StringBuilder();
             infoBuffer = new StringBuilder();
         }
-
 	}
-
-    @Subscribe
-    public void onEvent(final DemodTextEvent event) {
-        MainActivity.instance.runOnUiThread(new Runnable() {
-
-            @Override
-            public void run() {
-
-                switch(event.getMode()) {
-                    case APPEND_STRING:
-                        textBuffer.append(event.getText());
-                        break;
-                    case WRITE_STRING:
-                        textBuffer = new StringBuilder(event.getText());
-                        break;
-                    case REPLACE_CHAR:
-                        textBuffer.setCharAt(event.getPosition(), event.getText().charAt(0));
-                }
-
-                demodTextText.setText(textBuffer.toString());
-
-            }
-
-        });
-    }
 
     @Subscribe
     public void onEvent(final DemodInfoEvent event) {
@@ -113,19 +98,38 @@ public class DemodulationInfoView extends LinearLayout {
             @Override
             public void run() {
 
-                switch(event.getMode()) {
-                    case APPEND_STRING:
-                        infoBuffer.append(event.getText());
-                        break;
-                    case WRITE_STRING:
-                        infoBuffer = new StringBuilder(event.getText());
-                        break;
-                    case REPLACE_CHAR:
-                        infoBuffer.setCharAt(event.getPosition(), event.getText().charAt(0));
+                TextView textview;
+                StringBuilder stringBuilder;
+                if(event.getTextPosition()== DemodInfoEvent.Position.TOP) {
+                    textview = demodInfoText;
+                    stringBuilder = infoBuffer;
+                } else {
+                    textview = demodTextText;
+                    stringBuilder = textBuffer;
                 }
 
-                demodInfoText.setText(infoBuffer.toString());
+                switch(event.getMode()) {
+                    case APPEND_STRING:
+                        stringBuilder.append(event.getText());
+                        break;
+                    case WRITE_STRING:
+                        stringBuilder.delete(0, stringBuilder.length());
+                        stringBuilder.append(event.getText());
+                        break;
+                    case REPLACE_CHAR:
+                        stringBuilder.setCharAt(event.getCharacterPosition(), event.getText().charAt(0));
+                }
 
+                textview.setText(stringBuilder.toString());
+                if(event.isMarquee()) {
+                    textview.setGravity(Gravity.LEFT);
+                    textview.setEllipsize(TextUtils.TruncateAt.MARQUEE);
+                    textview.setSelected(true);
+
+                } else {
+                    textview.setGravity(Gravity.RIGHT);
+                    textview.setEllipsize(TextUtils.TruncateAt.END);
+                }
             }
 
         });

@@ -42,10 +42,6 @@ public class FM extends Demodulation {
 			deviation = 75000;
 			quadratureRate = 8 * Demodulator.AUDIO_RATE;
 			rds = new RDS();
-			rdsFilter = FirFilter.createLowPass(8, 20, quadratureRate, 1000, 2000, 40);
-			Log.d(LOGTAG, "FM: created new rdsFilter with " + rdsFilter.getNumberOfTaps()
-					+ " taps. Decimation=" + rdsFilter.getDecimation() + " Cut-Off="
-					+ rdsFilter.getCutOffFrequency() + " transition=" + rdsFilter.getTransitionWidth());
 			break;
 		case NFM:
 			deviation = 5000;
@@ -96,6 +92,15 @@ public class FM extends Demodulation {
 			rdsBaseband.setFrequency(output.getFrequency());
 
 			// Step 3: Filter ( RDS signal is ~2400Hz wide )
+			float desiredTransitionWidth = 2150 - 150*Preferences.MORSE_PREFERENCE.getPerformanceSelector();
+			if (rdsFilter == null || rdsFilter.getTransitionWidth() != desiredTransitionWidth) {
+				float desiredCutOff = 950 + 50*Preferences.MORSE_PREFERENCE.getPerformanceSelector();
+				float desiredAttenuation = 41 + 2*Preferences.MORSE_PREFERENCE.getPerformanceSelector();
+				rdsFilter = FirFilter.createLowPass(8, 20, quadratureRate, desiredCutOff, desiredTransitionWidth, desiredAttenuation);
+				Log.d(LOGTAG, "FM: created new rdsFilter with " + rdsFilter.getNumberOfTaps()
+						+ " taps. Decimation=" + rdsFilter.getDecimation() + " Cut-Off="
+						+ rdsFilter.getCutOffFrequency() + " transition=" + rdsFilter.getTransitionWidth());
+			}
 			if (rdsFiltered == null || rdsFiltered.capacity() < rdsBaseband.size() / rdsFilter.getDecimation()) {
 				rdsFiltered = new SamplePacket(rdsBaseband.size() / rdsFilter.getDecimation());
 			}
