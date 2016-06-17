@@ -74,7 +74,7 @@ public class FM extends Demodulation {
 		// Step 1: Frequency demodulation:
 		fmDemodulate(input, output);
 
-		if(Preferences.MORSE_PREFERENCE.isFmRDS()) {
+		if(type == DemoType.WFM && Preferences.MORSE_PREFERENCE.isFmRDS()) {
 			// Step 2: Downmixing (shift the RDS signal to baseband)
 			if (rdsBaseband == null || rdsBaseband.capacity() < input.size()) {
 				rdsBaseband = new SamplePacket(input.size());
@@ -135,6 +135,9 @@ public class FM extends Demodulation {
 		float[] imOut = output.getIm();
 		int inputSize = input.size();
 		float quadratureGain = quadratureRate / (2 * (float) Math.PI * deviation);
+
+		if(inputSize < 1)
+			return;
 
 		if (demodulatorHistory == null) {
 			demodulatorHistory = new SamplePacket(1);

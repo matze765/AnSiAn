@@ -6,7 +6,7 @@ import java.util.concurrent.TimeUnit;
 import android.util.Log;
 import de.tu.darmstadt.seemoo.ansian.model.SamplePacket;
 import de.tu.darmstadt.seemoo.ansian.model.filter.FirFilter;
-import de.tu.darmstadt.seemoo.ansian.model.filter.HalfBandLowPassFilter;
+import de.tu.darmstadt.seemoo.ansian.model.preferences.Preferences;
 
 /**
  * <h1>AnSiAn - Decimator</h1>
@@ -43,6 +43,7 @@ public class Decimator extends Thread {
 
 	private boolean stopRequested = true;
 	private static final String LOGTAG = "Decimator";
+	private int performanceSelector = -1;
 
 	private static final int OUTPUT_QUEUE_SIZE = 2; // Double Buffer
 	private ArrayBlockingQueue<SamplePacket> inputQueue; // queue that holds the incoming sample packets
@@ -54,10 +55,8 @@ public class Decimator extends Thread {
 	private static final int INPUT_RATE = 1000000; // For now, this decimator
 													// only works with a fixed
 													// input rate of 1Msps
-	private HalfBandLowPassFilter inputFilter1 = null;
-	private HalfBandLowPassFilter inputFilter2 = null;
-	private HalfBandLowPassFilter inputFilter3 = null;
-	private FirFilter inputFilter4 = null;
+	private FirFilter inputFilter1 = null;
+	private FirFilter inputFilter2 = null;
 	private SamplePacket tmpDownsampledSamples;
 
 	/**
@@ -84,11 +83,6 @@ public class Decimator extends Thread {
 		this.outputReturnQueue = new ArrayBlockingQueue<>(OUTPUT_QUEUE_SIZE);
 		for (int i = 0; i < OUTPUT_QUEUE_SIZE; i++)
 			outputReturnQueue.offer(new SamplePacket(packetSize));
-
-		// Create half band filters for downsampling:
-		this.inputFilter1 = new HalfBandLowPassFilter(8);
-		this.inputFilter2 = new HalfBandLowPassFilter(8);
-		this.inputFilter3 = new HalfBandLowPassFilter(8);
 
 		// Create local buffers:
 		this.tmpDownsampledSamples = new SamplePacket(packetSize);
@@ -134,6 +128,27 @@ public class Decimator extends Thread {
 		Log.i(LOGTAG, "Decimator started. (Thread: " + this.getName() + ")");
 
 		while (!stopRequested) {
+			// Check whether the Filters are still set up correctly
+			if(performanceSelector != Preferences.MORSE_PREFERENCE.getPerformanceSelector()) {
+				performanceSelector = Preferences.MORSE_PREFERENCE.getPerformanceSelector();
+
+				// Create FirFilters with tabs according to performance level
+				float cutoff = 75000 + 2500*performanceSelector;
+				float transWidth = 75000 - 5000*performanceSelector;
+				float attenuation = 20 + 4 * performanceSelector;
+				inputFilter1 = FirFilter.createLowPass(4, 1, 1000000, cutoff, transWidth, attenuation);
+				Log.d(LOGTAG, "run: created new inputFilter1 with " + inputFilter1.getNumberOfTaps()
+								+ " taps. Decimation=" + inputFilter1.getDecimation() + " Cut-Off="
+								+ inputFilter1.getCutOffFrequency() + " transition=" + inputFilter1.getTransitionWidth());
+
+				cutoff = 18750 + 625*performanceSelector;
+				transWidth = 18750 - 1250*performanceSelector;
+				inputFilter2 = FirFilter.createLowPass(4, 1, 250000, cutoff, transWidth, attenuation);
+				Log.d(LOGTAG, "run: created new inputFilter2 with " + inputFilter2.getNumberOfTaps()
+						+ " taps. Decimation=" + inputFilter2.getDecimation() + " Cut-Off="
+						+ inputFilter2.getCutOffFrequency() + " transition=" + inputFilter2.getTransitionWidth());
+			}
+
 			// Get a packet from the input queue:
 			try {
 				inputSamples = inputQueue.poll(1000, TimeUnit.MILLISECONDS);
@@ -200,44 +215,22 @@ public class Decimator extends Thread {
 	 * @return
 	 */
 	private SamplePacket downsampling(SamplePacket input, SamplePacket output) {
-		// Verify that the input filter 4 is still correct configured (gain):
-		if (inputFilter4 == null || inputFilter4.getGain() != 2 * (outputSampleRate / (double) input.getSampleRate())) {
-			// We have to (re-)create the filter:
-			this.inputFilter4 = FirFilter.createLowPass(2, 2 * (outputSampleRate / (float) input.getSampleRate()), 1,
-					0.15f, 0.2f, 20);
-			Log.d(LOGTAG,
-					"downsampling: created new inputFilter4 with " + inputFilter4.getNumberOfTaps()
-							+ " taps. Decimation=" + inputFilter4.getDecimation() + " Cut-Off="
-							+ inputFilter4.getCutOffFrequency() + " transition=" + inputFilter4.getTransitionWidth());
-		}
-
-		// apply first filter (decimate to INPUT_RATE/2)
-		tmpDownsampledSamples.setSize(0); // mark buffer as empty
-		if (inputFilter1.filterN8(input, tmpDownsampledSamples, 0, input.size()) < input.size()) {
-			Log.e(LOGTAG, "downsampling: [inputFilter1] could not filter all samples from input packet.");
-		}
-
-		// if we need a decimation of 16: apply second and third filter
-		// (decimate to INPUT_RATE/8)
-		if (input.getSampleRate() / outputSampleRate == 16) {
+		if(outputSampleRate == input.getSampleRate()/4) {
+			// apply only the first filter (decimate to INPUT_RATE/4)
 			output.setSize(0); // mark buffer as empty
-			if (inputFilter2.filterN8(tmpDownsampledSamples, output, 0,
-					tmpDownsampledSamples.size()) < tmpDownsampledSamples.size()) {
+			if (inputFilter1.filter(input, output, 0, input.size()) < input.size()) {
+				Log.e(LOGTAG, "downsampling: [inputFilter1] could not filter all samples from input packet.");
+			}
+		} else {
+			// apply the first and the second filter (decimate to INPUT_RATE/16)
+			tmpDownsampledSamples.setSize(0); // mark buffer as empty
+			if (inputFilter1.filter(input, tmpDownsampledSamples, 0, input.size()) < input.size()) {
+				Log.e(LOGTAG, "downsampling: [inputFilter1] could not filter all samples from input packet.");
+			}
+			output.setSize(0); // mark buffer as empty
+			if (inputFilter2.filter(tmpDownsampledSamples, output, 0, tmpDownsampledSamples.size()) < tmpDownsampledSamples.size()) {
 				Log.e(LOGTAG, "downsampling: [inputFilter2] could not filter all samples from input packet.");
 			}
-
-			tmpDownsampledSamples.setSize(0); // mark tmp buffer as again
-			if (inputFilter3.filterN8(output, tmpDownsampledSamples, 0, output.size()) < output.size()) {
-				Log.e(LOGTAG, "downsampling: [inputFilter3] could not filter all samples from input packet.");
-			}
-		}
-
-		// apply fourth filter (decimate either to INPUT_RATE/4 or
-		// INPUT_RATE/16)
-		output.setSize(0); // mark buffer as empty
-		if (inputFilter4.filter(tmpDownsampledSamples, output, 0, tmpDownsampledSamples.size()) < tmpDownsampledSamples
-				.size()) {
-			Log.e(LOGTAG, "downsampling: [inputFilter4] could not filter all samples from input packet.");
 		}
 		return output;
 	}
