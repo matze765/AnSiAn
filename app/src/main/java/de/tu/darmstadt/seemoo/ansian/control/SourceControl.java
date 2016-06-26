@@ -27,6 +27,7 @@ import de.tu.darmstadt.seemoo.ansian.model.sources.HackrfSource;
 import de.tu.darmstadt.seemoo.ansian.model.sources.IQSourceInterface;
 import de.tu.darmstadt.seemoo.ansian.model.sources.IQSourceInterface.SourceType;
 import de.tu.darmstadt.seemoo.ansian.model.sources.RtlsdrSource;
+import de.tu.darmstadt.seemoo.ansian.model.sources.SDRplaySource;
 
 /**
  * SourceControl handles the communication with the different sources
@@ -38,10 +39,8 @@ public class SourceControl implements IQSourceInterface.Callback {
 	private MiscPreferences preferences;
 	public static final String LOGTAG = "SourceControl";
 	public static final String RECORDING_DIR = "AnSiAn";
-	public static final int RTL2832U_RESULT_CODE = 1234; // arbitrary value,
-															// used when sending
-															// intent to
-															// RTL2832U
+	public static final int RTL2832U_RESULT_CODE = 1234; // arbitrary value, used when sending intent to RTL2832U
+	public static final int SDRPLAY_RESULT_CODE  = 1235; // arbitrary value, used when sending intent to SDRPLAY
 
 	private static MainActivity activity;
 	private static IQSourceInterface source;
@@ -117,6 +116,24 @@ public class SourceControl implements IQSourceInterface.Callback {
 				((RtlsdrSource) source).setIFGain(preferences.getIFGain());
 			}
 			break;
+		case SDRPLAY_SOURCE:
+			// Create SDRplaySource
+			source = new SDRplaySource("127.0.0.1", 1234);
+
+			if (sampleRate > 10000000) // might be the case after switching over from HackRF
+				sampleRate = 10000000;
+			source.setFrequency(frequency);
+			source.setSampleRate(sampleRate);
+
+			((SDRplaySource) source).setFrequencyCorrection(preferences.getFrequencyCorrection());
+			((SDRplaySource) source).setFrequencyShift(preferences.getRtlsdrFrequencyShift());
+			((SDRplaySource) source).setManualGain(preferences.isManualGain());
+
+			if (((SDRplaySource) source).isManualGain()) {
+				((SDRplaySource) source).setGain(preferences.getGain());
+				((SDRplaySource) source).setIFGain(preferences.getIFGain());
+			}
+			break;
 		default:
 			Log.e(LOGTAG, "createSource: Invalid source type: " + sourceType);
 			return false;
@@ -129,7 +146,7 @@ public class SourceControl implements IQSourceInterface.Callback {
 
 	/**
 	 * Will open the IQ Source instance. Note: some sources need special
-	 * treatment on opening, like the rtl-sdr source.
+	 * treatment on opening, like the rtl-sdr or sdrplay source.
 	 *
 	 * @return true on success; false on error
 	 */
@@ -158,7 +175,8 @@ public class SourceControl implements IQSourceInterface.Callback {
 					// start local rtl_tcp instance:
 					try {
 						Intent intent = new Intent(Intent.ACTION_VIEW);
-						intent.setData(Uri.parse("iqsrc://-a 127.0.0.1 -p 1234 -n 1"));
+						intent.setClassName("marto.rtl_tcp_andro", "com.sdrtouch.rtlsdr.DeviceOpenActivity");
+						intent.setData(Uri.parse("iqsrc://-a 127.0.0.1 -p 1234"));
 						activity.startActivityForResult(intent, RTL2832U_RESULT_CODE);
 					} catch (ActivityNotFoundException e) {
 						Log.e(LOGTAG, "createSource: RTL2832U is not installed");
@@ -184,6 +202,40 @@ public class SourceControl implements IQSourceInterface.Callback {
 				return source.open(activity, this);
 			} else {
 				Log.e(LOGTAG, "openSource: sourceType is RTLSDR_SOURCE, but source is null or of other type.");
+				return false;
+			}
+		case SDRPLAY_SOURCE:
+			if (source != null && source instanceof SDRplaySource) {
+
+				// start local SDRplay instance:
+				try {
+					Intent intent = new Intent(Intent.ACTION_VIEW);
+					intent.setClassName("com.sdrtouch.sdrplay", "com.sdrtouch.sdrplay.DeviceOpenActivity");
+					intent.setData(Uri.parse("iqsrc://-a 127.0.0.1 -p 1234"));
+					activity.startActivityForResult(intent, SDRPLAY_RESULT_CODE);
+				} catch (ActivityNotFoundException e) {
+					Log.e(LOGTAG, "createSource: SDRplay driver is not installed");
+
+					// Show a dialog that links to the play market:
+					new AlertDialog.Builder(activity).setTitle("SDRplay driver not installed!")
+							.setMessage("You need to install the (free) SDRplay driver to use SDRplay dongles.")
+							.setPositiveButton("Install from Google Play", new DialogInterface.OnClickListener() {
+								public void onClick(DialogInterface dialog, int whichButton) {
+									Intent marketIntent = new Intent(Intent.ACTION_VIEW,
+											Uri.parse("market://details?id=com.sdrtouch.sdrplay"));
+									activity.startActivity(marketIntent);
+								}
+							}).setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+						public void onClick(DialogInterface dialog, int whichButton) {
+							// do nothing
+						}
+					}).show();
+					return false;
+				}
+
+				return source.open(activity, this);
+			} else {
+				Log.e(LOGTAG, "openSource: sourceType is SDRPLAY_SOURCE, but source is null or of other type.");
 				return false;
 			}
 		default:
@@ -293,8 +345,11 @@ public class SourceControl implements IQSourceInterface.Callback {
 				EventBus.getDefault().post(new RequestStateEvent(State.MONITORING));
 		}
 
-		if (preferences.isAdaptiveSamplerate() && scannerThread == null && !StateHandler.isDemodulating())
-			source.setSampleRate(source.getNextHigherOptimalSampleRate(bandwidth));
+		if (preferences.isAdaptiveSamplerate() && scannerThread == null && !StateHandler.isDemodulating()) {
+			int newSampleRate = source.getNextHigherOptimalSampleRate(bandwidth);
+			if(newSampleRate != source.getSampleRate())
+				source.setSampleRate(newSampleRate);
+		}
 	}
 
 	@Subscribe
