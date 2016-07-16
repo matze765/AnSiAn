@@ -1,4 +1,4 @@
-package de.tu.darmstadt.seemoo.ansian.model.demodulation.morse;
+package de.tu.darmstadt.seemoo.ansian.model.demodulation.oldmorse;
 
 import java.util.BitSet;
 
