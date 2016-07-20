@@ -9,6 +9,7 @@ public class AM extends Demodulation {
 	public AM() {
 		MIN_USER_FILTER_WIDTH = 3000;
 		MAX_USER_FILTER_WIDTH = 15000;
+		userFilterCutOff = MAX_USER_FILTER_WIDTH + MIN_USER_FILTER_WIDTH / 2;
 	}
 
 	/**
