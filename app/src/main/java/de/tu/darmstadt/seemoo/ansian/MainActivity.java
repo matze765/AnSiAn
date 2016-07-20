@@ -273,13 +273,17 @@ public class MainActivity extends AppCompatActivity {
 
 				@Override
 				public void run() {
-					if (event.getDemodulation() == DemoType.MORSE
-							|| (event.getDemodulation() == DemoType.WFM && Preferences.MORSE_PREFERENCE.isFmRDS())) {
-						findViewById(R.id.ubiquitousMorseTicker).setVisibility(View.VISIBLE);
-						findViewById(R.id.morseReceiveView).setVisibility(View.GONE);
-					} else {
-						findViewById(R.id.ubiquitousMorseTicker).setVisibility(View.GONE);
-						findViewById(R.id.morseReceiveView).setVisibility(View.VISIBLE);
+					View vMorseTicker = findViewById(R.id.ubiquitousMorseTicker);
+					View vReceiveView = findViewById(R.id.morseReceiveView);
+					if(vMorseTicker != null && vReceiveView != null) {
+                        if (event.getDemodulation() == DemoType.MORSE
+                                || (event.getDemodulation() == DemoType.WFM && Preferences.MORSE_PREFERENCE.isFmRDS())) {
+                            vMorseTicker.setVisibility(View.VISIBLE);
+                            vReceiveView.setVisibility(View.GONE);
+                        } else {
+                            vMorseTicker.setVisibility(View.GONE);
+                            vReceiveView.setVisibility(View.VISIBLE);
+                        }
 					}
 				}
 			});
