@@ -200,9 +200,9 @@ public class Scheduler extends Thread {
 		}
 		this.stopRequested = true;
 		if (recording != null)
-
 		{
 			recording.stopRecordingThread();
+			recording = null;
 		}
 		Log.i(LOGTAG, "Scheduler stopped. (Thread: " + this.getName() + ")");
 
@@ -213,7 +213,7 @@ public class Scheduler extends Thread {
 		if (event.isRecording()) {
 			recording = event.getRecording();
 			recording.startRecordingThread();
-		} else {
+		} else if(recording != null) {
 			recording.stopRecordingThread();
 			recording = null;
 		}
