@@ -164,23 +164,6 @@ public class AnsianService extends Service {
 		// close source
 		if (getSource() != null && getSource().isOpen())
 			getSource().close();
-
-		// shut down RTL2832U driver if running
-		IQSourceInterface source = getSource();
-		if (!StateHandler.isStopped() && source != null && source.getType() == SourceType.RTLSDR_SOURCE
-				&& preferences.isExternalSource()) {
-			try {
-				Intent intent = new Intent(Intent.ACTION_VIEW);
-				intent.setData(Uri.parse("iqsrc://-x")); // -x is invalid. will
-															// cause the driver
-															// to shut down (if
-															// running)
-				startActivity(intent);
-			} catch (ActivityNotFoundException e) {
-				Log.e(LOGTAG, "onDestroy: RTL2832U is not installed");
-			}
-		}
-
 		super.onDestroy();
 	}
 
