@@ -125,14 +125,7 @@ public class SourceControl implements IQSourceInterface.Callback {
 			source.setFrequency(frequency);
 			source.setSampleRate(sampleRate);
 
-			((SDRplaySource) source).setFrequencyCorrection(preferences.getFrequencyCorrection());
 			((SDRplaySource) source).setFrequencyShift(preferences.getRtlsdrFrequencyShift());
-			((SDRplaySource) source).setManualGain(preferences.isManualGain());
-
-			if (((SDRplaySource) source).isManualGain()) {
-				((SDRplaySource) source).setGain(preferences.getGain());
-				((SDRplaySource) source).setIFGain(preferences.getIFGain());
-			}
 			break;
 		default:
 			Log.e(LOGTAG, "createSource: Invalid source type: " + sourceType);
