@@ -14,6 +14,7 @@ import java.util.concurrent.TimeUnit;
 
 import de.tu.darmstadt.seemoo.ansian.model.SamplePacket;
 import de.tu.darmstadt.seemoo.ansian.tools.IQConverter;
+import de.tu.darmstadt.seemoo.ansian.tools.Signed12BitIQConverter;
 import de.tu.darmstadt.seemoo.ansian.tools.Unsigned8BitIQConverter;
 
 /**
@@ -47,8 +48,16 @@ public class SDRplaySource implements IQSourceInterface {
 	public static final int SDRPLAY_COMMAND_SET_FREQUENCY = 0x01;
 	public static final int SDRPLAY_COMMAND_SET_SAMPLERATE = 0x02;
 	public static final int SDRPLAY_COMMAND_SET_GAIN = 0x04;
-	public final String[] COMMAND_NAME = { "invalid", "SET_FREQUENY", "SET_SAMPLERATE", "invalid", "SET_GAIN",
-			"invalid", "invalid", "SET_TEST_MODE", "invalid" };
+	public static final int SDRPLAY_COMMAND_ENABLE_16_BIT = 0x80;
+	public static final String[] COMMAND_NAME = new String[256];
+	static {
+		for(int i=0; i<0xFF; i++)
+			COMMAND_NAME[i] = "invalid_command";
+		COMMAND_NAME[SDRPLAY_COMMAND_SET_FREQUENCY] = "SET_FREQUENCY";
+		COMMAND_NAME[SDRPLAY_COMMAND_SET_SAMPLERATE] = "SET_SAMPLERATE";
+		COMMAND_NAME[SDRPLAY_COMMAND_SET_GAIN] = "SET_GAIN";
+		COMMAND_NAME[SDRPLAY_COMMAND_ENABLE_16_BIT] = "SET_16_BIT";
+	};
 
 	private ReceiverThread receiverThread = null;
 	private CommandThread commandThread = null;
@@ -91,6 +100,7 @@ public class SDRplaySource implements IQSourceInterface {
 
 		// Unfortunately the current version of the SDRplay driver converts the
 		// 12 bit signed samples into 8 bit unsigned to be compatible with the RTL-SDR
+		//this.iqConverter = new Signed12BitIQConverter();
 		this.iqConverter = new Unsigned8BitIQConverter();
 	}
 
@@ -543,7 +553,7 @@ public class SDRplaySource implements IQSourceInterface {
 		 * @return true if command has been scheduled;
 		 */
 		public boolean executeCommand(byte[] command) {
-			Log.d(LOGTAG, "executeCommand: Queuing command: " + COMMAND_NAME[command[0]]);
+			Log.d(LOGTAG, "executeCommand: Queuing command: " + COMMAND_NAME[command[0]&0xFF]);
 			if (commandQueue.offer(command))
 				return true;
 
@@ -640,6 +650,10 @@ public class SDRplaySource implements IQSourceInterface {
 				// Sample Rate:
 				executeCommand(commandToByteArray(SDRPLAY_COMMAND_SET_SAMPLERATE, sampleRate));
 
+				// We want the raw 16 bit samples:
+				// But its not working correctly yet -.- TODO: fix!
+				//executeCommand(commandToByteArray(SDRPLAY_COMMAND_ENABLE_16_BIT, 1));
+
 				return true;
 
 			} catch (UnknownHostException e) {
@@ -700,19 +714,19 @@ public class SDRplaySource implements IQSourceInterface {
 					if (nextCommand == null)
 						continue;
 					outputStream.write(nextCommand);
-					Log.d(LOGTAG, "CommandThread: Command was sent: " + COMMAND_NAME[nextCommand[0]]
+					Log.d(LOGTAG, "CommandThread: Command was sent: " + COMMAND_NAME[nextCommand[0]&0xFF]
 							+ " (" + nextCommand[1] + ", " + nextCommand[2] + ", " + nextCommand[3]
 							+ ", " + nextCommand[4] + ") or (" + ((nextCommand[1]&0xFF)<<24
 							| (nextCommand[2]&0xFF)<<16 | (nextCommand[3]&0xFF)<<8 | (nextCommand[4]&0xFF)) + ")");
 				} catch (IOException e) {
-					Log.e(LOGTAG, "CommandThread: Error while sending command (" + COMMAND_NAME[nextCommand[0]] + "): "
+					Log.e(LOGTAG, "CommandThread: Error while sending command (" + COMMAND_NAME[nextCommand[0]&0xFF] + "): "
 							+ e.getMessage());
-					reportError("Error while sending command: " + COMMAND_NAME[nextCommand[0]]);
+					reportError("Error while sending command: " + COMMAND_NAME[nextCommand[0]&0xFF]);
 					break;
 				} catch (InterruptedException e) {
 					Log.e(LOGTAG,
-							"CommandThread: Interrupted while sending command (" + COMMAND_NAME[nextCommand[0]] + ")");
-					reportError("Interrupted while sending command: " + COMMAND_NAME[nextCommand[0]]);
+							"CommandThread: Interrupted while sending command (" + COMMAND_NAME[nextCommand[0]&0xFF] + ")");
+					reportError("Interrupted while sending command: " + COMMAND_NAME[nextCommand[0]&0xFF]);
 					break;
 				}
 			}
