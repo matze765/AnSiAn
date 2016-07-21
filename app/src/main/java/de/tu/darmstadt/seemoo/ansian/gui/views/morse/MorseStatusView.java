@@ -1,15 +1,12 @@
 package de.tu.darmstadt.seemoo.ansian.gui.views.morse;
 
 import android.content.Context;
-import android.content.Context;
 import android.util.AttributeSet;
-import android.util.AttributeSet;
-import android.view.LayoutInflater;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
-import android.widget.TextView;
+
 import de.greenrobot.event.EventBus;
 import de.greenrobot.event.Subscribe;
 import de.tu.darmstadt.seemoo.ansian.MainActivity;
@@ -19,7 +16,7 @@ import de.tu.darmstadt.seemoo.ansian.control.events.morse.MorseDitEvent;
 import de.tu.darmstadt.seemoo.ansian.control.events.morse.MorseStateEvent;
 import de.tu.darmstadt.seemoo.ansian.control.events.morse.MorseSymbolEvent;
 import de.tu.darmstadt.seemoo.ansian.control.events.morse.RequestMorseStateEvent;
-import de.tu.darmstadt.seemoo.ansian.model.demodulation.morse.Morse.State;
+import de.tu.darmstadt.seemoo.ansian.model.demodulation.oldmorse.Morse.State;
 
 /**
  * This view bunches all the sensor data in a compact view with a picture for

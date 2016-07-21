@@ -1,8 +1,8 @@
 package de.tu.darmstadt.seemoo.ansian.model.demodulation.morse;
 
-import java.util.ArrayList;
+import android.util.Log;
+
 import java.util.Arrays;
-import java.util.List;
 
 import de.greenrobot.event.EventBus;
 import de.tu.darmstadt.seemoo.ansian.control.events.DemodInfoEvent;
@@ -19,21 +19,21 @@ import de.tu.darmstadt.seemoo.ansian.tools.morse.MorseCodeCharacterGetter;
 
 public class Morse extends Demodulation {
 
-    // TODO: idea for memory optimization - reuse buffer for current envelope and binary envelope!
+    // TODO: idea for memory optimization: reuse buffer for current envelope and binary envelope!
 
 
     public enum State {
         COLLECT_SAMPLES, INIT_STATS, DEMOD, STOPPED
     }
 
+    private String LOGTAG = "Morse";
+
     private AM amDemodulator;
     private MorsePreference prefs;
     private State state;
 
-    private int initTime;
-    private long firstInitTimestamp;
-    private List<EnvelopePacket> initPackets;
-    private boolean[] binaryInitData;
+    private float[] initSamples;
+    private boolean[] binaryInitSamples;
 
     private float peak;
     private float bottom;
@@ -49,6 +49,9 @@ public class Morse extends Demodulation {
     private boolean lastStreakValue;
 
     private int sampleRate;
+    private int initTime;
+    private int initSamplesRequired;
+    private int initSamplesCollected;
 
     private StringBuilder currentSymbolCode;
     private Decoder decoder;
@@ -58,11 +61,10 @@ public class Morse extends Demodulation {
         this.amDemodulator = new AM();
         this.prefs = Preferences.MORSE_PREFERENCE;
         this.state = State.COLLECT_SAMPLES;
-        this.initTime = prefs.getInitTime();
-        this.initPackets = new ArrayList<EnvelopePacket>(); // sensible init-value for better performance?
-        this.binaryInitData = null;
 
-        this.firstInitTimestamp = -1;
+        this.initSamples = null; // gets initialized later with sensible size
+        this.binaryInitSamples = null;
+
         this.peak = Float.MIN_VALUE;
         this.bottom = Float.MAX_VALUE;
         this.threshold = Float.NaN;
@@ -73,12 +75,19 @@ public class Morse extends Demodulation {
         this.margin = -1;
 
         this.sampleRate = -1;
+        this.initTime = prefs.getInitTime();
+        this.initSamplesRequired = -1;
+        this.initSamplesCollected = 0;
 
         this.lastStreakLength = 0;
         this.lastStreakValue = false;
 
         this.currentSymbolCode = new StringBuilder();
         this.decoder = new Decoder();
+
+        Log.d(LOGTAG, "initialiting Morse Demodulator; initTime: " + initTime);
+
+
     }
 
     @Override
@@ -97,24 +106,25 @@ public class Morse extends Demodulation {
     @Override
     public void demodulate(SamplePacket input, SamplePacket output) {
         if (prefs.isAmDemod()) {
-            amDemodulator.demodulate(input, output);
+            //amDemodulator.demodulate(input, output);
+            amDemod(input, output);
         }
 
-        // TODO: don't do this if you don't need the envelope
-        this.sampleRate = input.getSampleRate();
+        if (this.sampleRate == -1) {
+            this.sampleRate = input.getSampleRate();
+            this.initSamplesRequired = (int) Math.round((double) initTime * (double) sampleRate / 1000d);
+            Log.d(LOGTAG, "SampleRate " + sampleRate + ", initTime " + initTime + ", need " + initSamplesRequired + " more samples.");
+            this.initSamples = new float[initSamplesRequired];
+        }
+
+        // TODO: don't do this if we don't need the envelope
         float[] envelope = getEnvelope(input.getRe(), input.getIm(), input.size());
 
         switch (this.state) {
             case COLLECT_SAMPLES:
-                long packetTimestamp = input.getTimestamp();
-                initPackets.add(new EnvelopePacket(envelope, packetTimestamp));
-                if (firstInitTimestamp == -1) {
-                    firstInitTimestamp = packetTimestamp;
-                } else {
-                    long time = (packetTimestamp - firstInitTimestamp);
-                    if (time > initTime) {
-                        initializeStats();
-                    }
+                collectSamples(envelope);
+                if (!(initSamplesCollected < initSamplesRequired)) {
+                    initializeStats();
                 }
                 break;
             case INIT_STATS:
@@ -131,6 +141,32 @@ public class Morse extends Demodulation {
         }
 
 
+    }
+
+    public void amDemod(SamplePacket input, SamplePacket output) {
+
+        float[] reIn = input.getRe();
+        float[] imIn = input.getIm();
+        float[] reOut = output.getRe();
+
+
+        // Complex to magnitude
+        for (int i = 0; i < input.size(); i++) {
+            reOut[i] = (float) Math.sqrt(reIn[i] * reIn[i] + imIn[i] * imIn[i]);
+        }
+
+        output.setSize(input.size());
+        output.setSampleRate(quadratureRate);
+
+    }
+
+    private void collectSamples(float[] samples) {
+        int freeSlots = initSamples.length - initSamplesCollected;
+        int count = Math.min(samples.length, freeSlots);
+        System.arraycopy(samples, 0, initSamples, initSamplesCollected, count);
+
+        initSamplesCollected += count;
+        Log.d(LOGTAG, "Collected " + count + " samples, now I have " + initSamplesCollected + " samples.");
     }
 
     private void demodulate(boolean[] envelope) {
@@ -151,6 +187,7 @@ public class Morse extends Demodulation {
                 currentIndex = currentStreak; // start iterating the rest of the array from this point
             }
         }
+
         decode(this.lastStreakValue, this.lastStreakLength);
 
         // iterate over the array and new find streaks
@@ -171,9 +208,10 @@ public class Morse extends Demodulation {
     }
 
     public boolean decode(boolean high, int streak) {
+        Log.d(LOGTAG, "Decoding streak of "+streak);
 
         if (streak < dit - margin)
-            return false; // this cannot be a
+            return false; // this cannot be a symbol we know
 
         String code = null;
 
@@ -192,6 +230,8 @@ public class Morse extends Demodulation {
             else if (word + margin < streak)
                 code = ""; // pause/no signal
         }
+
+        Log.d(LOGTAG, "Decoded streak was a  "+code);
 
         if (code == null) { // streak was not recognized
             EventBus.getDefault().postSticky(new MorseCodeEvent(1.0f, this.threshold)); // TODO: why is this important?
@@ -241,13 +281,6 @@ public class Morse extends Demodulation {
         return -1; // array ended without streak termination
     }
 
-    private void initializeThreshold() {
-        for (int i = 0; i < initPackets.size(); i++) {
-            float[] envelope = initPackets.get(i).getEnvelope();
-            updateThreshold(envelope);
-        }
-    }
-
     private void updateThreshold(float[] envelope) {
         for (int i = 0; i < envelope.length; i++) {
             if (envelope[i] > this.peak) {
@@ -257,7 +290,7 @@ public class Morse extends Demodulation {
                 this.bottom = envelope[i];
             }
         }
-        this.threshold = this.bottom + ((this.peak - this.bottom) * 2f);
+        this.threshold = this.bottom + ((this.peak - this.bottom) / 2f);
     }
 
 
@@ -265,43 +298,30 @@ public class Morse extends Demodulation {
      * Initializes threshold and timings
      */
     private void initializeStats() {
+        Log.d(LOGTAG, "Initializing Stats");
         this.state = State.INIT_STATS;
-        initializeThreshold();
-        binarizeInitData();
-        initPackets = null; // release memory
+        updateThreshold(initSamples);
+        Log.d(LOGTAG, "peak " + peak + ", bottom " + bottom + ", threshold " + threshold);
+        binarizeInitSamples();
+        initSamples = null; // release memory
         initializeTimings();
-    }
-
-    /**
-     * Initializes this.binaryInitData with an empty boolean array of appropriate size
-     */
-    private void initializeBinaryInitArray() {
-        int totalSize = 0;
-        for (int i = 0; i < initPackets.size(); i++) {
-            totalSize += initPackets.get(i).getEnvelope().length;
-        }
-        this.binaryInitData = new boolean[totalSize];
+        binaryInitSamples = null; // release memory
+        Log.d(LOGTAG, "Initialized Stats; Threshold: " + threshold + ", dit: " + dit);
+        this.state = State.DEMOD;
     }
 
 
     /**
-     * Turns collected init samples to high/low information and writes them into this.binaryInitData
+     * Turns collected init samples to high/low information and writes them into this.binaryInitSamples
      */
-    private void binarizeInitData() {
-        int ctr = 0;
-        initializeBinaryInitArray();
-        for (int i = 0; i < initPackets.size(); i++) {
-            float[] envelope = initPackets.get(i).getEnvelope();
-            for (int j = 0; j < envelope.length; j++) {
-                binaryInitData[ctr++] = envelope[j] >= threshold;
-            }
-        }
+    private void binarizeInitSamples() {
+        this.binaryInitSamples = binarize(initSamples);
     }
 
     private boolean[] binarize(float[] envelope) {
         boolean[] result = new boolean[envelope.length];
         for (int i = 0; i < result.length; i++) {
-            result[i] = envelope[i] < threshold;
+            result[i] = envelope[i] >= threshold;
         }
         return result;
     }
@@ -318,23 +338,20 @@ public class Morse extends Demodulation {
     }
 
     private void initializeTimings() {
-        int[] streaks = new int[binaryInitData.length]; // overkill?
+        int[] streaks = new int[binaryInitSamples.length + 1]; // overkill?
 
         int currentIndex = 0;
         int streakLength = 0;
 
-        while (currentIndex < binaryInitData.length) {
-            streakLength = getStreakLength(binaryInitData, currentIndex);
+        while (currentIndex < binaryInitSamples.length) {
+            streakLength = getStreakLength(binaryInitSamples, currentIndex);
 
             if (streakLength == -1) // array terminated before streak was interrupted
-                streakLength = binaryInitData.length - currentIndex;
+                streakLength = binaryInitSamples.length - currentIndex;
 
             streaks[streakLength]++;
             currentIndex += streakLength;
         }
-
-        // release memory
-        this.binaryInitData = null;
 
         // number of samples per dit, hopefully
         int samples = indexOfMax(sumNeighbours(streaks, 1)) + 1;

@@ -1,6 +1,6 @@
 package de.tu.darmstadt.seemoo.ansian.control.events.morse;
 
-import de.tu.darmstadt.seemoo.ansian.model.demodulation.morse.Morse.State;
+import de.tu.darmstadt.seemoo.ansian.model.demodulation.oldmorse.Morse.State;
 
 public class MorseStateEvent {
 
