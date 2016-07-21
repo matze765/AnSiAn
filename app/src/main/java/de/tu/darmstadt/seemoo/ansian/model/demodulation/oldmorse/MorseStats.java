@@ -1,4 +1,4 @@
-package de.tu.darmstadt.seemoo.ansian.model.demodulation.morse;
+package de.tu.darmstadt.seemoo.ansian.model.demodulation.oldmorse;
 
 import java.util.Arrays;
 
@@ -12,7 +12,7 @@ import de.tu.darmstadt.seemoo.ansian.control.events.morse.MorseDitEvent;
 import de.tu.darmstadt.seemoo.ansian.control.events.morse.MorseSymbolEvent;
 import de.tu.darmstadt.seemoo.ansian.model.ErrorBitSet;
 import de.tu.darmstadt.seemoo.ansian.model.FFTSample;
-import de.tu.darmstadt.seemoo.ansian.model.demodulation.morse.Morse.Mode;
+import de.tu.darmstadt.seemoo.ansian.model.demodulation.oldmorse.Morse.Mode;
 import de.tu.darmstadt.seemoo.ansian.model.preferences.DemodFrequencyEvent;
 import de.tu.darmstadt.seemoo.ansian.model.preferences.Preferences;
 import de.tu.darmstadt.seemoo.ansian.tools.morse.Decoder;
@@ -64,7 +64,6 @@ public class MorseStats {
         dah = 3 * dit;
         word = 7 * dit;
         offset = (int) Math.round(dit * 0.5);
-
     }
 
     public boolean decode(boolean high, long l) {
@@ -163,6 +162,7 @@ public class MorseStats {
         EventBus.getDefault().postSticky(new MorseDitEvent(dit));
     }
 
+    // finds index where stats has the highest value
     private int findPosOfMaxOccurance(int[] stats) {
         int pos = 0;
         int value = 0;
