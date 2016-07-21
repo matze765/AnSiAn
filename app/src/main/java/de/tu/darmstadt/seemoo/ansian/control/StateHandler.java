@@ -252,7 +252,7 @@ public class StateHandler {
 		switch (state) {
 		case PAUSED:
 		case MONITORING:
-			if (recording = false) {
+			if (recording == false) {
 				recording = true;
 				EventBus.getDefault().post(new RecordingEvent(event));
 			}

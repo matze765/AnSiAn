@@ -47,7 +47,7 @@ public class RdsTest extends ApplicationTestCase<Application> {
         System.out.printf("Demodulating packets took %d ms\n", te-ts);
     }
 
-    public SamplePacket[] readRtlSdrIqFile(String path, int packetsize, int samplerate, long frequency) {
+    public static SamplePacket[] readRtlSdrIqFile(String path, int packetsize, int samplerate, long frequency) {
         Unsigned8BitIQConverter converter = new Unsigned8BitIQConverter();
         byte[] packet = new byte[packetsize*2];
         ArrayList<SamplePacket> samplePackets = new ArrayList<SamplePacket>();

@@ -7,6 +7,7 @@ public class LSB extends SSB {
 	public LSB() {
 		MIN_USER_FILTER_WIDTH = 1500;
 		MAX_USER_FILTER_WIDTH = 5000;
+		userFilterCutOff = MAX_USER_FILTER_WIDTH + MIN_USER_FILTER_WIDTH / 2;
 	}
 
 	@Override

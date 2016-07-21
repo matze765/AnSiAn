@@ -28,7 +28,7 @@ public abstract class Demodulation {
 	// 0 to avoid divide by
 	// zero errors!
 
-	private int userFilterCutOff = -1;
+	protected int userFilterCutOff = -1;
 
 	/**
 	 * This method does the demodulation of the given input samples and

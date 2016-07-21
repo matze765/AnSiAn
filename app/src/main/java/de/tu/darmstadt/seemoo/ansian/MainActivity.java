@@ -144,7 +144,8 @@ public class MainActivity extends AppCompatActivity {
 		if (Preferences.MORSE_PREFERENCE.isUbiquitousTicker()
 				&& (StateHandler.getActiveDemodulationMode() == DemoType.MORSE
 					|| (StateHandler.getActiveDemodulationMode() == DemoType.WFM
-						&& Preferences.MORSE_PREFERENCE.isFmRDS()))) {
+						&& Preferences.MORSE_PREFERENCE.isFmRDS())
+					|| StateHandler.getActiveDemodulationMode() == DemoType.USB)) {
 			findViewById(R.id.ubiquitousMorseTicker).setVisibility(View.VISIBLE);
 		} else {
 			findViewById(R.id.ubiquitousMorseTicker).setVisibility(View.GONE);
@@ -276,14 +277,15 @@ public class MainActivity extends AppCompatActivity {
 					View vMorseTicker = findViewById(R.id.ubiquitousMorseTicker);
 					View vReceiveView = findViewById(R.id.morseReceiveView);
 					if(vMorseTicker != null && vReceiveView != null) {
-                        if (event.getDemodulation() == DemoType.MORSE
-                                || (event.getDemodulation() == DemoType.WFM && Preferences.MORSE_PREFERENCE.isFmRDS())) {
-                            vMorseTicker.setVisibility(View.VISIBLE);
-                            vReceiveView.setVisibility(View.GONE);
-                        } else {
-                            vMorseTicker.setVisibility(View.GONE);
-                            vReceiveView.setVisibility(View.VISIBLE);
-                        }
+						if (event.getDemodulation() == DemoType.MORSE
+							|| (event.getDemodulation() == DemoType.WFM && Preferences.MORSE_PREFERENCE.isFmRDS())
+							|| (event.getDemodulation() == DemoType.USB)) {
+							vMorseTicker.setVisibility(View.VISIBLE);
+							vReceiveView.setVisibility(View.GONE);
+						} else {
+							vMorseTicker.setVisibility(View.GONE);
+							vReceiveView.setVisibility(View.VISIBLE);
+						}
 					}
 				}
 			});
