@@ -5,10 +5,10 @@ import java.util.concurrent.TimeUnit;
 
 import android.content.Context;
 import android.util.Log;
+import com.mantz_it.hackrf_android.Hackrf;
+import com.mantz_it.hackrf_android.HackrfCallbackInterface;
+import com.mantz_it.hackrf_android.HackrfUsbException;
 import de.tu.darmstadt.seemoo.ansian.model.SamplePacket;
-import de.tu.darmstadt.seemoo.ansian.model.sources.hackrf.Hackrf;
-import de.tu.darmstadt.seemoo.ansian.model.sources.hackrf.HackrfCallbackInterface;
-import de.tu.darmstadt.seemoo.ansian.model.sources.hackrf.HackrfUsbException;
 import de.tu.darmstadt.seemoo.ansian.tools.IQConverter;
 import de.tu.darmstadt.seemoo.ansian.tools.Signed8BitIQConverter;
 

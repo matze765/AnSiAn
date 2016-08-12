@@ -26,4 +26,5 @@ dependencies {
     compile files('libs/eventbus-3.0.0-beta1.jar')
     compile 'com.android.support:appcompat-v7:22.2.1'
     compile 'com.android.support:support-v13:22.2.1'
+    compile project(':hackrf_android')
 }
