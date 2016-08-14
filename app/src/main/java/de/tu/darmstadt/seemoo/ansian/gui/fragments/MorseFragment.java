@@ -11,7 +11,6 @@ import de.tu.darmstadt.seemoo.ansian.R;
 import de.tu.darmstadt.seemoo.ansian.control.StateHandler;
 import de.tu.darmstadt.seemoo.ansian.gui.tabs.MyTabFragment;
 import de.tu.darmstadt.seemoo.ansian.gui.views.morse.MorseSendingView;
-import de.tu.darmstadt.seemoo.ansian.gui.views.morse.MorseStatusView;
 import de.tu.darmstadt.seemoo.ansian.model.demodulation.Demodulation.DemoType;
 import de.tu.darmstadt.seemoo.ansian.model.preferences.Preferences;
 
@@ -22,12 +21,10 @@ import de.tu.darmstadt.seemoo.ansian.model.preferences.Preferences;
 
 public class MorseFragment extends MyTabFragment {
 
-	private MorseStatusView morseStatusView;
 	private MorseSendingView morseSendingView;
 
 	public MorseFragment(MainActivity activity) {
 		super("Morse", activity);
-
 	}
 
 	// Inflate the view for the fragment based on layout XML
@@ -52,7 +49,6 @@ public class MorseFragment extends MyTabFragment {
 	}
 
 	private void update() {
-		morseStatusView.update();
 		morseSendingView.update();
 	}
 
@@ -69,15 +65,14 @@ public class MorseFragment extends MyTabFragment {
 		// show/hide morse ticker if desired
 		if (!Preferences.MORSE_PREFERENCE.isUbiquitousTicker()
 				|| StateHandler.getActiveDemodulationMode() != DemoType.MORSE) {
-			getView().findViewById(R.id.morseReceiveView).setVisibility(View.VISIBLE);
+			getView().findViewById(R.id.demodulationInfoView).setVisibility(View.VISIBLE);
 		} else {
-			getView().findViewById(R.id.morseReceiveView).setVisibility(View.GONE);
+			getView().findViewById(R.id.demodulationInfoView).setVisibility(View.GONE);
 		}
 
 	}
 
 	private void init() {
-		morseStatusView = (MorseStatusView) getView().findViewById(R.id.morseStatusView);
 		morseSendingView = (MorseSendingView) getView().findViewById(R.id.morseSendingView);
 		getView().setBackgroundColor(Color.BLACK);
 	}

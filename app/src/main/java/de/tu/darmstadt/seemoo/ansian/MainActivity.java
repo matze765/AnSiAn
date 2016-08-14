@@ -242,10 +242,10 @@ public class MainActivity extends AppCompatActivity {
 					if (event.getDemodulation() == DemoType.MORSE
 							|| (event.getDemodulation() == DemoType.WFM && Preferences.MORSE_PREFERENCE.isFmRDS())) {
 						findViewById(R.id.ubiquitousMorseTicker).setVisibility(View.VISIBLE);
-						findViewById(R.id.morseReceiveView).setVisibility(View.GONE);
+						findViewById(R.id.demodulationInfoView).setVisibility(View.GONE);
 					} else {
 						findViewById(R.id.ubiquitousMorseTicker).setVisibility(View.GONE);
-						findViewById(R.id.morseReceiveView).setVisibility(View.VISIBLE);
+						findViewById(R.id.demodulationInfoView).setVisibility(View.VISIBLE);
 					}
 				}
 			});

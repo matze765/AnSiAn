@@ -1,6 +1,7 @@
 package de.tu.darmstadt.seemoo.ansian.model.demodulation;
 
 import android.util.Log;
+import android.widget.Toast;
 
 import java.util.Arrays;
 
@@ -8,12 +9,9 @@ import de.greenrobot.event.EventBus;
 import de.greenrobot.event.Subscribe;
 import de.tu.darmstadt.seemoo.ansian.control.events.DemodInfoEvent;
 import de.tu.darmstadt.seemoo.ansian.control.events.DemodulationEvent;
-import de.tu.darmstadt.seemoo.ansian.control.events.morse.MorseCodeEvent;
-import de.tu.darmstadt.seemoo.ansian.control.events.morse.MorseDitEvent;
-import de.tu.darmstadt.seemoo.ansian.control.events.morse.MorseSymbolEvent;
+import de.tu.darmstadt.seemoo.ansian.gui.misc.MyToast;
 import de.tu.darmstadt.seemoo.ansian.model.ErrorBitSet;
 import de.tu.darmstadt.seemoo.ansian.model.SamplePacket;
-import de.tu.darmstadt.seemoo.ansian.model.demodulation.Demodulation;
 import de.tu.darmstadt.seemoo.ansian.model.preferences.MorsePreference;
 import de.tu.darmstadt.seemoo.ansian.model.preferences.Preferences;
 import de.tu.darmstadt.seemoo.ansian.tools.morse.Decoder;
@@ -434,7 +432,7 @@ public class Morse extends Demodulation {
 
         // calculate duration in ms for UI output
         int dit_duration = (int) Math.round(((double) samples / (double) sampleRate) * 1000d);
-        EventBus.getDefault().postSticky(new MorseDitEvent(dit_duration));
+        MyToast.makeText("Timings initialized, one dit is about " + dit + " ms.", Toast.LENGTH_LONG);
     }
 
     private int indexOfMax(int[] array) {
