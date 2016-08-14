@@ -16,7 +16,7 @@ import de.tu.darmstadt.seemoo.ansian.control.events.morse.MorseDitEvent;
 import de.tu.darmstadt.seemoo.ansian.control.events.morse.MorseStateEvent;
 import de.tu.darmstadt.seemoo.ansian.control.events.morse.MorseSymbolEvent;
 import de.tu.darmstadt.seemoo.ansian.control.events.morse.RequestMorseStateEvent;
-import de.tu.darmstadt.seemoo.ansian.model.demodulation.oldmorse.Morse.State;
+import de.tu.darmstadt.seemoo.ansian.model.demodulation.Morse.State;
 
 /**
  * This view bunches all the sensor data in a compact view with a picture for
