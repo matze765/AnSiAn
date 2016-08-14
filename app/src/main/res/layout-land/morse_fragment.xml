@@ -15,7 +15,7 @@
         android:orientation="vertical" >
 
         <de.tu.darmstadt.seemoo.ansian.gui.views.DemodulationInfoView
-            android:id="@+id/morseReceiveView"
+            android:id="@+id/demodulationInfoView"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"  >
   </de.tu.darmstadt.seemoo.ansian.gui.views.DemodulationInfoView>
@@ -46,13 +46,6 @@
         android:layout_height="match_parent"
         android:layout_weight="1"
         android:orientation="vertical" >
-
-        <de.tu.darmstadt.seemoo.ansian.gui.views.morse.MorseStatusView
-            android:id="@+id/morseStatusView"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_weight="1" >
-        </de.tu.darmstadt.seemoo.ansian.gui.views.morse.MorseStatusView>
 
         <de.tu.darmstadt.seemoo.ansian.gui.views.morse.MorseButtonView
             android:id="@+id/morseButtonView"

@@ -2,7 +2,6 @@ package de.tu.darmstadt.seemoo.ansian.model.demodulation;
 
 import de.tu.darmstadt.seemoo.ansian.control.threads.Demodulator;
 import de.tu.darmstadt.seemoo.ansian.model.SamplePacket;
-import de.tu.darmstadt.seemoo.ansian.model.demodulation.morse.Morse;
 
 /**
  * Superclass for the various Demodulations

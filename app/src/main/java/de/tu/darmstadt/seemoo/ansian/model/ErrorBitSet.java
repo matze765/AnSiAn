@@ -6,50 +6,42 @@ import android.util.Log;
 
 public class ErrorBitSet extends BitSet {
 
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = -5148101260177507175L;
+    private int index;
+    private boolean filled;
+    private int size;
 
-	private BitSet bits;
-	private int index;
-	private boolean filled;
-	private int size;
-	private float threshold = 0.5f;
+    public ErrorBitSet(int size) {
+        super(size);
+        this.filled = false;
+        this.index = 0;
+        this.size = size;
+    }
 
-	public ErrorBitSet(int size) {
-		filled = false;
-		index = 0;
-		this.size = size;
-		bits = new BitSet(size);
-	}
+    public void setBit(boolean b) {
+        if (this.index == this.size) {
+            this.index = 0;
+            this.filled = true;
+        }
+        set(this.index, b);
+        this.index++;
+    }
 
-	public void setBit(boolean b) {
-		if (index == size) {
-			index = 0;
-			filled = true;
-		}
-		bits.set(index, b);
-		index++;
-	}
+    public float getSuccessRate() {
+        if (this.filled)
+            return (float) cardinality() / this.size;
+        else
+            return (float) cardinality() / this.index;
+    }
 
-	public float getSuccessRate() {
-		//Log.d("ERROR", "c: " + bits.cardinality() + " size: " + size + " index: " + index);
-		if (filled)
-			return (float) bits.cardinality() / size;
-		else
-			return (float) bits.cardinality() / index;
-	}
+    public float getErrorRate() {
+        return 1f - getSuccessRate();
+    }
 
-	public float getErrorRate() {
-		return 1f - getSuccessRate();
-	}
-
-	public boolean checkStats() {
-		if (filled)
-			if (getSuccessRate() < threshold)
-				return false;
-		return true;
-	}
+    public boolean needsReinit(float threshold) {
+        if (this.filled) {
+            return getSuccessRate() < threshold;
+        }
+        return false;
+    }
 
 }
