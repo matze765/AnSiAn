@@ -140,7 +140,7 @@
     
     <string-array name="pref_morse_mode_entries">
         <item>Automatic</item>
-        <item>Semi-Automatic</item>
+        <!--<item>Semi-Automatic</item> remnants from old morse demodulator -->
         <item>Manual</item>
     </string-array>
     <string-array name="pref_morse_mode_values">

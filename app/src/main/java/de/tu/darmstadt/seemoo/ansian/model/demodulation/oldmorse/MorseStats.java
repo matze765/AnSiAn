@@ -219,7 +219,6 @@ public class MorseStats {
             high = -Float.MAX_VALUE;
             low = Float.MAX_VALUE;
         }
-
     }
 
     public void calcThreshold(FFTSample sample) {
@@ -230,8 +229,8 @@ public class MorseStats {
     }
 
     public boolean checkStats() {
-        return (symbolSuccess.checkStats() && symbolSuccess.checkStats());
-
+        // return (symbolSuccess.checkStats() && symbolSuccess.checkStats());
+        return true;
     }
 
 }
