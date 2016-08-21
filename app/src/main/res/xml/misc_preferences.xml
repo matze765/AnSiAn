@@ -127,8 +127,6 @@
         android:summary="@string/pref_filesource_samplerate_summ"
         android:title="@string/pref_filesource_samplerate_title" />
 
-    <PreferenceCategory>
-    </PreferenceCategory>
     <PreferenceCategory
         android:key="@string/pref_signalProcessing_category"
         android:title="@string/pref_signalProcessing_category_title" >
