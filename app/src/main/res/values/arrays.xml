@@ -140,13 +140,11 @@
     
     <string-array name="pref_morse_mode_entries">
         <item>Automatic</item>
-        <!--<item>Semi-Automatic</item> remnants from old morse demodulator -->
         <item>Manual</item>
     </string-array>
     <string-array name="pref_morse_mode_values">
         <item>0</item>
         <item>1</item>
-        <item>2</item>
     </string-array>
     <string-array name="pref_filesource_format_entries">
         <item>8-bit signed IQ (HackRF)</item>

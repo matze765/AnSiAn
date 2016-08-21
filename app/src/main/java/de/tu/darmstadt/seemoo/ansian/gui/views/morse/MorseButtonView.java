@@ -66,9 +66,9 @@ public class MorseButtonView extends MyMorseView {
 			public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
 				if (fromUser) {
 					int wpm = progress + 1;
-					Preferences.MORSE_PREFERENCE.setWPM(wpm);
+					Preferences.DEMOD_PREFERENCE.setWPM(wpm);
 					EventBus.getDefault()
-							.postSticky(new MorseDitDurationEvent(Preferences.MORSE_PREFERENCE.getDitDuration()));
+							.postSticky(new MorseDitDurationEvent(Preferences.DEMOD_PREFERENCE.getDitDuration()));
 				}
 				updateWPMLabel();
 			}
@@ -88,17 +88,17 @@ public class MorseButtonView extends MyMorseView {
 
 	public void update() {
 		updateWPMLabel();
-		morseWPMSeekBar.setProgress(Preferences.MORSE_PREFERENCE.getWPM());
+		morseWPMSeekBar.setProgress(Preferences.DEMOD_PREFERENCE.getWPM());
 
 	}
 
 	private void updateWPMLabel() {
 		morseWPMLabel.setText(String.format(getContext().getString(R.string.morse_wpm_label),
-				getWPMStringRepresentation(), Preferences.MORSE_PREFERENCE.getDitDuration()));
+				getWPMStringRepresentation(), Preferences.DEMOD_PREFERENCE.getDitDuration()));
 	}
 
 	public String getWPMStringRepresentation() {
-		float wpm = Preferences.MORSE_PREFERENCE.getWPM();
+		float wpm = Preferences.DEMOD_PREFERENCE.getWPM();
 		if (wpm < 1)
 			return "<1";
 		if (wpm > 20)

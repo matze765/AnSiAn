@@ -4,9 +4,6 @@ import android.util.Log;
 
 import java.io.BufferedOutputStream;
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
 
 import de.tu.darmstadt.seemoo.ansian.control.threads.Demodulator;
 import de.tu.darmstadt.seemoo.ansian.model.SamplePacket;
@@ -74,7 +71,7 @@ public class FM extends Demodulation {
 		// Step 1: Frequency demodulation:
 		fmDemodulate(input, output);
 
-		if(type == DemoType.WFM && Preferences.MORSE_PREFERENCE.isFmRDS()) {
+		if(type == DemoType.WFM && Preferences.DEMOD_PREFERENCE.isFmRDS()) {
 			// Step 2: Downmixing (shift the RDS signal to baseband)
 			if (rdsBaseband == null || rdsBaseband.capacity() < input.size()) {
 				rdsBaseband = new SamplePacket(input.size());
@@ -92,10 +89,10 @@ public class FM extends Demodulation {
 			rdsBaseband.setFrequency(output.getFrequency());
 
 			// Step 3: Filter ( RDS signal is ~2400Hz wide )
-			float desiredTransitionWidth = 2150 - 150*Preferences.MORSE_PREFERENCE.getPerformanceSelector();
+			float desiredTransitionWidth = 2150 - 150*Preferences.DEMOD_PREFERENCE.getPerformanceSelector();
 			if (rdsFilter == null || rdsFilter.getTransitionWidth() != desiredTransitionWidth) {
-				float desiredCutOff = 950 + 50*Preferences.MORSE_PREFERENCE.getPerformanceSelector();
-				float desiredAttenuation = 41 + 2*Preferences.MORSE_PREFERENCE.getPerformanceSelector();
+				float desiredCutOff = 950 + 50*Preferences.DEMOD_PREFERENCE.getPerformanceSelector();
+				float desiredAttenuation = 41 + 2*Preferences.DEMOD_PREFERENCE.getPerformanceSelector();
 				rdsFilter = FirFilter.createLowPass(8, 20, quadratureRate, desiredCutOff, desiredTransitionWidth, desiredAttenuation);
 				Log.d(LOGTAG, "FM: created new rdsFilter with " + rdsFilter.getNumberOfTaps()
 						+ " taps. Decimation=" + rdsFilter.getDecimation() + " Cut-Off="

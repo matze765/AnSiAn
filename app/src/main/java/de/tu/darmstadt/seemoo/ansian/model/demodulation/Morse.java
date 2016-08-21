@@ -12,7 +12,7 @@ import de.tu.darmstadt.seemoo.ansian.control.events.DemodulationEvent;
 import de.tu.darmstadt.seemoo.ansian.gui.misc.MyToast;
 import de.tu.darmstadt.seemoo.ansian.model.ErrorBitSet;
 import de.tu.darmstadt.seemoo.ansian.model.SamplePacket;
-import de.tu.darmstadt.seemoo.ansian.model.preferences.MorsePreference;
+import de.tu.darmstadt.seemoo.ansian.model.preferences.DemodPreference;
 import de.tu.darmstadt.seemoo.ansian.model.preferences.Preferences;
 import de.tu.darmstadt.seemoo.ansian.tools.morse.Decoder;
 import de.tu.darmstadt.seemoo.ansian.tools.morse.MorseCodeCharacterGetter;
@@ -37,7 +37,7 @@ public class Morse extends Demodulation {
     private boolean amDemod;
     private boolean automaticReinit;
 
-    private MorsePreference prefs;
+    private DemodPreference prefs;
     private State state;
     private Mode mode;
 
@@ -75,7 +75,7 @@ public class Morse extends Demodulation {
     private ErrorBitSet symbolSuccess;
 
     public Morse() {
-        this.prefs = Preferences.MORSE_PREFERENCE;
+        this.prefs = Preferences.DEMOD_PREFERENCE;
         this.decoder = new Decoder();
 
         // filters from AM demodulator

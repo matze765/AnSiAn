@@ -38,11 +38,11 @@ public class MorsePlayer extends AsyncTask<String, Integer, Boolean> {
 	}
 
 	private void initTiming() {
-		dit = Preferences.MORSE_PREFERENCE.getDitDuration();
+		dit = Preferences.DEMOD_PREFERENCE.getDitDuration();
 		dah = 3 * dit;
 		word = 7 * dit;
-		ditTrack = generateTone(Preferences.MORSE_PREFERENCE.getMorseFrequency(), dit);
-		dahTrack = generateTone(Preferences.MORSE_PREFERENCE.getMorseFrequency(), dah);
+		ditTrack = generateTone(Preferences.DEMOD_PREFERENCE.getMorseFrequency(), dit);
+		dahTrack = generateTone(Preferences.DEMOD_PREFERENCE.getMorseFrequency(), dah);
 
 	}
 

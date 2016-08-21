@@ -4,9 +4,9 @@ import android.app.Fragment;
 import android.app.FragmentManager;
 import android.support.v13.app.FragmentStatePagerAdapter;
 import de.tu.darmstadt.seemoo.ansian.gui.fragments.settings.AlarmFragment;
+import de.tu.darmstadt.seemoo.ansian.gui.fragments.settings.DemodFragment;
 import de.tu.darmstadt.seemoo.ansian.gui.fragments.settings.GuiFragment;
 import de.tu.darmstadt.seemoo.ansian.gui.fragments.settings.MiscFragment;
-import de.tu.darmstadt.seemoo.ansian.gui.fragments.settings.MorseFragment;
 import de.tu.darmstadt.seemoo.ansian.gui.fragments.settings.MyPreferenceFragment;
 
 public class SettingsActivityPagerAdapter extends FragmentStatePagerAdapter {
@@ -17,7 +17,7 @@ public class SettingsActivityPagerAdapter extends FragmentStatePagerAdapter {
 
 	public SettingsActivityPagerAdapter(FragmentManager fragmentManager, MyViewPager viewPager) {
 		super(fragmentManager);
-		fragments = new MyPreferenceFragment[] { new MiscFragment(), new GuiFragment(), new MorseFragment(),
+		fragments = new MyPreferenceFragment[] { new MiscFragment(), new GuiFragment(), new DemodFragment(),
 				new AlarmFragment() };
 	}
 

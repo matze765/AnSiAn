@@ -128,7 +128,7 @@ public class MorseSendingView extends MyMorseView {
 	}
 
 	public String getWPMStringRepresentation() {
-		float wpm = Preferences.MORSE_PREFERENCE.getWPM();
+		float wpm = Preferences.DEMOD_PREFERENCE.getWPM();
 		if (wpm < 1)
 			return "<1";
 		if (wpm > 20)
@@ -173,7 +173,7 @@ public class MorseSendingView extends MyMorseView {
 			morseCodeField.setText(text, BufferType.SPANNABLE);
 		} else {
 			morseCodeField.setText(morseCodeTemp);
-			enable(Preferences.MORSE_PREFERENCE.isClearAfter());
+			enable(Preferences.DEMOD_PREFERENCE.isClearAfter());
 		}
 		;
 	}

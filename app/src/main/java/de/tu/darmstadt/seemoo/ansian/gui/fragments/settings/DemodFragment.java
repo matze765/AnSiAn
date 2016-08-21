@@ -10,12 +10,12 @@ import de.tu.darmstadt.seemoo.ansian.model.preferences.Preferences;
  * Fragment for Morse preferences
  *
  */
-public class MorseFragment extends MyPreferenceFragment {
+public class DemodFragment extends MyPreferenceFragment {
 
-	@SuppressWarnings("unused")private static final String LOGTAG = "MorseFragment";
+	private static final String LOGTAG = "DemodFragment";
 	
-	public MorseFragment() {
-		super(Preferences.MORSE_PREFERENCE);
+	public DemodFragment() {
+		super(Preferences.DEMOD_PREFERENCE);
 		}
 
 	@Override

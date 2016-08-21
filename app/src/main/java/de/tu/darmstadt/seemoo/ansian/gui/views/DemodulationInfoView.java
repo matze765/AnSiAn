@@ -34,7 +34,7 @@ public class DemodulationInfoView extends LinearLayout {
 
 	public DemodulationInfoView(Context context, AttributeSet attrs, int defaultStyle) {
 		super(context, attrs, defaultStyle);
-        isInEditMode();
+        // isInEditMode();
 		init();
         setBackgroundColor(Color.BLACK);
 	}

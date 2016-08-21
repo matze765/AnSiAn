@@ -4,9 +4,9 @@ import android.util.Log;
 import de.tu.darmstadt.seemoo.ansian.MainActivity;
 import de.tu.darmstadt.seemoo.ansian.R;
 
-public class MorsePreference extends MySharedPreferences {
+public class DemodPreference extends MySharedPreferences {
 
-	private static final String LOGTAG = "MorsePreference";
+	private static final String LOGTAG = "DemodPreference";
 	private int ditDuration;
 	private boolean fixedDit;
 	private int morseFrequency;
@@ -18,7 +18,7 @@ public class MorsePreference extends MySharedPreferences {
 	private boolean fmRDS;
 	private int performanceSelector;
 
-	public MorsePreference(MainActivity activity) {
+	public DemodPreference(MainActivity activity) {
 		super(activity);
 	}
 
@@ -52,12 +52,12 @@ public class MorsePreference extends MySharedPreferences {
 
 	@Override
 	public String getName() {
-		return "morse";
+		return "demod";
 	}
 
 	@Override
 	public int getResID() {
-		return R.xml.morse_preferences;
+		return R.xml.demod_preferences;
 	}
 
 	public int getDitDuration() {

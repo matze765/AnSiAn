@@ -129,8 +129,8 @@ public class Decimator extends Thread {
 
 		while (!stopRequested) {
 			// Check whether the Filters are still set up correctly
-			if(performanceSelector != Preferences.MORSE_PREFERENCE.getPerformanceSelector()) {
-				performanceSelector = Preferences.MORSE_PREFERENCE.getPerformanceSelector();
+			if(performanceSelector != Preferences.DEMOD_PREFERENCE.getPerformanceSelector()) {
+				performanceSelector = Preferences.DEMOD_PREFERENCE.getPerformanceSelector();
 
 				// Create FirFilters with tabs according to performance level
 				float cutoff = 75000 + 2500*performanceSelector;

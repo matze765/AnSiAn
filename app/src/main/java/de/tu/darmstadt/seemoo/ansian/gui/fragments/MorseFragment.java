@@ -63,7 +63,7 @@ public class MorseFragment extends MyTabFragment {
 	public void onStart() {
 		super.onStart();
 		// show/hide morse ticker if desired
-		if (!Preferences.MORSE_PREFERENCE.isUbiquitousTicker()
+		if (!Preferences.DEMOD_PREFERENCE.isUbiquitousTicker()
 				|| StateHandler.getActiveDemodulationMode() != DemoType.MORSE) {
 			getView().findViewById(R.id.demodulationInfoView).setVisibility(View.VISIBLE);
 		} else {

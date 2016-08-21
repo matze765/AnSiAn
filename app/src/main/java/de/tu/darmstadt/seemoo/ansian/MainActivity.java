@@ -144,13 +144,13 @@ public class MainActivity extends AppCompatActivity {
 		else
 			slidingTabLayout.setVisibility(View.VISIBLE);
 		// show/hide morse ticker if desired
-		if (Preferences.MORSE_PREFERENCE.isUbiquitousTicker()
+		if (Preferences.DEMOD_PREFERENCE.isUbiquitousTicker()
 				&& (StateHandler.getActiveDemodulationMode() == DemoType.MORSE
 					|| (StateHandler.getActiveDemodulationMode() == DemoType.WFM
-						&& Preferences.MORSE_PREFERENCE.isFmRDS()))) {
-			findViewById(R.id.ubiquitousMorseTicker).setVisibility(View.VISIBLE);
+						&& Preferences.DEMOD_PREFERENCE.isFmRDS()))) {
+			findViewById(R.id.demodulationInfoView).setVisibility(View.VISIBLE);
 		} else {
-			findViewById(R.id.ubiquitousMorseTicker).setVisibility(View.GONE);
+			findViewById(R.id.demodulationInfoView).setVisibility(View.GONE);
 		}
 
 		super.onStart();
@@ -234,17 +234,17 @@ public class MainActivity extends AppCompatActivity {
 	 */
 	@Subscribe
 	public void onEvent(final DemodulationEvent event) {
-		if (Preferences.MORSE_PREFERENCE.isUbiquitousTicker()) {
+		if (Preferences.DEMOD_PREFERENCE.isUbiquitousTicker()) {
 			runOnUiThread(new Runnable() {
 
 				@Override
 				public void run() {
 					if (event.getDemodulation() == DemoType.MORSE
-							|| (event.getDemodulation() == DemoType.WFM && Preferences.MORSE_PREFERENCE.isFmRDS())) {
-						findViewById(R.id.ubiquitousMorseTicker).setVisibility(View.VISIBLE);
+							|| (event.getDemodulation() == DemoType.WFM && Preferences.DEMOD_PREFERENCE.isFmRDS())) {
+						findViewById(R.id.demodulationInfoView).setVisibility(View.VISIBLE);
 						findViewById(R.id.demodulationInfoView).setVisibility(View.GONE);
 					} else {
-						findViewById(R.id.ubiquitousMorseTicker).setVisibility(View.GONE);
+						findViewById(R.id.demodulationInfoView).setVisibility(View.GONE);
 						findViewById(R.id.demodulationInfoView).setVisibility(View.VISIBLE);
 					}
 				}
