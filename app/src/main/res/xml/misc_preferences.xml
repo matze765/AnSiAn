@@ -26,27 +26,12 @@
         <PreferenceCategory
             android:key="@string/pref_filesource_category"
             android:title="@string/pref_filesource_category_title" >
-
-            <EditTextPreference
-                android:defaultValue="@string/pref_filesource_frequency_default"
-                android:dialogTitle="@string/pref_filesource_frequency_title"
-                android:inputType="number"
-                android:key="pref_filesource_frequency"
-                android:summary="@string/pref_filesource_frequency_summ"
-                android:title="@string/pref_filesource_frequency_title" />
-            <EditTextPreference
-                android:key="@string/pref_filesource_samplerate"
-                android:title="@string/pref_filesource_samplerate_title"
-                android:dialogTitle="@string/pref_filesource_samplerate_title"
-                android:defaultValue="@string/pref_filesource_samplerate_default"
-                android:summary="@string/pref_filesource_samplerate_summ"
-                android:inputType="number"/>
-
             <de.tu.darmstadt.seemoo.ansian.model.preferences.MyEditTextPreference
                 android:defaultValue="@string/pref_filesource_file_default"
                 android:key="filesource_file_name"
                 android:summary="@string/pref_filesource_file_summ"
                 android:title="@string/pref_filesource_file_title" />
+
             <ListPreference
                 android:defaultValue="@string/pref_filesource_format_default"
                 android:dialogTitle="@string/pref_filesource_format_title"
@@ -142,6 +127,8 @@
         android:summary="@string/pref_filesource_samplerate_summ"
         android:title="@string/pref_filesource_samplerate_title" />
 
+    <PreferenceCategory>
+    </PreferenceCategory>
     <PreferenceCategory
         android:key="@string/pref_signalProcessing_category"
         android:title="@string/pref_signalProcessing_category_title" >
