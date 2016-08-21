@@ -143,7 +143,7 @@ public class MainActivity extends AppCompatActivity {
 			slidingTabLayout.setVisibility(View.GONE);
 		else
 			slidingTabLayout.setVisibility(View.VISIBLE);
-		// show/hide morse ticker if desired
+		// show/hide demodulation info text, depending on current demod type
 		if (StateHandler.getActiveDemodulationMode() == DemoType.MORSE
 					|| (StateHandler.getActiveDemodulationMode() == DemoType.WFM
 						&& Preferences.DEMOD_PREFERENCE.isFmRDS())) {
@@ -227,9 +227,7 @@ public class MainActivity extends AppCompatActivity {
 	}
 
 	/**
-	 * Set visibility for the global morse receive view
-	 * 
-	 * @param event
+	 * Set visibility for demodulation info text
 	 */
 	@Subscribe
 	public void onEvent(final DemodulationEvent event) {
@@ -239,10 +237,8 @@ public class MainActivity extends AppCompatActivity {
 					if (event.getDemodulation() == DemoType.MORSE
 							|| (event.getDemodulation() == DemoType.WFM && Preferences.DEMOD_PREFERENCE.isFmRDS())) {
 						findViewById(R.id.demodulationInfoView).setVisibility(View.VISIBLE);
-						// findViewById(R.id.demodulationInfoView).setVisibility(View.GONE);
 					} else {
 						findViewById(R.id.demodulationInfoView).setVisibility(View.GONE);
-						// findViewById(R.id.demodulationInfoView).setVisibility(View.VISIBLE);
 					}
 				}
 			});
