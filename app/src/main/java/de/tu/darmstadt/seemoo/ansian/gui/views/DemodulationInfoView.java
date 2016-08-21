@@ -61,8 +61,8 @@ public class DemodulationInfoView extends LinearLayout {
         if(infoEvent != null && infoEvent.getMode() != DemodInfoEvent.Mode.REPLACE_CHAR) {
             if(infoEvent.getTextPosition() == DemodInfoEvent.Position.TOP) {
                 infoBuffer = new StringBuilder(infoEvent.getText());
-                demodInfoText.setText(textBuffer.toString());
                 textBuffer = new StringBuilder();
+                demodInfoText.setText(textBuffer.toString());
                 if(infoEvent.isMarquee()) {
                     demodInfoText.setGravity(Gravity.LEFT);
                     demodInfoText.setEllipsize(TextUtils.TruncateAt.MARQUEE);
