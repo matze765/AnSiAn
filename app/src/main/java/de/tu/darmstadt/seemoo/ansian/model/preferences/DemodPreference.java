@@ -12,7 +12,6 @@ public class DemodPreference extends MySharedPreferences {
 	private int morseFrequency;
 	private boolean clearTextAfter;
 	private boolean automaticReinit;
-	private boolean ubiquitousTicker;
 	private boolean amDemod;
 	private int initTime;
 	private boolean fmRDS;
@@ -31,7 +30,6 @@ public class DemodPreference extends MySharedPreferences {
 		automaticReinit = getBoolean("automatic_init", false);
 		initTime = getInt("init_time", 5);
 		amDemod = getBoolean("am_demod", true);
-		ubiquitousTicker = getBoolean("ubiquitous_ticker", true);
 		fmRDS = getBoolean("fm_rds", true);
 		performanceSelector = Integer.parseInt(getString("performance_selector", "1"));
 	}
@@ -96,10 +94,6 @@ public class DemodPreference extends MySharedPreferences {
 
 	public boolean isAmDemod() {
 		return amDemod;
-	}
-
-	public boolean isUbiquitousTicker() {
-		return ubiquitousTicker;
 	}
 
 	public boolean isAutomaticReinit() {

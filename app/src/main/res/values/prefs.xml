@@ -12,10 +12,6 @@
         <string name="pref_morse_automatic_init_summ_on">Reinit automatically</string>
     <string name="pref_morse_automatic_init_summ_off">No automatic reinit of timings</string>
    <string name="pref_morse_automatic_init_title">Automatic reinit timings</string>
-   
-        <string name="pref_morse_ubiquitous_ticker_summ_on">Morse receiver in all views</string>
-    <string name="pref_morse_ubiquitous_ticker_summ_off">Morse receiver only in Morse view</string>
-   <string name="pref_morse_ubiquitous_ticker_title">Ubiquitous morse ticker</string>
 
     <string name="pref_fm_rds_summ_on">RDS demodulation during wide FM is activated</string>
     <string name="pref_fm_rds_summ_off">RDS demodulation during wide FM is deactivated</string>

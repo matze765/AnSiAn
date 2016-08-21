@@ -55,12 +55,6 @@
             android:summaryOff="@string/pref_morse_automatic_init_summ_off"
             android:summaryOn="@string/pref_morse_automatic_init_summ_on"
             android:title="@string/pref_morse_automatic_init_title" />
-        <SwitchPreference
-            android:defaultValue="true"
-            android:key="ubiquitous_ticker"
-            android:summaryOff="@string/pref_morse_ubiquitous_ticker_summ_off"
-            android:summaryOn="@string/pref_morse_ubiquitous_ticker_summ_on"
-            android:title="@string/pref_morse_ubiquitous_ticker_title" />
     </PreferenceCategory>
 
     <PreferenceCategory android:title="FM" >

@@ -144,10 +144,9 @@ public class MainActivity extends AppCompatActivity {
 		else
 			slidingTabLayout.setVisibility(View.VISIBLE);
 		// show/hide morse ticker if desired
-		if (Preferences.DEMOD_PREFERENCE.isUbiquitousTicker()
-				&& (StateHandler.getActiveDemodulationMode() == DemoType.MORSE
+		if (StateHandler.getActiveDemodulationMode() == DemoType.MORSE
 					|| (StateHandler.getActiveDemodulationMode() == DemoType.WFM
-						&& Preferences.DEMOD_PREFERENCE.isFmRDS()))) {
+						&& Preferences.DEMOD_PREFERENCE.isFmRDS())) {
 			findViewById(R.id.demodulationInfoView).setVisibility(View.VISIBLE);
 		} else {
 			findViewById(R.id.demodulationInfoView).setVisibility(View.GONE);
@@ -234,24 +233,22 @@ public class MainActivity extends AppCompatActivity {
 	 */
 	@Subscribe
 	public void onEvent(final DemodulationEvent event) {
-		if (Preferences.DEMOD_PREFERENCE.isUbiquitousTicker()) {
-			runOnUiThread(new Runnable() {
-
+ 			runOnUiThread(new Runnable() {
 				@Override
 				public void run() {
 					if (event.getDemodulation() == DemoType.MORSE
 							|| (event.getDemodulation() == DemoType.WFM && Preferences.DEMOD_PREFERENCE.isFmRDS())) {
 						findViewById(R.id.demodulationInfoView).setVisibility(View.VISIBLE);
-						findViewById(R.id.demodulationInfoView).setVisibility(View.GONE);
+						// findViewById(R.id.demodulationInfoView).setVisibility(View.GONE);
 					} else {
 						findViewById(R.id.demodulationInfoView).setVisibility(View.GONE);
-						findViewById(R.id.demodulationInfoView).setVisibility(View.VISIBLE);
+						// findViewById(R.id.demodulationInfoView).setVisibility(View.VISIBLE);
 					}
 				}
 			});
 		}
 
-	}
+
 
 	public MyViewPager getViewPager() {
 		return viewPager;
