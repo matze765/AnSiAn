@@ -432,7 +432,7 @@ public class Morse extends Demodulation {
 
         // calculate duration in ms for UI output
         int dit_duration = (int) Math.round(((double) samples / (double) sampleRate) * 1000d);
-        MyToast.makeText("Timings initialized, one dit is about " + dit + " ms.", Toast.LENGTH_LONG);
+        MyToast.makeText("Timings initialized, one dit is about " + dit_duration + " ms.", Toast.LENGTH_LONG);
     }
 
     private int indexOfMax(int[] array) {
@@ -464,10 +464,16 @@ public class Morse extends Demodulation {
 
     @Subscribe
     public void onEvent(DemodulationEvent event) {
-        if (event.getDemodulation() == DemoType.MORSE)
+        if (event.getDemodulation() == DemoType.MORSE) {
+
+            // clear DemodulationInfoView
+            EventBus.getDefault().postSticky(DemodInfoEvent.newReplaceStringEvent(DemodInfoEvent.Position.TOP, "", false));
+            EventBus.getDefault().postSticky(DemodInfoEvent.newReplaceStringEvent(DemodInfoEvent.Position.BOTTOM, "", false));
+
             init();
-        else
+        } else {
             this.state = State.STOPPED;
+        }
     }
 
 

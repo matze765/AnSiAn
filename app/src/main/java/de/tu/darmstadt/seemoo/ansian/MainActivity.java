@@ -21,6 +21,7 @@ import de.tu.darmstadt.seemoo.ansian.gui.misc.MyToast;
 import de.tu.darmstadt.seemoo.ansian.gui.tabs.MainActivityPagerAdapter;
 import de.tu.darmstadt.seemoo.ansian.gui.tabs.MyViewPager;
 import de.tu.darmstadt.seemoo.ansian.gui.tabs.SlidingTabLayout;
+import de.tu.darmstadt.seemoo.ansian.model.Logger;
 import de.tu.darmstadt.seemoo.ansian.model.demodulation.Demodulation.DemoType;
 import de.tu.darmstadt.seemoo.ansian.model.preferences.Preferences;
 import de.tu.darmstadt.seemoo.ansian.model.sources.RtlsdrSource;
@@ -75,6 +76,9 @@ public class MainActivity extends AppCompatActivity {
 
 		// init all prefs
 		new Preferences(this);
+
+		// enable logging of demodulated text
+		new Logger();
 
 		// Set view for this activity
 		setContentView(R.layout.activity_main);

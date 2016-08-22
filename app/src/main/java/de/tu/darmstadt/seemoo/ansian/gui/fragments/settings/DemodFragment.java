@@ -22,10 +22,12 @@ public class DemodFragment extends MyPreferenceFragment {
 	public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
 		super.onSharedPreferenceChanged(sharedPreferences, key);	
 		Preference pref = findPreference(key);
-		if (key=="receive_mode") {
+
+		// disable automatic reinit if manual mode is selected
+		if (key.equals("receive_mode")) {
 			ListPreference listPref = (ListPreference) pref;
 			SwitchPreference switchPref= (SwitchPreference) findPreference("automatic_init");
-			if(listPref.getValue()=="2")
+			if(listPref.getValue().equals("1"))
 				switchPref.setEnabled(false);
 			else
 				switchPref.setEnabled(true);

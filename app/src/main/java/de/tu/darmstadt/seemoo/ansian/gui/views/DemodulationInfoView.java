@@ -9,6 +9,7 @@ import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+
 import de.greenrobot.event.EventBus;
 import de.greenrobot.event.Subscribe;
 import de.tu.darmstadt.seemoo.ansian.MainActivity;
@@ -17,39 +18,39 @@ import de.tu.darmstadt.seemoo.ansian.control.events.DemodInfoEvent;
 
 public class DemodulationInfoView extends LinearLayout {
 
-	private TextView demodInfoText;
+    private TextView demodInfoText;
     private TextView demodTextText;
 
-	private String LOGTAG = "DemodulationInfoView";
+    private String LOGTAG = "DemodulationInfoView";
     private StringBuilder infoBuffer;
     private StringBuilder textBuffer;
 
-	public DemodulationInfoView(Context context) {
-		this(context, null);
-	}
+    public DemodulationInfoView(Context context) {
+        this(context, null);
+    }
 
-	public DemodulationInfoView(Context context, AttributeSet attrs) {
-		this(context, attrs, 0);
-	}
+    public DemodulationInfoView(Context context, AttributeSet attrs) {
+        this(context, attrs, 0);
+    }
 
-	public DemodulationInfoView(Context context, AttributeSet attrs, int defaultStyle) {
-		super(context, attrs, defaultStyle);
+    public DemodulationInfoView(Context context, AttributeSet attrs, int defaultStyle) {
+        super(context, attrs, defaultStyle);
         // isInEditMode();
-		init();
+        init();
         setBackgroundColor(Color.BLACK);
-	}
+    }
 
-	private void init() {
-		LayoutInflater inflater = (LayoutInflater) getContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-		inflater.inflate(R.layout.demodulation_info_view, this);
+    private void init() {
+        LayoutInflater inflater = (LayoutInflater) getContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+        inflater.inflate(R.layout.demodulation_info_view, this);
 
-		demodInfoText = (TextView) findViewById(R.id.demod_info_text);
+        demodInfoText = (TextView) findViewById(R.id.demod_info_text);
         demodInfoText.setHorizontallyScrolling(true);
         demodInfoText.setSingleLine(true);
         demodInfoText.setTypeface(Typeface.MONOSPACE);
         demodInfoText.setTextSize(12);
 
-		demodTextText = (TextView) findViewById(R.id.demod_text_text);
+        demodTextText = (TextView) findViewById(R.id.demod_text_text);
         demodTextText.setHorizontallyScrolling(true);
         demodTextText.setSingleLine(true);
         demodTextText.setTypeface(Typeface.MONOSPACE);
@@ -57,13 +58,13 @@ public class DemodulationInfoView extends LinearLayout {
         demodTextText.setTextSize(12);
 
 
-        DemodInfoEvent infoEvent  = EventBus.getDefault().getStickyEvent(DemodInfoEvent.class);
-        if(infoEvent != null && infoEvent.getMode() != DemodInfoEvent.Mode.REPLACE_CHAR) {
-            if(infoEvent.getTextPosition() == DemodInfoEvent.Position.TOP) {
+        DemodInfoEvent infoEvent = EventBus.getDefault().getStickyEvent(DemodInfoEvent.class);
+        if (infoEvent != null) {
+            if (infoEvent.getTextPosition() == DemodInfoEvent.Position.TOP) {
                 infoBuffer = new StringBuilder(infoEvent.getText());
                 textBuffer = new StringBuilder();
                 demodInfoText.setText(textBuffer.toString());
-                if(infoEvent.isMarquee()) {
+                if (infoEvent.isMarquee()) {
                     demodInfoText.setGravity(Gravity.LEFT);
                     demodInfoText.setEllipsize(TextUtils.TruncateAt.MARQUEE);
                     demodInfoText.setSelected(true);
@@ -75,7 +76,7 @@ public class DemodulationInfoView extends LinearLayout {
                 infoBuffer = new StringBuilder();
                 textBuffer = new StringBuilder(infoEvent.getText());
                 demodTextText.setText(textBuffer.toString());
-                if(infoEvent.isMarquee()) {
+                if (infoEvent.isMarquee()) {
                     demodTextText.setGravity(Gravity.LEFT);
                     demodTextText.setEllipsize(TextUtils.TruncateAt.MARQUEE);
                     demodTextText.setSelected(true);
@@ -89,7 +90,7 @@ public class DemodulationInfoView extends LinearLayout {
             textBuffer = new StringBuilder();
             infoBuffer = new StringBuilder();
         }
-	}
+    }
 
     @Subscribe
     public void onEvent(final DemodInfoEvent event) {
@@ -100,7 +101,7 @@ public class DemodulationInfoView extends LinearLayout {
 
                 TextView textview;
                 StringBuilder stringBuilder;
-                if(event.getTextPosition()== DemodInfoEvent.Position.TOP) {
+                if (event.getTextPosition() == DemodInfoEvent.Position.TOP) {
                     textview = demodInfoText;
                     stringBuilder = infoBuffer;
                 } else {
@@ -108,7 +109,7 @@ public class DemodulationInfoView extends LinearLayout {
                     stringBuilder = textBuffer;
                 }
 
-                switch(event.getMode()) {
+                switch (event.getMode()) {
                     case APPEND_STRING:
                         stringBuilder.append(event.getText());
                         break;
@@ -116,12 +117,10 @@ public class DemodulationInfoView extends LinearLayout {
                         stringBuilder.delete(0, stringBuilder.length());
                         stringBuilder.append(event.getText());
                         break;
-                    case REPLACE_CHAR:
-                        stringBuilder.setCharAt(event.getCharacterPosition(), event.getText().charAt(0));
                 }
 
                 textview.setText(stringBuilder.toString());
-                if(event.isMarquee()) {
+                if (event.isMarquee()) {
                     textview.setGravity(Gravity.LEFT);
                     textview.setEllipsize(TextUtils.TruncateAt.MARQUEE);
                     textview.setSelected(true);
@@ -135,15 +134,15 @@ public class DemodulationInfoView extends LinearLayout {
         });
     }
 
-	@Override
-	protected void onDetachedFromWindow() {
-		super.onDetachedFromWindow();
-		EventBus.getDefault().unregister(this);
-	}
+    @Override
+    protected void onDetachedFromWindow() {
+        super.onDetachedFromWindow();
+        EventBus.getDefault().unregister(this);
+    }
 
-	@Override
-	protected void onAttachedToWindow() {
-		super.onAttachedToWindow();
-		EventBus.getDefault().register(this);
-	}
+    @Override
+    protected void onAttachedToWindow() {
+        super.onAttachedToWindow();
+        EventBus.getDefault().register(this);
+    }
 }
