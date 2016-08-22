@@ -70,7 +70,7 @@ public class DemodulationInfoView extends LinearLayout {
                     demodInfoText.setSelected(true);
                 } else {
                     demodInfoText.setGravity(Gravity.RIGHT);
-                    demodInfoText.setEllipsize(TextUtils.TruncateAt.END);
+                    demodInfoText.setEllipsize(null);
                 }
             } else {
                 infoBuffer = new StringBuilder();
@@ -83,7 +83,7 @@ public class DemodulationInfoView extends LinearLayout {
 
                 } else {
                     demodTextText.setGravity(Gravity.RIGHT);
-                    demodTextText.setEllipsize(TextUtils.TruncateAt.END);
+                    demodTextText.setEllipsize(null);
                 }
             }
         } else {
@@ -127,7 +127,7 @@ public class DemodulationInfoView extends LinearLayout {
 
                 } else {
                     textview.setGravity(Gravity.RIGHT);
-                    textview.setEllipsize(TextUtils.TruncateAt.END);
+                    textview.setEllipsize(null);
                 }
             }
 
