@@ -5,7 +5,7 @@ import de.greenrobot.event.EventBus;
 import de.greenrobot.event.Subscribe;
 import de.tu.darmstadt.seemoo.ansian.control.events.morse.MorseCharPlayedEvent;
 import de.tu.darmstadt.seemoo.ansian.control.events.morse.MorseDitDurationEvent;
-import de.tu.darmstadt.seemoo.ansian.control.events.morse.MorseSendEvent;
+import de.tu.darmstadt.seemoo.ansian.control.events.morse.TransmitEvent;
 import de.tu.darmstadt.seemoo.ansian.model.preferences.Preferences;
 
 public class MorsePlayer extends AsyncTask<String, Integer, Boolean> {
@@ -84,7 +84,7 @@ public class MorsePlayer extends AsyncTask<String, Integer, Boolean> {
 			counter++;
 		}
 
-		EventBus.getDefault().post(new MorseSendEvent(false));
+		EventBus.getDefault().post(new TransmitEvent(false));
 		return result;
 	}
 

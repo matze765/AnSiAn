@@ -4,7 +4,7 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentStatePagerAdapter;
 import de.tu.darmstadt.seemoo.ansian.MainActivity;
-import de.tu.darmstadt.seemoo.ansian.gui.fragments.MorseFragment;
+import de.tu.darmstadt.seemoo.ansian.gui.fragments.TransmitFragment;
 import de.tu.darmstadt.seemoo.ansian.gui.fragments.AnalyzerFragment;
 import de.tu.darmstadt.seemoo.ansian.gui.fragments.WaveformFragment;
 
@@ -18,7 +18,7 @@ public class MainActivityPagerAdapter extends FragmentStatePagerAdapter {
 
 	public MainActivityPagerAdapter(FragmentManager fragmentManager, MyViewPager viewPager, MainActivity activity) {
 		super(fragmentManager);
-		fragments = new MyTabFragment[] { new MorseFragment(activity), new AnalyzerFragment(activity),
+		fragments = new MyTabFragment[] { new TransmitFragment(activity), new AnalyzerFragment(activity),
 				new WaveformFragment(activity) };
 	}
 

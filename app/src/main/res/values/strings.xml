@@ -59,7 +59,7 @@
      <string name="morse_success_rate">"Symbol success rate: "</string>
     <string name="morse_state_user_input">User input</string>
     <string name="morse_state_playing_sound">Playing morse sound</string>
-    <string formatted="false" name="morse_wpm_label">%s WPM - %s ms per Dit</string>
+    <string formatted="false" name="vga_gain_label">VGA Gain: %s</string>
     <string name="morse_symbol_success_rate">"Symbol success rate: "</string>
     <string name="morse_code_success_rate">"Code success rate: "</string>
       <string name="morse_estimated_dit_duration_label">"Estimated dit duration: "</string>
