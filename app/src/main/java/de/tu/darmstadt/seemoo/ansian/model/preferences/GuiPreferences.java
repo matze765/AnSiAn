@@ -325,7 +325,6 @@ public class GuiPreferences extends MySharedPreferences {
 	}
 
 	public void setDemodFrequency(long frequency) {
-		EventBus.getDefault().post(new DemodFrequencyEvent(frequency));
 		demodFrequency = frequency;
 	}
 
