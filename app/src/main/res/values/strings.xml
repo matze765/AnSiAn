@@ -8,7 +8,7 @@
     <string name="action_help">Help</string>
     <string name="action_start">Start</string>
     <string name="action_stop">Stop</string>
-    <string name="dit_duration_summary">Time for one dit is %s ms</string>
+    <string name="dit_duration_summary">One dit is %s ms</string>
     <string name="morse_frequency_summary">Frequency of morse is %s Hz</string>
     <string name="initialization_time_summary">Initialization time is %ss</string>
     <string name="action_demodulation_off">Demodulation: off</string>

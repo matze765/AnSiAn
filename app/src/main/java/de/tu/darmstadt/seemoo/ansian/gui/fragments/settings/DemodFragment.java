@@ -7,6 +7,7 @@ import android.preference.ListPreference;
 import android.preference.Preference;
 import android.preference.SwitchPreference;
 
+import de.tu.darmstadt.seemoo.ansian.model.preferences.IntEditTextPreference;
 import de.tu.darmstadt.seemoo.ansian.model.preferences.Preferences;
 
 /**
@@ -54,9 +55,14 @@ public class DemodFragment extends MyPreferenceFragment {
     private void updateReinitEnabledState() {
         ListPreference listPref = (ListPreference) findPreference("receive_mode");
         SwitchPreference switchPref = (SwitchPreference) findPreference("automatic_init");
-        if (listPref.getValue().equals("1"))
+        IntEditTextPreference editPref = (IntEditTextPreference) findPreference("dit_duration");
+        if (listPref.getValue().equals("1")) {
             switchPref.setEnabled(false);
-        else
+            editPref.setEnabled(true);
+        }
+        else {
             switchPref.setEnabled(true);
+            editPref.setEnabled(false);
+        }
     }
 }

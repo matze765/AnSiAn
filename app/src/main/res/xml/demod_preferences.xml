@@ -10,13 +10,6 @@
             android:summary="@string/morse_frequency_summary"
             android:title="Morse frequency" />
 
-        <de.tu.darmstadt.seemoo.ansian.model.preferences.IntEditTextPreference
-            android:inputType="number"
-            android:key="dit_duration"
-            android:maxLength="4"
-            android:summary="@string/dit_duration_summary"
-            android:title="Dit duration" />
-
         <SwitchPreference
             android:defaultValue="true"
             android:key="clear_text_after"
@@ -55,6 +48,13 @@
             android:summaryOff="@string/pref_morse_automatic_init_summ_off"
             android:summaryOn="@string/pref_morse_automatic_init_summ_on"
             android:title="@string/pref_morse_automatic_init_title" />
+
+        <de.tu.darmstadt.seemoo.ansian.model.preferences.IntEditTextPreference
+            android:inputType="number"
+            android:key="dit_duration"
+            android:maxLength="4"
+            android:summary="@string/dit_duration_summary"
+            android:title="Dit duration (manual mode)" />
     </PreferenceCategory>
 
     <PreferenceCategory android:title="FM">
