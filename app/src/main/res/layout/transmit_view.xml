@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="@dimen/default_margin"
+    android:orientation="vertical">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:orientation="horizontal">
+
+        <TextView
+            android:id="@+id/tv_sampRateLabel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignBaseline="@+id/et_sampRate"
+            android:layout_alignParentLeft="true"
+            android:text="Sample Rate (Sps)" />
+
+        <EditText
+            android:id="@+id/et_sampRate"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:layout_toRightOf="@+id/tv_sampRateLabel"
+            android:ems="10"
+            android:inputType="number"
+            android:text="1000000" />
+
+        <TextView
+            android:id="@+id/tv_freqLabel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignBaseline="@+id/et_freq"
+            android:layout_alignParentLeft="true"
+            android:layout_below="@+id/et_sampRate"
+            android:text="Frequency (Hz)" />
+
+        <EditText
+            android:id="@+id/et_freq"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:layout_below="@+id/et_sampRate"
+            android:layout_toRightOf="@+id/tv_freqLabel"
+            android:ems="10"
+            android:inputType="number"
+            android:text="97000000" />
+
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:orientation="horizontal">
+
+        <CheckBox
+            android:id="@+id/cb_amp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true"
+            android:text="Amplifier" />
+
+        <CheckBox
+            android:id="@+id/cb_antenna"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:text="Antenna Port Power" />
+
+    </RelativeLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:orientation="horizontal">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/vgaGainLabel"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/vga_gain_label" />
+
+            <SeekBar
+                android:id="@+id/vgaGainSeekBar"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:max="100"
+                android:progress="40" />
+        </LinearLayout>
+
+        <Button
+            android:id="@+id/transmitButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="2"
+            android:drawableStart="@android:drawable/ic_menu_send"
+            android:text="@string/morse_button_send" />
+    </LinearLayout>
+
+
+</LinearLayout>
