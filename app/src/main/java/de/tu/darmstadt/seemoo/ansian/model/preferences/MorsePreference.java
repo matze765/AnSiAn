@@ -16,6 +16,7 @@ public class MorsePreference extends MySharedPreferences {
 	private boolean amDemod;
 	private int initTime;
 	private boolean fmRDS;
+	private boolean usbPSK31;
 	private int performanceSelector;
 
 	public MorsePreference(MainActivity activity) {
@@ -33,6 +34,7 @@ public class MorsePreference extends MySharedPreferences {
 		amDemod = getBoolean("am_demod", true);
 		ubiquitousTicker = getBoolean("ubiquitous_ticker", true);
 		fmRDS = getBoolean("fm_rds", true);
+		usbPSK31 = getBoolean("usb_psk31", true);
 		performanceSelector = Integer.parseInt(getString("performance_selector", "1"));
 	}
 
@@ -46,6 +48,7 @@ public class MorsePreference extends MySharedPreferences {
 		editor.putBoolean("fixed_dit", fixedDit);
 		editor.putBoolean("clear_text_after", clearTextAfter);
 		editor.putBoolean("fm_rds", fmRDS);
+		editor.putBoolean("usb_psk31", usbPSK31);
 		editor.putString("performance_selector", ""+performanceSelector);
 		Log.d(LOGTAG, LOGTAG + " saved: " + editor.commit());
 	}
@@ -110,8 +113,15 @@ public class MorsePreference extends MySharedPreferences {
 		return fmRDS;
 	}
 
+	public boolean isUsbPSK31() {
+		return usbPSK31;
+	}
 	public void setFmRDS(boolean fmRDS) {
 		this.fmRDS = fmRDS;
+	}
+
+	public void setUsbPSK31(boolean usbPSK31) {
+		this.usbPSK31 = usbPSK31;
 	}
 
 	public int getPerformanceSelector() {

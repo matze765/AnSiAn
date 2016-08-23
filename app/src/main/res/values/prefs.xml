@@ -20,6 +20,9 @@
     <string name="pref_fm_rds_summ_on">RDS demodulation during wide FM is activated</string>
     <string name="pref_fm_rds_summ_off">RDS demodulation during wide FM is deactivated</string>
     <string name="pref_fm_rds_title">RDS demodulation during wFM</string>
+    <string name="pref_usb_psk31_summ_on">PSK31 demodulation during Upper Side Band mode is activated</string>
+    <string name="pref_usb_psk31_summ_off">PSK31 demodulation during Upper Side Band mode is deactivated</string>
+    <string name="pref_usb_psk31_title">PSK31 demodulation during Upper Side Band mode</string>
     <string name="pref_performance_selector_default">1</string>
     <string name="pref_performance_selector_summary">Filter performance is set to: %s</string>
     <string name="pref_performance_selector_title">Performance Selector</string>
