@@ -108,7 +108,7 @@ public class Demodulator extends Thread {
 		// smaller buffers.
 		this.quadratureSamples = new SamplePacket(packetSize);
 
-		// Create Audio Transmitter
+		// Create Audio Sink
 		this.audioSink = new AudioSink(packetSize, AUDIO_RATE);
 
 		// Create Decimator block

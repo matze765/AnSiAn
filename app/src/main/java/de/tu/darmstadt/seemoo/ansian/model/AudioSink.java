@@ -10,7 +10,7 @@ import android.util.Log;
 import de.tu.darmstadt.seemoo.ansian.model.filter.FirFilter;
 
 /**
- * <h1>AnSiAn - Audio Transmitter</h1>
+ * <h1>AnSiAn - Audio Sink</h1>
  *
  * Module: AudioSink.java Description: This class implements the interface to
  * the systems audio API. It will run in a separate thread and buffer incoming
