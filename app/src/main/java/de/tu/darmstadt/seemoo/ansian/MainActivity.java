@@ -146,8 +146,8 @@ public class MainActivity extends AppCompatActivity {
 			slidingTabLayout.setVisibility(View.VISIBLE);
 		// show/hide demodulation info text, depending on current demod type
 		if (StateHandler.getActiveDemodulationMode() == DemoType.MORSE
-					|| (StateHandler.getActiveDemodulationMode() == DemoType.WFM
-						&& Preferences.DEMOD_PREFERENCE.isFmRDS())) {
+					|| (StateHandler.getActiveDemodulationMode() == DemoType.WFM && Preferences.DEMOD_PREFERENCE.isFmRDS())
+					|| (StateHandler.getActiveDemodulationMode() == DemoType.USB && Preferences.DEMOD_PREFERENCE.isUsbPSK31())) {
 			findViewById(R.id.demodulationInfoView).setVisibility(View.VISIBLE);
 		} else {
 			findViewById(R.id.demodulationInfoView).setVisibility(View.GONE);
@@ -273,7 +273,8 @@ public class MainActivity extends AppCompatActivity {
 				@Override
 				public void run() {
 					if (event.getDemodulation() == DemoType.MORSE
-							|| (event.getDemodulation() == DemoType.WFM && Preferences.DEMOD_PREFERENCE.isFmRDS())) {
+							|| (event.getDemodulation() == DemoType.WFM && Preferences.DEMOD_PREFERENCE.isFmRDS())
+							|| (event.getDemodulation() == DemoType.USB && Preferences.DEMOD_PREFERENCE.isUsbPSK31())) {
 						findViewById(R.id.demodulationInfoView).setVisibility(View.VISIBLE);
 					} else {
 						findViewById(R.id.demodulationInfoView).setVisibility(View.GONE);

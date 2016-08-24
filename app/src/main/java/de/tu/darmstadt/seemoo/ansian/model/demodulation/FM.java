@@ -45,7 +45,7 @@ public class FM extends Demodulation {
                 // throw new WrongDemodulationTypeException();
 
         }
-
+        userFilterCutOff = MAX_USER_FILTER_WIDTH + MIN_USER_FILTER_WIDTH / 2;
     }
 
     /**

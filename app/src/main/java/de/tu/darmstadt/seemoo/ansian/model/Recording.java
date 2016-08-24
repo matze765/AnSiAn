@@ -136,6 +136,8 @@ public class Recording {
 	}
 
 	public void write(byte[] packet) {
+		if(bufferedOutputStream == null)
+			return;
 		if (stopRecording) {
 			try {
 				bufferedOutputStream.close();
@@ -144,14 +146,14 @@ public class Recording {
 			}
 			bufferedOutputStream = null;
 			Log.i(LOGTAG, "run: Recording stopped.");
-		} else
+		} else {
 			try {
 				bufferedOutputStream.write(packet);
 			} catch (IOException e) {
 				Log.e(LOGTAG, "run: Error while writing to output stream (recording): " + e.getMessage());
 				this.stopRecordingThread();
 			}
-
+		}
 	}
 
 	/**

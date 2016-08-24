@@ -22,6 +22,7 @@ public class DemodPreference extends MySharedPreferences {
     private boolean amDemod;
     private int initTime;
     private boolean fmRDS;
+	private boolean usbPSK31;
     private int performanceSelector;
     private boolean logging;
     private String logfile_top_path;
@@ -41,6 +42,7 @@ public class DemodPreference extends MySharedPreferences {
         initTime = getInt("init_time", 5);
         amDemod = getBoolean("am_demod", true);
         fmRDS = getBoolean("fm_rds", true);
+		usbPSK31 = getBoolean("usb_psk31", true);
         performanceSelector = Integer.parseInt(getString("performance_selector", "1"));
         logging = getBoolean("demod_log", false);
 
@@ -129,8 +131,16 @@ public class DemodPreference extends MySharedPreferences {
         return fmRDS;
     }
 
+    public boolean isUsbPSK31() {
+        return usbPSK31;
+    }
+
     public void setFmRDS(boolean fmRDS) {
         this.fmRDS = fmRDS;
+    }
+
+    public void setUsbPSK31(boolean usbPSK31) {
+        this.usbPSK31 = usbPSK31;
     }
 
     public int getPerformanceSelector() {

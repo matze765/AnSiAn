@@ -55,7 +55,7 @@ public class RDS extends Demodulation {
 
     public RDS() {
         bitBuffer = new byte[2000];     // Just a large buffer, no need for optimization here..
-        bpsk = new BPSK(BAUDRATE);
+        bpsk = new BPSK(BAUDRATE, true);
         resetState();
     }
 

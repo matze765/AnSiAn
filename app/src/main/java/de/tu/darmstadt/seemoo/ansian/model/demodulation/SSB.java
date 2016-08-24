@@ -8,7 +8,6 @@ public abstract class SSB extends Demodulation {
 
 	private ComplexFirFilter bandPassFilter = null; // used for SSB demodulation
 	private static final int BAND_PASS_ATTENUATION = 40;
-	private static int userFilterCutOff = 0;
 	// DEMODULATION
 	private float lastMax = 0; // used for gain control in AM / SSB demodulation
 	private String LOGTAG = "SSB";
