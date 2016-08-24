@@ -88,7 +88,7 @@ public class HackrfSource implements IQSourceInterface, HackrfCallbackInterface 
 
 	@Override
 	public boolean open(Context context, Callback callback) {
-		int queueSize = 1000000;
+		int queueSize = 8000000;
 		this.callback = callback;
 		// Initialize the HackRF (i.e. open the USB device, which requires the
 		// user to give permissions)
@@ -106,7 +106,6 @@ public class HackrfSource implements IQSourceInterface, HackrfCallbackInterface 
 		if (callback != null)
 			callback.onIQSourceReady(this);
 	}
-
 	@Override
 	public void onHackrfError(String message) {
 		Log.e(LOGTAG, "Error while opening HackRF: " + message);

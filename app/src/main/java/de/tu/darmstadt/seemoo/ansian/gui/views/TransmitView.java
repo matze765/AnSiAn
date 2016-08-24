@@ -139,7 +139,7 @@ public class TransmitView extends LinearLayout {
             @Override
             public void onClick(View v) {
                 Log.d(LOGTAG, "Send Button clicked; sending = " + sending);
-                EventBus.getDefault().post(new TransmitEvent(!sending));
+                EventBus.getDefault().post(new TransmitEvent(!sending, TransmitEvent.Sender.GUI));
             }
         });
         setButtonText(sending);

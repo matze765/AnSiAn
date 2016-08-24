@@ -25,21 +25,22 @@ import de.tu.darmstadt.seemoo.ansian.model.preferences.Preferences;
  * Created by Max on 23.08.2016.
  */
 
-public class Sink implements HackrfCallbackInterface, Runnable {
+public class Transmitter implements HackrfCallbackInterface, Runnable {
 
-    private static final String LOGTAG = "Sink";
+    private static final String LOGTAG = "Transmitter";
 
     private boolean stopRequested;
     private Hackrf hackrf;
+    private static final int QUEUE_SIZE = 8000000;
 
-    public Sink() {
+    public Transmitter() {
         EventBus.getDefault().register(this);
         stopRequested = false;
     }
 
     @Override
     public void onHackrfError(String s) {
-        Log.d(LOGTAG, "HackRF Error: " + s);
+        Log.e(LOGTAG, "HackRF Error: " + s);
     }
 
     @Override
@@ -52,7 +53,11 @@ public class Sink implements HackrfCallbackInterface, Runnable {
     @Subscribe
     public void onEvent(final TransmitEvent event) {
 
-        if (!event.isTransmitting()) {
+        if (event.getSender() == TransmitEvent.Sender.TX) {
+            return; // don't react to the events we sent ourselves, as this may stop an ongoing transmission
+        }
+
+        if (!event.isTransmitting()) { // stop transmitting
             this.stopRequested = true;
             if (hackrf != null) {
                 try {
@@ -63,9 +68,10 @@ public class Sink implements HackrfCallbackInterface, Runnable {
                 }
             }
             return;
+        } else { // start transmitting
+            open(); // transmission gets triggered in callback
         }
 
-        open();
 
     }
 
@@ -76,12 +82,12 @@ public class Sink implements HackrfCallbackInterface, Runnable {
     }
 
     private void finishedTransmitting() {
-        EventBus.getDefault().post(new TransmitEvent(false));
+        EventBus.getDefault().post(new TransmitEvent(false, TransmitEvent.Sender.TX));
     }
 
     private void transmit() {
 
-        int sampRate = Preferences.MISC_PREFERENCE.getSend_sampleRate();
+        final int sampRate = Preferences.MISC_PREFERENCE.getSend_sampleRate();
         int frequency = Preferences.MISC_PREFERENCE.getSend_frequency();
         boolean amp = Preferences.MISC_PREFERENCE.isSend_amplifier();
         boolean antennaPower = Preferences.MISC_PREFERENCE.isSend_antennaPower();
@@ -188,11 +194,10 @@ public class Sink implements HackrfCallbackInterface, Runnable {
 
 
     private boolean open() {
-        int queueSize = 1000000;
         Context context = MainActivity.instance;
         // Initialize the HackRF (i.e. open the USB device, which requires the
         // user to give permissions)
         Log.d(LOGTAG, "Initializing HackRF");
-        return Hackrf.initHackrf(context, this, queueSize);
+        return Hackrf.initHackrf(context, this, QUEUE_SIZE);
     }
 }
