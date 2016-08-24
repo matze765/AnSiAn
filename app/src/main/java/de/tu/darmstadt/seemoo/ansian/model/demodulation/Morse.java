@@ -82,6 +82,7 @@ public class Morse extends Demodulation {
         // filters from AM demodulator
         MIN_USER_FILTER_WIDTH = 3000;
         MAX_USER_FILTER_WIDTH = 15000;
+        userFilterCutOff = MAX_USER_FILTER_WIDTH + MIN_USER_FILTER_WIDTH / 2;
 
         EventBus.getDefault().register(this);
     }
@@ -143,6 +144,11 @@ public class Morse extends Demodulation {
             this.initSamplesRequired = (int) Math.round((double) initTime * (double) sampleRate / 1000d);
             //Log.d(LOGTAG, "SampleRate " + sampleRate + ", initTime " + initTime + ", need " + initSamplesRequired + " samples.");
             this.initSamples = new float[initSamplesRequired];
+        }
+
+        if (this.state == null) { // how can this even happen?
+            init();
+            return;
         }
 
         switch (this.state) {
@@ -365,7 +371,12 @@ public class Morse extends Demodulation {
             setTimings(samples_per_dit);
         } else { // this.mode == Mode.AUTOMATIC
             binarizeInitSamples();
-            estimateTimings();
+            if (!estimateTimings()) { // re-initialize if dit time estimate is out of range
+                initSamples = null; // release memory
+                binaryInitSamples = null; // release memory
+                init();
+                return;
+            }
         }
 
         initSamples = null; // release memory
@@ -410,7 +421,12 @@ public class Morse extends Demodulation {
         currentSampleCount = count;
     }
 
-    private void estimateTimings() {
+    /**
+     * Estimates the duration of a dit based on the collected initialization samples in binaryInitSamples
+     *
+     * @return true if the estimated dit duration is a plausible value, false otherwise
+     */
+    private boolean estimateTimings() {
         int[] streaks = new int[binaryInitSamples.length + 1]; //possibly overkill?
 
         int currentIndex = 0;
@@ -436,9 +452,10 @@ public class Morse extends Demodulation {
 
         if (dit_duration < MIN_DIT_TIME_MS) {
             MyToast.makeText("Detected timings out of range; reinitializing...", Toast.LENGTH_LONG);
-            init();
+            return false;
         } else {
             MyToast.makeText("Timings initialized, one dit is about " + dit_duration + " ms.", Toast.LENGTH_LONG);
+            return true;
         }
 
 
