@@ -5,13 +5,16 @@ import java.io.File;
 import android.app.Dialog;
 import android.content.ActivityNotFoundException;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
 import android.preference.EditTextPreference;
 import android.preference.Preference;
+import android.preference.PreferenceManager;
 import android.util.Log;
 import android.widget.Toast;
 
+import de.tu.darmstadt.seemoo.ansian.R;
 import de.tu.darmstadt.seemoo.ansian.model.preferences.Preferences;
 import de.tu.darmstadt.seemoo.ansian.tools.FileUtils;
 
@@ -42,7 +45,6 @@ public class MiscFragment extends MyPreferenceFragment {
     public boolean onPreferenceClick(Preference preference) {
         super.onPreferenceClick(preference);
         // FileSource file:
-        Log.d(LOGTAG, "key = "+preference.getKey());
         if (preference.getKey().equals("filesource_file_name")) {
             try {
                 Log.d(LOGTAG, "starting intent...");
@@ -115,6 +117,7 @@ public class MiscFragment extends MyPreferenceFragment {
                         if (filepath != null) {
                             ((EditTextPreference) findPreference("filesource_file_name")).setText(filepath);
                             updateFileSourcePrefs(filepath);
+                            getPreferenceManager().findPreference("filesource_file_name").setSummary(String.format(getResources().getString(R.string.pref_filesource_file_summ), filepath));
                         } else {
                             Toast.makeText(MiscFragment.this.getActivity(),
                                     "Can't resolve file path from: " + uri.toString(), Toast.LENGTH_LONG).show();
@@ -128,6 +131,8 @@ public class MiscFragment extends MyPreferenceFragment {
                             ((EditTextPreference) findPreference("send_file_name")).setText(filepath);
                             // TODO: method for automatically setting samplerate and frequency?
                             Preferences.MISC_PREFERENCE.setSend_filename(filepath);
+                            Preferences.MISC_PREFERENCE.savePreference();
+                            getPreferenceManager().findPreference("send_file_name").setSummary("File Path: " + filepath);
                         } else {
                             Toast.makeText(MiscFragment.this.getActivity(),
                                     "Can't resolve file path from: " + uri.toString(), Toast.LENGTH_LONG).show();
