@@ -122,6 +122,10 @@ public class FFTSample {
 			float offset = (float) (newCenter * factor);
 			int newLow = Math.max((int) (newCenter - offset), 0);
 			int newHigh = Math.min((int) (newCenter + offset + 1), length - 1);
+			if(newHigh < 0)
+				newHigh = 0;
+			if(newLow < 0 || newLow > newHigh)
+				newLow = 0;
 			return Arrays.copyOfRange(magnitude, newLow, newHigh);
 		}
 	}
