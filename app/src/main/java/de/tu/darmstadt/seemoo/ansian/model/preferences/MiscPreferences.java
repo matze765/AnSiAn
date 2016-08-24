@@ -126,7 +126,6 @@ public class MiscPreferences extends MySharedPreferences {
         send_frequency = getInt("send_frequency", 97000000);
         send_filename = getString("send_file_name", Environment.getExternalStorageDirectory().getAbsolutePath() + "/samples.iq");
 
-
     }
 
     public void savePreference() {
@@ -182,6 +181,8 @@ public class MiscPreferences extends MySharedPreferences {
         editor.putBoolean("send_amplifier", send_amplifier);
         editor.putBoolean("send_antenna_power", send_antennaPower);
         editor.putString("send_file_name", send_filename);
+        editor.putInt("send_sample_rate", send_sampleRate);
+        editor.putInt("send_frequency", send_frequency);
 
         Log.d(LOGTAG, "Preferences saved: " + editor.commit());
     }

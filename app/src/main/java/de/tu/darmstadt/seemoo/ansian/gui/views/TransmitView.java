@@ -138,7 +138,6 @@ public class TransmitView extends LinearLayout {
         playButton.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
-                Log.d(LOGTAG, "Send Button clicked; sending = " + sending);
                 EventBus.getDefault().post(new TransmitEvent(!sending, TransmitEvent.Sender.GUI));
             }
         });
@@ -146,7 +145,7 @@ public class TransmitView extends LinearLayout {
         update();
     }
 
-    private void update() {
+    public void update() {
         updateAmplifierCheckbox();
         updateAntennaPowerCheckbox();
         updateVgaGainLabel();

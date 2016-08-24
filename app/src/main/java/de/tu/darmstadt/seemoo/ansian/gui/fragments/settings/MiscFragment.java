@@ -129,9 +129,8 @@ public class MiscFragment extends MyPreferenceFragment {
                         String filepath = FileUtils.getPath(getActivity(), uri);
                         if (filepath != null) {
                             ((EditTextPreference) findPreference("send_file_name")).setText(filepath);
-                            // TODO: method for automatically setting samplerate and frequency?
                             Preferences.MISC_PREFERENCE.setSend_filename(filepath);
-                            Preferences.MISC_PREFERENCE.savePreference();
+                            updateTransmissionPrefs(filepath);
                             getPreferenceManager().findPreference("send_file_name").setSummary("File Path: " + filepath);
                         } else {
                             Toast.makeText(MiscFragment.this.getActivity(),
@@ -155,7 +154,7 @@ public class MiscFragment extends MyPreferenceFragment {
                 || filename.matches(".*RTL-SDR.*"))
             Preferences.MISC_PREFERENCE.setSourceFileFormat(1);
 
-        // Sampe Rate. Search for pattern XXXXXXXSps
+        // Sample Rate. Search for pattern XXXXXXXSps
         if (filename.matches(".*(_|-|\\s)([0-9]+)(sps|Sps|SPS).*"))
             Preferences.MISC_PREFERENCE.setFileSourceSampleRate(
                     Integer.valueOf(filename.replaceFirst(".*(_|-|\\s)([0-9]+)(sps|Sps|SPS).*", "$2")));
@@ -171,6 +170,30 @@ public class MiscFragment extends MyPreferenceFragment {
 
         if (filename.matches(".*(_|-|\\s)([0-9]+)(mhz|Mhz|MHz|MHZ).*"))
             Preferences.MISC_PREFERENCE.setFileSourceFrequency(
+                    Integer.valueOf(filename.replaceFirst(".*(_|-|\\s)([0-9]+)(mhz|Mhz|MHz|MHZ).*", "$2")) * 1000000);
+
+        Preferences.MISC_PREFERENCE.savePreference();
+
+    }
+
+    private void updateTransmissionPrefs(String filename) {
+
+        // Sample Rate. Search for pattern XXXXXXXSps
+        if (filename.matches(".*(_|-|\\s)([0-9]+)(sps|Sps|SPS).*"))
+            Preferences.MISC_PREFERENCE.setSend_sampleRate(
+                    Integer.valueOf(filename.replaceFirst(".*(_|-|\\s)([0-9]+)(sps|Sps|SPS).*", "$2")));
+        if (filename.matches(".*(_|-|\\s)([0-9]+)(msps|Msps|MSps|MSPS).*"))
+            Preferences.MISC_PREFERENCE.setSend_sampleRate(
+                    Integer.valueOf(filename.replaceFirst(".*(_|-|\\s)([0-9]+)(msps|Msps|MSps|MSPS).*", "$2"))
+                            * 1000000);
+
+        // Frequency. Search for pattern XXXXXXXHz
+        if (filename.matches(".*(_|-|\\s)([0-9]+)(hz|Hz|HZ).*"))
+            Preferences.MISC_PREFERENCE.setSend_frequency(
+                    Integer.valueOf(filename.replaceFirst(".*(_|-|\\s)([0-9]+)(hz|Hz|HZ).*", "$2")));
+
+        if (filename.matches(".*(_|-|\\s)([0-9]+)(mhz|Mhz|MHz|MHZ).*"))
+            Preferences.MISC_PREFERENCE.setSend_frequency(
                     Integer.valueOf(filename.replaceFirst(".*(_|-|\\s)([0-9]+)(mhz|Mhz|MHz|MHZ).*", "$2")) * 1000000);
 
         Preferences.MISC_PREFERENCE.savePreference();

@@ -9,7 +9,7 @@
     android:orientation="horizontal" >
 
     <de.tu.darmstadt.seemoo.ansian.gui.views.TransmitView
-        android:id="@+id/morseButtonView"
+        android:id="@+id/transmitView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_weight="5" >
