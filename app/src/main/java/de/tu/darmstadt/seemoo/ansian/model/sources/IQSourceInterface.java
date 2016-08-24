@@ -33,7 +33,7 @@ import de.tu.darmstadt.seemoo.ansian.model.SamplePacket;
 public interface IQSourceInterface {
 
 	public static enum SourceType {
-		FILE_SOURCE, HACKRF_SOURCE, RTLSDR_SOURCE;
+		FILE_SOURCE, HACKRF_SOURCE, RTLSDR_SOURCE, SDRPLAY_SOURCE;
 	};
 
 	/**

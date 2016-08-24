@@ -104,6 +104,17 @@ public class Scheduler extends Thread {
 		ArrayBlockingQueue<SamplePacket> fftInputQueue = DataHandler.getInstance().getFftInputQueue();
 		ArrayBlockingQueue<SamplePacket> fftReturnQueue = DataHandler.getInstance().getFftReturnQueue();
 
+		// Check if we get packets from the source.
+		// The timeout for the first packet is long because it might take a while to set up the source..
+		byte[] firstPacket = source.getPacket(10000);
+		if(firstPacket == null) {
+			Log.e(LOGTAG, "run: Did not get a packet from source after 10 seconds. Must be an error. stop.");
+			stopRequested = true;
+		} else {
+			// We ignore the first packet, this was just to see if there are packets incoming...
+			source.returnPacket(firstPacket);
+		}
+
 		while (!stopRequested) {
 			// Get a new packet from the source:
 			byte[] packet = source.getPacket(1000);

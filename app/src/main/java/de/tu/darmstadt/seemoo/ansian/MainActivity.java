@@ -25,6 +25,7 @@ import de.tu.darmstadt.seemoo.ansian.model.Logger;
 import de.tu.darmstadt.seemoo.ansian.model.demodulation.Demodulation.DemoType;
 import de.tu.darmstadt.seemoo.ansian.model.preferences.Preferences;
 import de.tu.darmstadt.seemoo.ansian.model.sources.RtlsdrSource;
+import de.tu.darmstadt.seemoo.ansian.model.sources.SDRplaySource;
 
 /**
  * <h1>AnSiAn - Main Activity</h1>
@@ -63,10 +64,6 @@ public class MainActivity extends AppCompatActivity {
 	private MyViewPager viewPager;
 	private SlidingTabLayout slidingTabLayout;
 	public static final String LOGTAG = "MainActivity";
-	public static final int RTL2832U_RESULT_CODE = 1234; // arbitrary value,
-															// used when sending
-															// intent to
-															// RTL2832U
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -190,7 +187,7 @@ public class MainActivity extends AppCompatActivity {
 				"already_running" };
 
 		switch (requestCode) {
-		case RTL2832U_RESULT_CODE:
+		case SourceControl.RTL2832U_RESULT_CODE:
 			// This happens if the RTL2832U driver was started.
 			// We check for errors and print them:
 			if (resultCode == RESULT_OK)
@@ -221,6 +218,43 @@ public class MainActivity extends AppCompatActivity {
 									+ errorId + ")"
 									+ (detailedDescription != null
 											? ": " + detailedDescription + " (" + exceptionCode + ")" : ""),
+							Toast.LENGTH_LONG).show();
+					SourceControl.getInstance();
+					SourceControl.getSource().close();
+				}
+			}
+			break;
+		case SourceControl.SDRPLAY_RESULT_CODE:
+			// This happens if the SDRplay driver was started.
+			// We check for errors and print them:
+			if (resultCode == -1)	// SDRplay driver returns -1 on success (not standard conform)
+				Log.i(LOGTAG, "onActivityResult: SDRplay driver was successfully started.");
+			else {
+				int errorId = -1;
+				int exceptionCode = 0;
+				String detailedDescription = null;
+				if (data != null) {
+					errorId = data.getIntExtra("marto.rtl_tcp_andro.RtlTcpExceptionId", -1);
+					exceptionCode = data.getIntExtra("detailed_exception_code", 0);
+					detailedDescription = data.getStringExtra("detailed_exception_message");
+				}
+				String errorMsg = "ERROR NOT SPECIFIED";
+				if (errorId >= 0 && errorId < rtlsdrErrInfo.length)
+					errorMsg = rtlsdrErrInfo[errorId];
+
+				Log.e(LOGTAG, "onActivityResult: SDRplay driver returned with error: " + errorMsg + " (" + errorId
+						+ ")"
+						+ (detailedDescription != null ? ": " + detailedDescription + " (" + exceptionCode + ")" : ""));
+
+				SourceControl.getInstance();
+				SourceControl.getInstance();
+				if (SourceControl.getSource() != null && SourceControl.getSource() instanceof SDRplaySource) {
+					SourceControl.getInstance();
+					Toast.makeText(MainActivity.this,
+							"Error with Source [" + SourceControl.getSource().getName() + "]: " + errorMsg + " ("
+									+ errorId + ")"
+									+ (detailedDescription != null
+									? ": " + detailedDescription + " (" + exceptionCode + ")" : ""),
 							Toast.LENGTH_LONG).show();
 					SourceControl.getInstance();
 					SourceControl.getSource().close();
