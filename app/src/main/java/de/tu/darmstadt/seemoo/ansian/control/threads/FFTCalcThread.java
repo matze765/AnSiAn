@@ -27,7 +27,6 @@ public class FFTCalcThread extends Thread {
 
 	private FFT fftBlock;
 	private int oldFFTSize;
-	private int FFT_QUEUE_SIZE = 5;
 
 	boolean stopRequested = false;
 
@@ -59,6 +58,9 @@ public class FFTCalcThread extends Thread {
 					fftSample = outputReturnQueue.poll(100, TimeUnit.MILLISECONDS);
 					if(fftSample == null)
 						continue;
+					if(fftSample.getSize() != fFTSize)
+						fftSample = new FFTSample(fFTSize); // When user changes the fft size we toss
+															// all old buffers and allocate new..
 				} catch (InterruptedException e) {
 					Log.e(LOGTAG, "run: Interrupted while polling from output return queue. stop.");
 					this.stopFFTCalcThread();
@@ -74,6 +76,16 @@ public class FFTCalcThread extends Thread {
 				samples = inputQueue.poll(100, TimeUnit.MILLISECONDS);
 				if (samples == null) {
 					Log.d(LOGTAG, "run: Timeout while waiting on input data. skip.");
+					if(!scanning)
+						outputReturnQueue.offer(fftSample);
+					continue;
+				}
+				// fft size might have changed (by user)
+				// replace all buffers in the input queues that do not fit the current size:
+				if(samples.size() != fFTSize) {
+					// Drop the old sample buffer (will be collected by the GC) and allocate a new:
+					samples = new SamplePacket(fFTSize);
+					inputReturnQueue.offer(samples);
 					if(!scanning)
 						outputReturnQueue.offer(fftSample);
 					continue;
