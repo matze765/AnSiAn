@@ -83,8 +83,6 @@ public class DataHandler {
 			throw new RuntimeException("NOT IMPLEMENTED YET");
 		}
 
-		// TODO: put fft queue in separate function and call when user changes fft size
-
 		for(int i = 0; i < WF_QUEUE_SIZE; i++)
 			wfReturnQueue.offer(new SamplePacket(packetSize));
 		for(int i = 0; i < FFT_QUEUE_SIZE; i++)
@@ -93,6 +91,9 @@ public class DataHandler {
 			demodReturnQueue.offer(new SamplePacket(packetSize));
 		for(int i = 0; i < FFTDRAW_DEQUE_SIZE; i++)
 			fftDrawDeque.offer(new FFTSample(Preferences.MISC_PREFERENCE.getFFTSize()));
+
+		// NOTE: The FFT queues are getting refilled when the user changes the fft size preference
+		// this happens on the fly in FFTCalcThread.java!
 	}
 
 	public FFTDrawData getScannerDrawData(int pixelWidth) {

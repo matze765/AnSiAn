@@ -97,8 +97,13 @@ public class ArrayHelper {
 
 	public static float calcAverage(float[] values, int from, int till) {
 		float avg = 0;
+		if(from < 0 || till > values.length)
+			return 0;
 		if (from == till) {
-			return values[from];
+			if(from < values.length)
+				return values[from];
+			else
+				return 0;
 		}
 		for (int pos = from; pos < till; pos++) {
 			avg += values[pos];
