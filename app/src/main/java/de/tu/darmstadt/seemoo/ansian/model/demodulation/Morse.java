@@ -144,6 +144,9 @@ public class Morse extends Demodulation {
             this.initSamples = new float[initSamplesRequired];
         }
 
+        if(!amDemod)
+            output.setSize(0);
+
         switch (this.state) {
             case INIT:
                 if (amDemod) {
