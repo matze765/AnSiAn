@@ -69,7 +69,12 @@ public class TransmitView extends LinearLayout {
 
             @Override
             public void afterTextChanged(Editable s) {
-                Preferences.MISC_PREFERENCE.setSend_sampleRate(Integer.parseInt(s.toString()));
+                try {
+                    int i = Integer.parseInt(s.toString());
+                    Preferences.MISC_PREFERENCE.setSend_sampleRate(i);
+                } catch (NumberFormatException e) {
+                    // not an integer; ignore
+                }
             }
         });
 
