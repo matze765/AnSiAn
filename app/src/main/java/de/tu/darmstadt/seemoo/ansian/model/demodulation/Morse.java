@@ -39,7 +39,7 @@ public class Morse extends Demodulation {
     private boolean automaticReinit;
 
     private DemodPreference prefs;
-    private State state = State.INIT;
+    private State state;
     private Mode mode;
 
     // buffers for data that is used for dit duration calibration
