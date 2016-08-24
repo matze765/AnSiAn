@@ -29,7 +29,8 @@ public class Morse extends Demodulation {
 
     private static final int CODE_SUCCESS_BUFFER_SIZE = 100;
     private static final int SYMBOL_SUCCESS_BUFFER_SIZE = 30;
-    private static final float REINIT_THRESHOLD = 0.5f;
+    private static final float REINIT_SUCCESS_THRESHOLD = 0.5f;
+    private static final int MIN_DIT_TIME_MS = 7; // minimal time for automatically detected dit duration; if detected duration is smaller, timings get re-initialized
 
 
     private String LOGTAG = "Morse";
@@ -174,7 +175,7 @@ public class Morse extends Demodulation {
                 binarizeBuffer();
                 demodulateBuffer();
                 if (automaticReinit && needsReinit()) {
-                    Log.d(LOGTAG, "Error rate too high; reinitializing");
+                    MyToast.makeText("High decoding error rate; reinitializing...", Toast.LENGTH_LONG);
                     init();
                 }
                 break;
@@ -186,7 +187,7 @@ public class Morse extends Demodulation {
     }
 
     private boolean needsReinit() {
-        return codeSuccess.needsReinit(REINIT_THRESHOLD) || symbolSuccess.needsReinit(REINIT_THRESHOLD);
+        return codeSuccess.needsReinit(REINIT_SUCCESS_THRESHOLD) || symbolSuccess.needsReinit(REINIT_SUCCESS_THRESHOLD);
     }
 
     private void ensureBufferCapacity(int size) {
@@ -432,7 +433,15 @@ public class Morse extends Demodulation {
 
         // calculate duration in ms for UI output
         int dit_duration = (int) Math.round(((double) samples / (double) sampleRate) * 1000d);
-        MyToast.makeText("Timings initialized, one dit is about " + dit_duration + " ms.", Toast.LENGTH_LONG);
+
+        if (dit_duration < MIN_DIT_TIME_MS) {
+            MyToast.makeText("Detected timings out of range; reinitializing...", Toast.LENGTH_LONG);
+            init();
+        } else {
+            MyToast.makeText("Timings initialized, one dit is about " + dit_duration + " ms.", Toast.LENGTH_LONG);
+        }
+
+
     }
 
     private int indexOfMax(int[] array) {
