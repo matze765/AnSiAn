@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources>    
+<resources>
     <string name="morse_button_stop">Stop</string>
     <string name="morse_button_send">Send</string>
     <string name="morse_code_sending">Playing morse code: </string>
-	 <string name="app_name">AnSiAn</string>
+    <string name="app_name">AnSiAn</string>
     <string name="action_settings">Settings</string>
     <string name="action_help">Help</string>
     <string name="action_start">Start</string>
@@ -17,7 +17,7 @@
     <string name="action_demodulation_wfm">Demodulation: wide FM</string>
     <string name="action_demodulation_lsb">Demodulation: LSB</string>
     <string name="action_demodulation_usb">Demodulation: USB</string>
-     <string name="action_demodulation_morse">Demodulation: Morse</string>
+    <string name="action_demodulation_morse">Demodulation: Morse</string>
     <string name="action_setFrequency">Set Frequency</string>
     <string name="action_setGain">Set Gain</string>
     <string name="action_recordOff">Record</string>
@@ -47,7 +47,7 @@
     <string name="save_state_virtualFrequency">save_state_virtualFrequency</string>
     <string name="save_state_virtualSampleRate">save_state_virtualSampleRate</string>
     <string name="save_state_minDB">save_state_minDB</string>
-    <string name="save_state_maxDB">save_state_maxDB</string>    
+    <string name="save_state_maxDB">save_state_maxDB</string>
     <string name="action_swap">Swap Waterfall/Scanner</string>
     <string name="action_stop_title">Stop</string>
     <string name="action_pause">Pause</string>
@@ -56,15 +56,30 @@
     <string name="morse_code_label">Morse code:</string>
     <string name="morse_text_label">Morse text:</string>
     <string name="morse_state">"State: "</string>
-     <string name="morse_success_rate">"Symbol success rate: "</string>
+    <string name="morse_success_rate">"Symbol success rate: "</string>
     <string name="morse_state_user_input">User input</string>
     <string name="morse_state_playing_sound">Playing morse sound</string>
-    <string formatted="false" name="vga_gain_label">VGA Gain: %s</string>
+    <string name="vga_gain_label" formatted="false">VGA Gain: %s</string>
     <string name="morse_symbol_success_rate">"Symbol success rate: "</string>
     <string name="morse_code_success_rate">"Code success rate: "</string>
-      <string name="morse_estimated_dit_duration_label">"Estimated dit duration: "</string>
-            <string name="morse_estimated_threshold_label">"Threshold: "</string>
-            <string name="morse_init_button">Init</string>
-      
-    
+    <string name="morse_estimated_dit_duration_label">"Estimated dit duration: "</string>
+    <string name="morse_estimated_threshold_label">"Threshold: "</string>
+    <string name="morse_init_button">Init</string>
+    <string name="pref_transmission_category">pref_transmission_category</string>
+    <string name="pref_transmission_category_title">Transmission</string>
+    <string name="send_file_name_summ">File Path: %s</string>
+    <string name="send_file_name_title">File to transmit</string>
+    <string name="initialization_time_title">Initialization time</string>
+    <string name="dit_duration_title">Dit duration (manual mode)</string>
+    <string name="demod_log_title">Logging</string>
+    <string name="demod_log_summ_off">Do not persist demodulated data</string>
+    <string name="demod_log_summ_on">Write demodulated data to logfile</string>
+    <string name="demod_top_log_path_title">Logfile location (top line)</string>
+    <string name="demod_bot_log_path_title">Logfile location (bottom line)</string>
+    <string name="tv_sampRateLabel_text">Sample Rate (Sps)</string>
+    <string name="tv_freqLabel_text">Frequency (Hz)</string>
+    <string name="cb_amp_text">Amplifier</string>
+    <string name="cb_antenna_text">Antenna Port Power</string>
+
+
 </resources>

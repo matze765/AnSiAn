@@ -40,7 +40,7 @@
             android:key="init_time"
             android:maxLength="2"
             android:summary="@string/initialization_time_summary"
-            android:title="Initialization time" />
+            android:title="@string/initialization_time_title" />
 
         <SwitchPreference
             android:defaultValue="true"
@@ -54,7 +54,7 @@
             android:key="dit_duration"
             android:maxLength="4"
             android:summary="@string/dit_duration_summary"
-            android:title="Dit duration (manual mode)" />
+            android:title="@string/dit_duration_title" />
     </PreferenceCategory>
 
     <PreferenceCategory android:title="FM">
@@ -85,21 +85,21 @@
         <SwitchPreference
             android:defaultValue="false"
             android:key="demod_log"
-            android:summaryOff="Do not persist demodulated data"
-            android:summaryOn="Write demodulated data to logfile"
-            android:title="Logging" />
+            android:summaryOff="@string/demod_log_summ_off"
+            android:summaryOn="@string/demod_log_summ_on"
+            android:title="@string/demod_log_title" />
 
         <de.tu.darmstadt.seemoo.ansian.model.preferences.MyEditTextPreference
             android:defaultValue="dummy"
             android:key="demod_top_log_path"
             android:summary="%s"
-            android:title="Logfile location (top line)" />
+            android:title="@string/demod_top_log_path_title" />
 
         <de.tu.darmstadt.seemoo.ansian.model.preferences.MyEditTextPreference
             android:defaultValue="dummy"
             android:key="demod_bot_log_path"
             android:summary="%s"
-            android:title="Logfile location (bottom line)" />
+            android:title="@string/demod_bot_log_path_title" />
 
     </PreferenceCategory>
 

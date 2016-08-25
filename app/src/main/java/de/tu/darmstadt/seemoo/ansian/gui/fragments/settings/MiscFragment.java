@@ -131,7 +131,7 @@ public class MiscFragment extends MyPreferenceFragment {
                             ((EditTextPreference) findPreference("send_file_name")).setText(filepath);
                             Preferences.MISC_PREFERENCE.setSend_filename(filepath);
                             updateTransmissionPrefs(filepath);
-                            getPreferenceManager().findPreference("send_file_name").setSummary("File Path: " + filepath);
+                            getPreferenceManager().findPreference("send_file_name").setSummary(String.format(getResources().getString(R.string.send_file_name_summ), filepath));
                         } else {
                             Toast.makeText(MiscFragment.this.getActivity(),
                                     "Can't resolve file path from: " + uri.toString(), Toast.LENGTH_LONG).show();

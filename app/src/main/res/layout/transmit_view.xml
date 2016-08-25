@@ -17,7 +17,7 @@
             android:layout_height="wrap_content"
             android:layout_alignBaseline="@+id/et_sampRate"
             android:layout_alignParentLeft="true"
-            android:text="Sample Rate (Sps)" />
+            android:text="@string/tv_sampRateLabel_text" />
 
         <EditText
             android:id="@+id/et_sampRate"
@@ -36,7 +36,7 @@
             android:layout_alignBaseline="@+id/et_freq"
             android:layout_alignParentLeft="true"
             android:layout_below="@+id/et_sampRate"
-            android:text="Frequency (Hz)" />
+            android:text="@string/tv_freqLabel_text" />
 
         <EditText
             android:id="@+id/et_freq"
@@ -62,14 +62,14 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentLeft="true"
-            android:text="Amplifier" />
+            android:text="@string/cb_amp_text" />
 
         <CheckBox
             android:id="@+id/cb_antenna"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentRight="true"
-            android:text="Antenna Port Power" />
+            android:text="@string/cb_antenna_text" />
 
     </RelativeLayout>
 

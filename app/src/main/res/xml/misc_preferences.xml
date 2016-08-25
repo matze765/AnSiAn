@@ -140,14 +140,14 @@
     </PreferenceCategory>
 
     <PreferenceCategory
-        android:key="pref_transmission_category"
-        android:title="Transmission">
+        android:key="@string/pref_transmission_category"
+        android:title="@string/pref_transmission_category_title">
 
         <de.tu.darmstadt.seemoo.ansian.model.preferences.MyEditTextPreference
             android:defaultValue=""
             android:key="send_file_name"
-            android:summary="File Path: %s"
-            android:title="File to transmit" />
+            android:summary="@string/send_file_name_summ"
+            android:title="@string/send_file_name_title" />
 
 
     </PreferenceCategory>
