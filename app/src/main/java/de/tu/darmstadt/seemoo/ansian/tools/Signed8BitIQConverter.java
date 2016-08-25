@@ -99,6 +99,20 @@ public class Signed8BitIQConverter extends IQConverter {
 		return count;
 	}
 
+	public int fillSamplePacketIntoByteBuffer(SamplePacket samplePacket, byte[] buffer) {
+		float[] re = samplePacket.getRe();
+		float[] im = samplePacket.getIm();
+		int count = 0;
+		for (int i = 0; i < samplePacket.size(); i++) {
+			buffer[2*i] =   (byte) (re[i] * 128);
+			buffer[2*i+1] = (byte) (im[i] * 128);
+			count++;
+			if (count >= buffer.length)
+				break;
+		}
+		return count*2;
+	}
+
 	@Override
 	public int mixPacketIntoSamplePacket(byte[] packet, SamplePacket samplePacket, long channelFrequency) {
 		int mixFrequency = (int) (frequency - channelFrequency);

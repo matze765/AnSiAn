@@ -3,6 +3,7 @@ package de.tu.darmstadt.seemoo.ansian.model.transmission;
 import android.content.Context;
 import android.os.Environment;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.mantz_it.hackrf_android.Hackrf;
 import com.mantz_it.hackrf_android.HackrfCallbackInterface;
@@ -19,6 +20,7 @@ import de.greenrobot.event.EventBus;
 import de.greenrobot.event.Subscribe;
 import de.tu.darmstadt.seemoo.ansian.MainActivity;
 import de.tu.darmstadt.seemoo.ansian.control.events.morse.TransmitEvent;
+import de.tu.darmstadt.seemoo.ansian.gui.misc.MyToast;
 import de.tu.darmstadt.seemoo.ansian.model.preferences.Preferences;
 
 /**
@@ -30,6 +32,7 @@ public class Transmitter implements HackrfCallbackInterface, Runnable {
     private static final String LOGTAG = "Transmitter";
 
     private boolean stopRequested;
+    private String filename;
     private Hackrf hackrf;
     private static final int QUEUE_SIZE = 8000000;
 
@@ -57,22 +60,30 @@ public class Transmitter implements HackrfCallbackInterface, Runnable {
             return; // don't react to the events we sent ourselves, as this may stop an ongoing transmission
         }
 
-        if (!event.isTransmitting()) { // stop transmitting
-            this.stopRequested = true;
-            if (hackrf != null) {
-                try {
-                    hackrf.stop();
-                } catch (HackrfUsbException e) {
-                    Log.d(LOGTAG, "Error when stopping HackRF");
-                    e.printStackTrace();
+        switch (event.getState()) {
+            case TXOFF:
+            case MODULATION:
+                this.stopRequested = true;
+                if (hackrf != null) {
+                    try {
+                        hackrf.stop();
+                    } catch (HackrfUsbException e) {
+                        Log.d(LOGTAG, "Error when stopping HackRF");
+                        e.printStackTrace();
+                    }
                 }
-            }
-            return;
-        } else { // start transmitting
-            open(); // transmission gets triggered in callback
+                break;
+            case TXACTIVE:
+                filename = event.getIqFile();
+                if(!open()) { // transmission gets triggered in callback
+                    Log.e(LOGTAG, "onEvent: Error while opening HackRF! Abort..");
+                    EventBus.getDefault().post(new TransmitEvent(TransmitEvent.State.TXOFF, TransmitEvent.Sender.TX));
+                    MyToast.makeText("Cannot open HackRF", Toast.LENGTH_LONG);
+                }
+                break;
+            default:
+                break;
         }
-
-
     }
 
     @Override
@@ -82,7 +93,7 @@ public class Transmitter implements HackrfCallbackInterface, Runnable {
     }
 
     private void finishedTransmitting() {
-        EventBus.getDefault().post(new TransmitEvent(false, TransmitEvent.Sender.TX));
+        EventBus.getDefault().post(new TransmitEvent(TransmitEvent.State.TXOFF, TransmitEvent.Sender.TX));
     }
 
     private void transmit() {
@@ -92,7 +103,6 @@ public class Transmitter implements HackrfCallbackInterface, Runnable {
         boolean amp = Preferences.MISC_PREFERENCE.isSend_amplifier();
         boolean antennaPower = Preferences.MISC_PREFERENCE.isSend_antennaPower();
         int vgaGain = Preferences.MISC_PREFERENCE.getSend_vgaGain();
-        String filename = Preferences.MISC_PREFERENCE.getSend_filename();
 
         // vgaGain is still a value from 0-100; scale it to the right range:
         vgaGain = (vgaGain * 47) / 100;

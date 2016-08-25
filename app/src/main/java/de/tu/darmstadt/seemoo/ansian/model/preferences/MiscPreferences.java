@@ -8,6 +8,7 @@ import android.util.Log;
 import de.tu.darmstadt.seemoo.ansian.MainActivity;
 import de.tu.darmstadt.seemoo.ansian.R;
 import de.tu.darmstadt.seemoo.ansian.model.demodulation.Demodulation.DemoType;
+import de.tu.darmstadt.seemoo.ansian.model.modulation.Modulation;
 import de.tu.darmstadt.seemoo.ansian.model.sources.HackrfSource;
 import de.tu.darmstadt.seemoo.ansian.model.sources.IQSourceInterface.SourceType;
 
@@ -61,6 +62,8 @@ public class MiscPreferences extends MySharedPreferences {
     private int fileSourceSampleRate;
 
     // tranmission
+    private Modulation.TxMode send_txMode;
+    private String send_payloadText;
     private int send_vgaGain;
     private boolean send_amplifier;
     private boolean send_antennaPower;
@@ -119,6 +122,8 @@ public class MiscPreferences extends MySharedPreferences {
         showLog = getBoolean("show_log", false);
 
         // transmission
+        send_txMode = Modulation.TxMode.values()[getInt("send_tx_mode", 0)];
+        send_payloadText = getString("send_payload_text", "Hello World");
         send_vgaGain = getInt("send_vga_gain", 40);
         send_amplifier = getBoolean("send_amplifier", false);
         send_antennaPower = getBoolean("send_antenna_power", false);
@@ -177,6 +182,8 @@ public class MiscPreferences extends MySharedPreferences {
         editor.putBoolean("show_debug_information", showDebugInformation);
 
         // transmission
+        editor.putInt("send_tx_mode", send_txMode.ordinal());
+        editor.putString("send_payload_text", send_payloadText);
         editor.putInt("send_vga_gain", send_vgaGain);
         editor.putBoolean("send_amplifier", send_amplifier);
         editor.putBoolean("send_antenna_power", send_antennaPower);
@@ -515,5 +522,21 @@ public class MiscPreferences extends MySharedPreferences {
 
     public void setSend_filename(String send_filename) {
         this.send_filename = send_filename;
+    }
+
+    public Modulation.TxMode getSend_txMode() {
+        return send_txMode;
+    }
+
+    public void setSend_txMode(Modulation.TxMode send_txMode) {
+        this.send_txMode = send_txMode;
+    }
+
+    public String getSend_payloadText() {
+        return send_payloadText;
+    }
+
+    public void setSend_payloadText(String send_payloadText) {
+        this.send_payloadText = send_payloadText;
     }
 }

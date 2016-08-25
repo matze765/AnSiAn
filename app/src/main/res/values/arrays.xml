@@ -197,4 +197,8 @@
         <item>9</item>
         <item>10</item>
     </string-array>
+    <string-array name="tx_modes">
+        <item>Raw IQ File</item>
+        <item>Morse</item>
+    </string-array>
 </resources>
