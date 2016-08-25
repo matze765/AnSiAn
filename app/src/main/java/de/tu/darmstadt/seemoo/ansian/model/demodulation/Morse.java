@@ -19,61 +19,64 @@ import de.tu.darmstadt.seemoo.ansian.tools.morse.MorseCodeCharacterGetter;
 
 public class Morse extends Demodulation {
 
-    public static enum State {
+    public enum State {
         INIT, COLLECT_SAMPLES, INIT_STATS, DEMOD, STOPPED
     }
 
-    public static enum Mode {
+    public enum Mode {
         AUTOMATIC, MANUAL
     }
 
-    private static final int CODE_SUCCESS_BUFFER_SIZE = 100;
-    private static final int SYMBOL_SUCCESS_BUFFER_SIZE = 30;
-    private static final float REINIT_SUCCESS_THRESHOLD = 0.5f;
-    private static final int MIN_DIT_TIME_MS = 7; // minimal time for automatically detected dit duration; if detected duration is smaller, timings get re-initialized
+    // parameters for automatic re-initialization
+    public static final int CODE_SUCCESS_BUFFER_SIZE = 100;
+    public static final int SYMBOL_SUCCESS_BUFFER_SIZE = 30;
+    public static final float REINIT_SUCCESS_THRESHOLD = 0.5f;
+    // minimal time for automatically detected dit duration; if detected duration is smaller, timings get re-initialized
+    private static final int MIN_DIT_TIME_MS = 7;
 
-
-    private String LOGTAG = "Morse";
-
-    private boolean amDemod;
-    private boolean automaticReinit;
+    public static final String LOGTAG = "Morse";
 
     private DemodPreference prefs;
     private State state;
     private Mode mode;
+    private Decoder decoder;
 
-    // buffers for data that is used for dit duration calibration
+    private ErrorBitSet codeSuccess;
+    private ErrorBitSet symbolSuccess;
+
+    private boolean amDemod;
+    private boolean automaticReinit;
+    private int sampleRate;
+    private int initTime;
+    private int initSamplesRequiredForInit;
+    private int initSamplesCollected;
+
+    // buffers for initialization data
     private float[] initSamples;
     private boolean[] binaryInitSamples;
 
     // buffers for currently demodulated data; are re-used for efficiency
     private float[] currentEnvelope;
     private boolean[] currentHighLow;
-    private int currentSampleCount;
+    private int currentSampleCount; // buffer usage
 
+    // highest/lowest sample seen; threshold = (peak + bottom) / 2
     private float peak;
     private float bottom;
     private float threshold;
 
-    // number of samples each
+    // duration of dits, dahs, etc. in #samples
     private int dit;
     private int dah;
     private int word;
     private int margin;
 
+    // for keeping track of high/low streaks across several SamplePackets
     private int lastStreakLength;
     private boolean lastStreakValue;
 
-    private int sampleRate;
-    private int initTime;
-    private int initSamplesRequired;
-    private int initSamplesCollected;
-
+    // currently detected dits/dahs
     private StringBuilder currentSymbolCode;
-    private Decoder decoder;
-
-    private ErrorBitSet codeSuccess;
-    private ErrorBitSet symbolSuccess;
 
     public Morse() {
         this.prefs = Preferences.DEMOD_PREFERENCE;
@@ -82,11 +85,16 @@ public class Morse extends Demodulation {
         // filters from AM demodulator
         MIN_USER_FILTER_WIDTH = 3000;
         MAX_USER_FILTER_WIDTH = 15000;
-        userFilterCutOff = MAX_USER_FILTER_WIDTH + MIN_USER_FILTER_WIDTH / 2;
+        userFilterCutOff = (MAX_USER_FILTER_WIDTH + MIN_USER_FILTER_WIDTH) / 2;
 
         EventBus.getDefault().register(this);
     }
 
+    /**
+     * Initializes this Morse demodulator so it can begin collecting samples and determine a
+     * threshold and, optionally, the dit duration. Can be called on a already-initialized Morse
+     * Demodulator to re-initialize it.
+     */
     private void init() {
         this.state = State.INIT;
         this.amDemod = prefs.isAmDemod();
@@ -98,9 +106,8 @@ public class Morse extends Demodulation {
         this.bottom = Float.MAX_VALUE;
         this.threshold = Float.NaN;
 
-        // this is relevant for automatic dit duration only
         this.sampleRate = -1;
-        this.initSamplesRequired = -1;
+        this.initSamplesRequiredForInit = -1;
         this.initSamplesCollected = 0;
 
         this.dit = -1;
@@ -113,13 +120,12 @@ public class Morse extends Demodulation {
 
         this.currentSymbolCode = new StringBuilder();
 
-        this.currentEnvelope = new float[0];
-        this.currentHighLow = new boolean[0];
+        this.currentEnvelope = new float[0]; // gets enlarged as needed
+        this.currentHighLow = new boolean[0]; // gets enlarged as needed
 
         this.codeSuccess = new ErrorBitSet(CODE_SUCCESS_BUFFER_SIZE);
         this.symbolSuccess = new ErrorBitSet(SYMBOL_SUCCESS_BUFFER_SIZE);
 
-        //Log.d(LOGTAG, "initialiting Morse Demodulator; initTime: " + initTime);
         this.state = State.COLLECT_SAMPLES;
     }
 
@@ -128,7 +134,12 @@ public class Morse extends Demodulation {
         return DemoType.MORSE;
     }
 
-    private void setTimings(int dit) {
+    /**
+     * Sets the duration of a dit, dah, etc. based on how many samples one dit is
+     *
+     * @param dit Number of samples per dit
+     */
+    private void setDurations(int dit) {
         this.dit = dit;
         this.dah = 3 * dit;
         this.word = 7 * dit;
@@ -141,42 +152,45 @@ public class Morse extends Demodulation {
         // initialize sampleRate and initSamples if they are not yet initialized
         if (this.sampleRate == -1) {
             this.sampleRate = input.getSampleRate();
-            this.initSamplesRequired = (int) Math.round((double) initTime * (double) sampleRate / 1000d);
-            //Log.d(LOGTAG, "SampleRate " + sampleRate + ", initTime " + initTime + ", need " + initSamplesRequired + " samples.");
-            this.initSamples = new float[initSamplesRequired];
+            this.initSamplesRequiredForInit = (int) Math.round((double) initTime * (double) sampleRate / 1000d);
+            this.initSamples = new float[initSamplesRequiredForInit];
         }
 
-        if (this.state == null) { // how can this even happen?
-            init();
+        // if demodulate is called before init, do nothing
+        if (this.state == null) {
             return;
         }
 
-        if(!amDemod)
+        if (!amDemod)
             output.setSize(0);
 
         switch (this.state) {
             case INIT:
                 if (amDemod) {
+                    // do nothing except AM Demodulation; Demodulator might be in inconsistent state
                     envelopeToBuffer(input);
                     amDemodFromBuffer(output);
                 }
                 break;
             case COLLECT_SAMPLES:
+                // collect samples and write them to initSamples until we have enough
                 envelopeToBuffer(input);
                 if (amDemod)
                     amDemodFromBuffer(output);
                 collectSamplesFromBuffer();
-                if (!(initSamplesCollected < initSamplesRequired)) {
+                if (!(initSamplesCollected < initSamplesRequiredForInit)) {
                     initializeStats();
                 }
                 break;
             case INIT_STATS:
                 if (amDemod) {
+                    // do nothing except AM Demodulation; Demodulator might be in inconsistent state
                     envelopeToBuffer(input);
                     amDemodFromBuffer(output);
                 }
                 break;
             case DEMOD:
+                // demodulate samples
                 envelopeToBuffer(input);
                 if (amDemod)
                     amDemodFromBuffer(output);
@@ -189,16 +203,26 @@ public class Morse extends Demodulation {
                 }
                 break;
             case STOPPED:
-                // discard packets
+                // discard samples; Demodulator should not be running
                 break;
         }
 
     }
 
+    /**
+     * Determines if the Demodulator needs to be re-initialized based on decoding and demodulation error rates
+     *
+     * @return true if the Demodulator needs to be re-initialized, false otherwise
+     */
     private boolean needsReinit() {
         return codeSuccess.needsReinit(REINIT_SUCCESS_THRESHOLD) || symbolSuccess.needsReinit(REINIT_SUCCESS_THRESHOLD);
     }
 
+    /**
+     * Makes sure that currentEnvelope and currentHighLow can hold at least size entries
+     *
+     * @param size the requested minimal buffer size
+     */
     private void ensureBufferCapacity(int size) {
         if (currentEnvelope == null || size > currentEnvelope.length) {
             currentEnvelope = new float[size];
@@ -207,6 +231,13 @@ public class Morse extends Demodulation {
     }
 
 
+    /**
+     * Writes demodulated AM data from currently demodulated input to a supplied SamplePacket.
+     * Essentially, this method just copies the envelope, which is already in the buffer, to the
+     * real part of the SamplePacket.
+     *
+     * @param output the SamplePacket to write the demodulated AM data to
+     */
     public void amDemodFromBuffer(SamplePacket output) {
         float[] reOut = output.getRe();
 
@@ -216,15 +247,20 @@ public class Morse extends Demodulation {
         output.setSampleRate(quadratureRate);
     }
 
+    /**
+     * Collects envelope data from current buffer and saves them in initSamples.
+     */
     private void collectSamplesFromBuffer() {
         int freeSlots = initSamples.length - initSamplesCollected;
         int count = Math.min(currentSampleCount, freeSlots);
         System.arraycopy(currentEnvelope, 0, initSamples, initSamplesCollected, count);
 
         initSamplesCollected += count;
-        //(LOGTAG, "Collected " + count + " samples, now I have " + initSamplesCollected + " samples.");
     }
 
+    /**
+     * Demodulates the data in currentHighLow
+     */
     private void demodulateBuffer() {
         if (currentSampleCount < 1)
             return;
@@ -263,8 +299,13 @@ public class Morse extends Demodulation {
         this.lastStreakValue = currentHighLow[currentSampleCount - 1];
     }
 
+    /**
+     * Decodes a streak of high/low samples into a dit/dah/pause
+     *
+     * @param high   is the streak a high or a low streak?
+     * @param streak length of the streak
+     */
     public void decode(boolean high, int streak) {
-        //Log.d(LOGTAG, "Decoding streak of " + streak);
 
         if (streak < dit - margin) { // this cannot be a symbol we know
             codeSuccess.setBit(false);
@@ -289,15 +330,14 @@ public class Morse extends Demodulation {
                 code = ""; // pause/no signal
         }
 
-        //Log.d(LOGTAG, "Decoded streak was a  " + code);
-
         if (code == null) { // streak was not recognized
             codeSuccess.setBit(false);
             return;
         }
 
-
+        // send code to GUI
         EventBus.getDefault().postSticky(DemodInfoEvent.newAppendStringEvent(DemodInfoEvent.Position.TOP, code));
+
         codeSuccess.setBit(true);
 
         // check if a new symbol was completed
@@ -308,6 +348,10 @@ public class Morse extends Demodulation {
 
     }
 
+    /**
+     * Decodes the current streak of dits/dahs in currentSymbolCode and sends the decoded symbol to
+     * GUI
+     */
     private void createSymbol() {
         String currentSymbolCodeString = currentSymbolCode.toString();
         String symbol = decoder.decode(currentSymbolCodeString);
@@ -321,8 +365,13 @@ public class Morse extends Demodulation {
 
     /**
      * Returns the length of consecutive values from a defined startIndex in a boolean array.
-     * Returns -1 if the streak does not terminate within the array or if startIndex is not in the array
+     *
+     * @param array      the array to iterate over
+     * @param startIndex the index to start looking for consecutive values
+     * @return the number of consecutive values; -1 if the streak does not terminate within the
+     * array or if startIndex is not in the array
      */
+
     private int getStreakLength(boolean[] array, int startIndex) {
         int result = 1;
         boolean value = array[startIndex];
@@ -338,14 +387,26 @@ public class Morse extends Demodulation {
         return -1; // array ended without streak termination
     }
 
+    /**
+     * Updates peak, bottom and threshold based on data in currentEnvelope
+     */
     private void updateThresholdFromBuffer() {
         updateThreshold(currentEnvelope, currentSampleCount);
     }
 
+    /**
+     * Initializes peak, bottom and threshold based on data in initSamples
+     */
     private void initThreshold() {
         updateThreshold(initSamples, initSamples.length);
     }
 
+    /**
+     * Updates peak, bottom and threshold based on data in supplied array
+     *
+     * @param envelope    array to check for new peak/bottom
+     * @param sampleCount number of samples in envelope array
+     */
     private void updateThreshold(float[] envelope, int sampleCount) {
         for (int i = 0; i < sampleCount; i++) {
             if (envelope[i] > this.peak) {
@@ -360,19 +421,19 @@ public class Morse extends Demodulation {
 
 
     /**
-     * Initializes threshold and timings
+     * Initializes threshold and timings based on data in initSamples
      */
     private void initializeStats() {
-        //Log.d(LOGTAG, "Initializing Stats");
         this.state = State.INIT_STATS;
         initThreshold();
-        //Log.d(LOGTAG, "peak " + peak + ", bottom " + bottom + ", threshold " + threshold);
 
         if (this.mode == Mode.MANUAL) {
+            // dit duration (in ms) can be read from preferences
             int dit_duration = prefs.getDitDuration();
             int samples_per_dit = (int) Math.round(((double) dit_duration * (double) sampleRate) / 1000d);
-            setTimings(samples_per_dit);
-        } else { // this.mode == Mode.AUTOMATIC
+            setDurations(samples_per_dit);
+        } else {
+            // dit duration needs to be estimated based on initSamples
             binarizeInitSamples();
             if (!estimateTimings()) { // re-initialize if dit time estimate is out of range
                 initSamples = null; // release memory
@@ -392,12 +453,18 @@ public class Morse extends Demodulation {
 
 
     /**
-     * Turns collected init samples to high/low information and writes them into this.binaryInitSamples
+     * Turns collected init samples into high/low information and writes it into this.binaryInitSamples
      */
     private void binarizeInitSamples() {
         this.binaryInitSamples = binarize(initSamples);
     }
 
+    /**
+     * Returns a binary representation of the supplied array with true for values >= threshold
+     *
+     * @param envelope the array to binarize
+     * @return a binary representation of the supplied array
+     */
     private boolean[] binarize(float[] envelope) {
         boolean[] result = new boolean[envelope.length];
         for (int i = 0; i < result.length; i++) {
@@ -406,12 +473,21 @@ public class Morse extends Demodulation {
         return result;
     }
 
+    /**
+     * Turns current buffer into high/low information and writes it into this.currentHighLow
+     */
     private void binarizeBuffer() {
         for (int i = 0; i < currentSampleCount; i++) {
             currentHighLow[i] = currentEnvelope[i] >= threshold;
         }
     }
 
+    /**
+     * Performs envelope detection on the supplied SamplePacket and writes the result into
+     * currentEnvelope
+     *
+     * @param input the SamplePacket to process
+     */
     private void envelopeToBuffer(SamplePacket input) {
         int count = input.size();
         float[] re = input.getRe();
@@ -448,7 +524,7 @@ public class Morse extends Demodulation {
         // number of samples per dit
         int samples = indexOfMax(sumNeighbours(streaks, 1)) + 1;
 
-        setTimings(samples);
+        setDurations(samples);
 
         // calculate duration in ms for UI output
         int dit_duration = (int) Math.round(((double) samples / (double) sampleRate) * 1000d);
@@ -464,6 +540,12 @@ public class Morse extends Demodulation {
 
     }
 
+    /**
+     * Returns the (last) index of the biggest value in this array
+     *
+     * @param array the array to process
+     * @return the (last) index of the biggest value in this array
+     */
     private int indexOfMax(int[] array) {
         int index = 0;
         int max = Integer.MIN_VALUE;
@@ -476,6 +558,15 @@ public class Morse extends Demodulation {
         return index;
     }
 
+    /**
+     * For every value in the array, the <code>width</code> left and right are added to this value.
+     * Returns the result as a new array; does not manipulate the supplied array.     *
+     *
+     * @param array the array to process
+     * @param width the number of left and right neighbors to add for each value
+     * @return a new array in which every value is the sum of the corresponding value and its
+     * <code>width</code> neighbors in the original array
+     */
     private int[] sumNeighbours(int[] array, int width) {
         int[] result = Arrays.copyOf(array, array.length);
 
