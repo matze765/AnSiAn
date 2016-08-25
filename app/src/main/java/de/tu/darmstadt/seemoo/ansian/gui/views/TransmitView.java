@@ -33,7 +33,7 @@ public class TransmitView extends LinearLayout {
     private SeekBar vgaGainSeekBar;
     private SeekBar morseWPMSeekBar;
     private TextView morseWPMLabel;
-    private EditText morseFrequency;
+    private EditText morseFrequencyEditText;
     private TextView vgaGainLabel;
     private CheckBox amplifierCheckBox;
     private CheckBox antennaPowerCheckBox;
@@ -73,13 +73,13 @@ public class TransmitView extends LinearLayout {
                     payloadTextEditText.setEnabled(false);
                     morseWPMSeekBar.setEnabled(false);
                     morseWPMLabel.setEnabled(false);
-                    morseFrequency.setEnabled(false);
+                    morseFrequencyEditText.setEnabled(false);
                     sampleRateEditText.setEnabled(true);
                 } else {
                     payloadTextEditText.setEnabled(true);
                     morseWPMSeekBar.setEnabled(true);
                     morseWPMLabel.setEnabled(true);
-                    morseFrequency.setEnabled(true);
+                    morseFrequencyEditText.setEnabled(true);
                     sampleRateEditText.setEnabled(false);
                     sampleRateEditText.setText("1000000");
                 }
@@ -133,8 +133,8 @@ public class TransmitView extends LinearLayout {
             }
         });
 
-        morseFrequency = (EditText) findViewById(R.id.et_morseFreq);
-        morseFrequency.addTextChangedListener(new TextWatcher() {
+        morseFrequencyEditText = (EditText) findViewById(R.id.et_morseFreq);
+        morseFrequencyEditText.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
 
@@ -269,6 +269,8 @@ public class TransmitView extends LinearLayout {
         updateFrequencyEditText();
         updatePayloadTextEditText();
         updateTxModeSpinner();
+        updateMorseWPMSeekBar();
+        updateMorseFrequencyEditText();
         vgaGainSeekBar.setProgress(Preferences.MISC_PREFERENCE.getSend_vgaGain());
     }
 
@@ -298,6 +300,14 @@ public class TransmitView extends LinearLayout {
 
     private void updateTxModeSpinner() {
         txModeSpinner.setSelection(Preferences.MISC_PREFERENCE.getSend_txMode().ordinal());
+    }
+
+    private void updateMorseWPMSeekBar() {
+        morseWPMSeekBar.setProgress(Preferences.MISC_PREFERENCE.getMorse_wpm() - 1);
+    }
+
+    private void updateMorseFrequencyEditText() {
+        morseFrequencyEditText.setText(Integer.toString(Preferences.MISC_PREFERENCE.getMorse_frequency()));
     }
 
     private void updateButtonText() {
