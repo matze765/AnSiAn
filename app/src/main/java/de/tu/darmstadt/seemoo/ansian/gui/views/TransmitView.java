@@ -33,6 +33,7 @@ public class TransmitView extends LinearLayout {
     private SeekBar vgaGainSeekBar;
     private SeekBar morseWPMSeekBar;
     private TextView morseWPMLabel;
+    private TextView morseFrequencyLabel;
     private EditText morseFrequencyEditText;
     private TextView vgaGainLabel;
     private CheckBox amplifierCheckBox;
@@ -63,25 +64,51 @@ public class TransmitView extends LinearLayout {
 
         txModeSpinner = (Spinner) findViewById(R.id.sp_txMode);
         payloadTextEditText = (EditText) findViewById(R.id.et_payloadText);
+        sampleRateEditText = (EditText) findViewById(R.id.et_sampRate);
+        frequencyEditText = (EditText) findViewById(R.id.et_freq);
+        morseFrequencyEditText = (EditText) findViewById(R.id.et_morseFreq);
+        morseFrequencyLabel = (TextView) findViewById(R.id.tv_morseFreqLabel);
+        amplifierCheckBox = (CheckBox) findViewById(R.id.cb_amp);
+        antennaPowerCheckBox = (CheckBox) findViewById(R.id.cb_antenna);
+        vgaGainLabel = (TextView) findViewById(R.id.vgaGainLabel);
+        vgaGainSeekBar = (SeekBar) findViewById(R.id.vgaGainSeekBar);
+        morseWPMLabel = (TextView) findViewById(R.id.morseWPMLabel);
+        morseWPMSeekBar = (SeekBar) findViewById(R.id.morseWPMSeekBar);
+        playButton = (Button) findViewById(R.id.transmitButton);
 
         txModeSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> adapterView, View view, int position, long l) {
                 Modulation.TxMode txMode = Modulation.TxMode.values()[txModeSpinner.getSelectedItemPosition()];
                 Preferences.MISC_PREFERENCE.setSend_txMode(txMode);
-                if (txMode == Modulation.TxMode.RAWIQ) {
-                    payloadTextEditText.setEnabled(false);
-                    morseWPMSeekBar.setEnabled(false);
-                    morseWPMLabel.setEnabled(false);
-                    morseFrequencyEditText.setEnabled(false);
-                    sampleRateEditText.setEnabled(true);
-                } else {
-                    payloadTextEditText.setEnabled(true);
-                    morseWPMSeekBar.setEnabled(true);
-                    morseWPMLabel.setEnabled(true);
-                    morseFrequencyEditText.setEnabled(true);
-                    sampleRateEditText.setEnabled(false);
-                    sampleRateEditText.setText("1000000");
+                switch (txMode) {
+                    case RAWIQ:
+                        payloadTextEditText.setEnabled(false);
+                        morseWPMSeekBar.setVisibility(View.GONE);
+                        morseWPMLabel.setVisibility(View.GONE);
+                        morseFrequencyLabel.setVisibility(View.GONE);
+                        morseFrequencyEditText.setVisibility(View.GONE);
+                        sampleRateEditText.setEnabled(true);
+                        break;
+                    case MORSE:
+                        payloadTextEditText.setEnabled(true);
+                        morseWPMSeekBar.setVisibility(View.VISIBLE);
+                        morseWPMLabel.setVisibility(View.VISIBLE);
+                        morseFrequencyLabel.setVisibility(View.VISIBLE);
+                        morseFrequencyEditText.setVisibility(View.VISIBLE);
+                        sampleRateEditText.setEnabled(false);
+                        sampleRateEditText.setText("1000000");
+                        break;
+                    case PSK31:
+                        payloadTextEditText.setEnabled(true);
+                        morseWPMSeekBar.setVisibility(View.GONE);
+                        morseWPMLabel.setVisibility(View.GONE);
+                        morseFrequencyLabel.setVisibility(View.GONE);
+                        morseFrequencyEditText.setVisibility(View.GONE);
+                        sampleRateEditText.setEnabled(false);
+                        sampleRateEditText.setText("1000000");
+                        break;
+                    default:
                 }
             }
 
@@ -108,8 +135,6 @@ public class TransmitView extends LinearLayout {
             }
         });
 
-        sampleRateEditText = (EditText) findViewById(R.id.et_sampRate);
-        frequencyEditText = (EditText) findViewById(R.id.et_freq);
 
         sampleRateEditText.addTextChangedListener(new TextWatcher() {
             @Override
@@ -133,7 +158,6 @@ public class TransmitView extends LinearLayout {
             }
         });
 
-        morseFrequencyEditText = (EditText) findViewById(R.id.et_morseFreq);
         morseFrequencyEditText.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
@@ -178,10 +202,6 @@ public class TransmitView extends LinearLayout {
             }
         });
 
-
-        amplifierCheckBox = (CheckBox) findViewById(R.id.cb_amp);
-        antennaPowerCheckBox = (CheckBox) findViewById(R.id.cb_antenna);
-
         amplifierCheckBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
@@ -196,8 +216,6 @@ public class TransmitView extends LinearLayout {
             }
         });
 
-        vgaGainLabel = (TextView) findViewById(R.id.vgaGainLabel);
-        vgaGainSeekBar = (SeekBar) findViewById(R.id.vgaGainSeekBar);
         vgaGainSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
 
             @Override
@@ -217,8 +235,6 @@ public class TransmitView extends LinearLayout {
             }
         });
 
-        morseWPMLabel = (TextView) findViewById(R.id.morseWPMLabel);
-        morseWPMSeekBar = (SeekBar) findViewById(R.id.morseWPMSeekBar);
         morseWPMSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
 
             @Override
@@ -241,7 +257,6 @@ public class TransmitView extends LinearLayout {
             }
         });
 
-        playButton = (Button) findViewById(R.id.transmitButton);
         playButton.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
