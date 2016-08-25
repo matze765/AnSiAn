@@ -31,6 +31,9 @@ public class TransmitView extends LinearLayout {
     private Spinner txModeSpinner;
     private EditText payloadTextEditText;
     private SeekBar vgaGainSeekBar;
+    private SeekBar morseWPMSeekBar;
+    private TextView morseWPMLabel;
+    private EditText morseFrequency;
     private TextView vgaGainLabel;
     private CheckBox amplifierCheckBox;
     private CheckBox antennaPowerCheckBox;
@@ -66,11 +69,17 @@ public class TransmitView extends LinearLayout {
             public void onItemSelected(AdapterView<?> adapterView, View view, int position, long l) {
                 Modulation.TxMode txMode = Modulation.TxMode.values()[txModeSpinner.getSelectedItemPosition()];
                 Preferences.MISC_PREFERENCE.setSend_txMode(txMode);
-                if(txMode == Modulation.TxMode.RAWIQ) {
+                if (txMode == Modulation.TxMode.RAWIQ) {
                     payloadTextEditText.setEnabled(false);
+                    morseWPMSeekBar.setEnabled(false);
+                    morseWPMLabel.setEnabled(false);
+                    morseFrequency.setEnabled(false);
                     sampleRateEditText.setEnabled(true);
                 } else {
                     payloadTextEditText.setEnabled(true);
+                    morseWPMSeekBar.setEnabled(true);
+                    morseWPMLabel.setEnabled(true);
+                    morseFrequency.setEnabled(true);
                     sampleRateEditText.setEnabled(false);
                     sampleRateEditText.setText("1000000");
                 }
@@ -124,6 +133,29 @@ public class TransmitView extends LinearLayout {
             }
         });
 
+        morseFrequency = (EditText) findViewById(R.id.et_morseFreq);
+        morseFrequency.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                try {
+                    int i = Integer.parseInt(s.toString());
+                    Preferences.MISC_PREFERENCE.setMorse_frequency(i);
+                } catch (NumberFormatException e) {
+                    // not an integer; ignore
+                }
+            }
+        });
+
         frequencyEditText.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
@@ -137,7 +169,12 @@ public class TransmitView extends LinearLayout {
 
             @Override
             public void afterTextChanged(Editable s) {
-                Preferences.MISC_PREFERENCE.setSend_frequency(Integer.parseInt(s.toString()));
+                try {
+                    int i = Integer.parseInt(s.toString());
+                    Preferences.MISC_PREFERENCE.setSend_frequency(i);
+                } catch (NumberFormatException e) {
+                    // not an integer; ignore
+                }
             }
         });
 
@@ -180,11 +217,35 @@ public class TransmitView extends LinearLayout {
             }
         });
 
+        morseWPMLabel = (TextView) findViewById(R.id.morseWPMLabel);
+        morseWPMSeekBar = (SeekBar) findViewById(R.id.morseWPMSeekBar);
+        morseWPMSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+
+            }
+
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                if (fromUser) {
+                    int wpm = progress + 1;
+                    Preferences.MISC_PREFERENCE.setMorse_wpm(wpm);
+                }
+                updateWPMLabel();
+            }
+        });
+
         playButton = (Button) findViewById(R.id.transmitButton);
         playButton.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(txState == TransmitEvent.State.TXOFF)
+                if (txState == TransmitEvent.State.TXOFF)
                     EventBus.getDefault().post(new TransmitEvent(TransmitEvent.State.MODULATION, TransmitEvent.Sender.GUI));
                 else
                     EventBus.getDefault().post(new TransmitEvent(TransmitEvent.State.TXOFF, TransmitEvent.Sender.GUI));
@@ -194,7 +255,13 @@ public class TransmitView extends LinearLayout {
         update();
     }
 
+    private void updateWPMLabel() {
+        morseWPMLabel.setText(String.format(getContext().getString(R.string.morseWPMLabel_text),
+                Preferences.MISC_PREFERENCE.getMorse_wpm(), Preferences.MISC_PREFERENCE.getMorse_DitDuration()));
+    }
+
     public void update() {
+        updateWPMLabel();
         updateAmplifierCheckbox();
         updateAntennaPowerCheckbox();
         updateVgaGainLabel();
@@ -227,14 +294,6 @@ public class TransmitView extends LinearLayout {
 
     private void updatePayloadTextEditText() {
         payloadTextEditText.setText(Preferences.MISC_PREFERENCE.getSend_payloadText());
-        if(Preferences.MISC_PREFERENCE.getSend_txMode() == Modulation.TxMode.RAWIQ) {
-            payloadTextEditText.setEnabled(false);
-            sampleRateEditText.setEnabled(true);
-        } else {
-            payloadTextEditText.setEnabled(true);
-            sampleRateEditText.setEnabled(false);
-            sampleRateEditText.setText("1000000");
-        }
     }
 
     private void updateTxModeSpinner() {

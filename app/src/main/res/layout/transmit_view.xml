@@ -25,7 +25,7 @@
             android:layout_height="wrap_content"
             android:layout_alignParentRight="true"
             android:layout_toRightOf="@+id/tv_txModeLabel"
-            android:entries="@array/tx_modes"/>
+            android:entries="@array/tx_modes" />
 
         <TextView
             android:id="@+id/tv_sampRateLabel"
@@ -41,8 +41,8 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentRight="true"
-            android:layout_toRightOf="@+id/tv_sampRateLabel"
             android:layout_below="@+id/sp_txMode"
+            android:layout_toRightOf="@+id/tv_sampRateLabel"
             android:ems="10"
             android:inputType="number"
             android:text="1000000" />
@@ -85,6 +85,48 @@
             android:layout_toRightOf="@+id/tv_payloadTextLabel"
             android:ems="10"
             android:text="Hello World" />
+
+        <LinearLayout
+            android:id="@+id/ll_morseWPM"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/et_payloadText"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/morseWPMLabel"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/morseWPMLabel_text" />
+
+            <SeekBar
+                android:id="@+id/morseWPMSeekBar"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:max="19"
+                android:progress="5" />
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/tv_morseFreqLabel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignBaseline="@+id/et_morseFreq"
+            android:layout_alignParentLeft="true"
+            android:layout_below="@+id/ll_morseWPM"
+            android:text="@string/tv_morseFreqLabel_text" />
+
+        <EditText
+            android:id="@+id/et_morseFreq"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:layout_below="@+id/ll_morseWPM"
+            android:layout_toRightOf="@+id/tv_morseFreqLabel"
+            android:ems="10"
+            android:inputType="number"
+            android:text="1000" />
 
     </RelativeLayout>
 

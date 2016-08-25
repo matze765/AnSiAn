@@ -27,29 +27,29 @@ public class Morse extends Modulation {
         this.wpm = wpm;
         this.sampleRate = samplerate;
         Encoder morseEncoder = new Encoder();
-        String morseEncoded = "/"+morseEncoder.encode(payload)+"/";
+        String morseEncoded = "/" + morseEncoder.encode(payload) + "/";
         this.morseCode = morseEncoded.toCharArray();
         this.currentSymbolIndex = 0;
         updateValues();
-        Log.i(LOGTAG, "Morse: generated morse code from payload (=" + payload + "): ["+morseEncoded+"]");
+        Log.i(LOGTAG, "Morse: generated morse code from payload (=" + payload + "): [" + morseEncoded + "]");
     }
 
     @Override
     public SamplePacket getNextSamplePacket() {
-        if(currentSymbolIndex >= morseCode.length)
+        if (currentSymbolIndex >= morseCode.length)
             return null;
         switch (morseCode[currentSymbolIndex]) {
             case '.':
-                insertSilenceAndSine(1,1);
+                insertSilenceAndSine(1, 1);
                 break;
             case '-':
-                insertSilenceAndSine(1,3);
+                insertSilenceAndSine(1, 3);
                 break;
             case ' ':
-                insertSilenceAndSine(2,0);
+                insertSilenceAndSine(2, 0);
                 break;
             case '/':
-                insertSilenceAndSine(6,0);
+                insertSilenceAndSine(6, 0);
                 break;
             default:
                 Log.e(LOGTAG, "getNextSamplePacket: invalid morse code character: " + morseCode[currentSymbolIndex]);
@@ -75,11 +75,11 @@ public class Morse extends Modulation {
 
     private void updateValues() {
         this.samplesPerDit = (int) (1200f / wpm * sampleRate / 1000);
-        this.currentSymbol = new SamplePacket(6*samplesPerDit);
-        this.sine = new float[3*samplesPerDit];
-        this.cosine = new float[3*samplesPerDit];
-        long frequency = Preferences.DEMOD_PREFERENCE.getMorseFrequency();
-        for(int i = 0; i < sine.length; i++) {
+        this.currentSymbol = new SamplePacket(6 * samplesPerDit);
+        this.sine = new float[3 * samplesPerDit];
+        this.cosine = new float[3 * samplesPerDit];
+        long frequency = Preferences.MISC_PREFERENCE.getMorse_frequency();
+        for (int i = 0; i < sine.length; i++) {
             sine[i] = (float) Math.sin(2 * Math.PI * frequency * i / (float) sampleRate) * 0.999f;
             cosine[i] = (float) Math.cos(2 * Math.PI * frequency * i / (float) sampleRate) * 0.999f;
         }
@@ -89,11 +89,11 @@ public class Morse extends Modulation {
     private void insertSilenceAndSine(int durationInDitsSilence, int durationInDitsSine) {
         float[] re = currentSymbol.getRe();
         float[] im = currentSymbol.getIm();
-        Arrays.fill(re, 0, durationInDitsSilence*samplesPerDit, 0f);
-        Arrays.fill(im, 0, durationInDitsSilence*samplesPerDit, 0f);
-        System.arraycopy(cosine, 0, re, durationInDitsSilence*samplesPerDit, durationInDitsSine*samplesPerDit);
-        System.arraycopy(sine, 0, im, durationInDitsSilence*samplesPerDit, durationInDitsSine*samplesPerDit);
+        Arrays.fill(re, 0, durationInDitsSilence * samplesPerDit, 0f);
+        Arrays.fill(im, 0, durationInDitsSilence * samplesPerDit, 0f);
+        System.arraycopy(cosine, 0, re, durationInDitsSilence * samplesPerDit, durationInDitsSine * samplesPerDit);
+        System.arraycopy(sine, 0, im, durationInDitsSilence * samplesPerDit, durationInDitsSine * samplesPerDit);
         currentSymbol.setSampleRate(sampleRate);
-        currentSymbol.setSize((durationInDitsSilence+durationInDitsSine)*samplesPerDit);
+        currentSymbol.setSize((durationInDitsSilence + durationInDitsSine) * samplesPerDit);
     }
 }

@@ -71,6 +71,10 @@ public class MiscPreferences extends MySharedPreferences {
     private int send_frequency;
     private String send_filename;
 
+    // morse transmission
+    private int morse_wpm;
+    private int morse_frequency;
+
     /**
      * Will check if any preference conflicts with the current state of the app
      * and fix it
@@ -131,6 +135,10 @@ public class MiscPreferences extends MySharedPreferences {
         send_frequency = getInt("send_frequency", 97000000);
         send_filename = getString("send_file_name", Environment.getExternalStorageDirectory().getAbsolutePath() + "/samples.iq");
 
+        // morse transmission
+        morse_wpm = getInt("morse_wpm", 6);
+        morse_frequency = getInt("morse_frequency", 1000);
+
     }
 
     public void savePreference() {
@@ -190,6 +198,10 @@ public class MiscPreferences extends MySharedPreferences {
         editor.putString("send_file_name", send_filename);
         editor.putInt("send_sample_rate", send_sampleRate);
         editor.putInt("send_frequency", send_frequency);
+
+        // morse transmission
+        editor.putInt("morse_wpm", morse_wpm);
+        editor.putInt("morse_frequency", morse_frequency);
 
         Log.d(LOGTAG, "Preferences saved: " + editor.commit());
     }
@@ -538,5 +550,25 @@ public class MiscPreferences extends MySharedPreferences {
 
     public void setSend_payloadText(String send_payloadText) {
         this.send_payloadText = send_payloadText;
+    }
+
+    public int getMorse_frequency() {
+        return morse_frequency;
+    }
+
+    public int getMorse_wpm() {
+        return morse_wpm;
+    }
+
+    public int getMorse_DitDuration() {
+        return (int) Math.round(1200d / morse_wpm);
+    }
+
+    public void setMorse_frequency(int morse_frequency) {
+        this.morse_frequency = morse_frequency;
+    }
+
+    public void setMorse_wpm(int morse_wpm) {
+        this.morse_wpm = morse_wpm;
     }
 }

@@ -81,6 +81,8 @@
     <string name="tv_freqLabel_text">Frequency (Hz)</string>
     <string name="cb_amp_text">Amplifier</string>
     <string name="cb_antenna_text">Antenna Port Power</string>
+    <string name="tv_morseFreqLabel_text">Morse Frequency (Hz)</string>
+    <string name="morseWPMLabel_text" formatted = "false">%s WPM - %s ms per Dit</string>
 
 
 </resources>

@@ -63,7 +63,7 @@ public class TransmitChainDummy implements Runnable {
 
         switch (mode) {
             case MORSE:
-                modulationInstance = new Morse(payloadString, 6, 1000000);
+                modulationInstance = new Morse(payloadString, Preferences.MISC_PREFERENCE.getMorse_wpm(), 1000000);
                 break;
             case RAWIQ:
                 TransmitEvent event = new TransmitEvent(TransmitEvent.State.TXACTIVE, TransmitEvent.Sender.TXCHAIN);
@@ -81,7 +81,7 @@ public class TransmitChainDummy implements Runnable {
         int counter = 0;
         try {
             File file = new File(extDir + "/AnSiAn/" + TMPFILENAME);
-            file.getParentFile().mkdir();	// Create directory if it does not yet exist
+            file.getParentFile().mkdir();    // Create directory if it does not yet exist
             BufferedOutputStream outputStream = new BufferedOutputStream(new FileOutputStream(file));
             while ((samplePacket = modulationInstance.getNextSamplePacket()) != null) {
                 int bufferLen = converter.fillSamplePacketIntoByteBuffer(samplePacket, buffer);
