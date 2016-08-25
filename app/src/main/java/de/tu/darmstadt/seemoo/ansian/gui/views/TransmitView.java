@@ -8,12 +8,14 @@ import android.util.AttributeSet;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.SeekBar;
+import android.widget.Spinner;
 import android.widget.TextView;
 
 import de.greenrobot.event.EventBus;
@@ -21,10 +23,13 @@ import de.greenrobot.event.Subscribe;
 import de.tu.darmstadt.seemoo.ansian.MainActivity;
 import de.tu.darmstadt.seemoo.ansian.R;
 import de.tu.darmstadt.seemoo.ansian.control.events.morse.TransmitEvent;
+import de.tu.darmstadt.seemoo.ansian.model.modulation.Modulation;
 import de.tu.darmstadt.seemoo.ansian.model.preferences.Preferences;
 
 public class TransmitView extends LinearLayout {
 
+    private Spinner txModeSpinner;
+    private EditText payloadTextEditText;
     private SeekBar vgaGainSeekBar;
     private TextView vgaGainLabel;
     private CheckBox amplifierCheckBox;
@@ -32,7 +37,7 @@ public class TransmitView extends LinearLayout {
     private EditText sampleRateEditText;
     private EditText frequencyEditText;
     private Button playButton;
-    private static boolean sending = false;
+    private static TransmitEvent.State txState = TransmitEvent.State.TXOFF;
     private static final String LOGTAG = "TransmitView";
 
     public TransmitView(Context context) {
@@ -52,6 +57,43 @@ public class TransmitView extends LinearLayout {
     protected void init() {
         LayoutInflater inflater = (LayoutInflater) getContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         inflater.inflate(R.layout.transmit_view, this);
+
+        txModeSpinner = (Spinner) findViewById(R.id.sp_txMode);
+        payloadTextEditText = (EditText) findViewById(R.id.et_payloadText);
+
+        txModeSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> adapterView, View view, int position, long l) {
+                Modulation.TxMode txMode = Modulation.TxMode.values()[txModeSpinner.getSelectedItemPosition()];
+                Preferences.MISC_PREFERENCE.setSend_txMode(txMode);
+                if(txMode == Modulation.TxMode.RAWIQ)
+                    payloadTextEditText.setEnabled(false);
+                else
+                    payloadTextEditText.setEnabled(true);
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> adapterView) {
+
+            }
+        });
+
+        payloadTextEditText.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                Preferences.MISC_PREFERENCE.setSend_payloadText(s.toString());
+            }
+        });
 
         sampleRateEditText = (EditText) findViewById(R.id.et_sampRate);
         frequencyEditText = (EditText) findViewById(R.id.et_freq);
@@ -138,10 +180,13 @@ public class TransmitView extends LinearLayout {
         playButton.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
-                EventBus.getDefault().post(new TransmitEvent(!sending, TransmitEvent.Sender.GUI));
+                if(txState == TransmitEvent.State.TXOFF)
+                    EventBus.getDefault().post(new TransmitEvent(TransmitEvent.State.MODULATION, TransmitEvent.Sender.GUI));
+                else
+                    EventBus.getDefault().post(new TransmitEvent(TransmitEvent.State.TXOFF, TransmitEvent.Sender.GUI));
             }
         });
-        setButtonText(sending);
+        updateButtonText();
         update();
     }
 
@@ -150,7 +195,9 @@ public class TransmitView extends LinearLayout {
         updateAntennaPowerCheckbox();
         updateVgaGainLabel();
         updateSampleRateEditText();
-        updateFrequencyeEditText();
+        updateFrequencyEditText();
+        updatePayloadTextEditText();
+        updateTxModeSpinner();
         vgaGainSeekBar.setProgress(Preferences.MISC_PREFERENCE.getSend_vgaGain());
     }
 
@@ -159,26 +206,47 @@ public class TransmitView extends LinearLayout {
     }
 
     private void updateAmplifierCheckbox() {
-        amplifierCheckBox.setChecked(Preferences.MISC_PREFERENCE.getAmplifier());
+        amplifierCheckBox.setChecked(Preferences.MISC_PREFERENCE.isSend_amplifier());
     }
 
     private void updateAntennaPowerCheckbox() {
-        antennaPowerCheckBox.setChecked(Preferences.MISC_PREFERENCE.getAntennaPower());
+        antennaPowerCheckBox.setChecked(Preferences.MISC_PREFERENCE.isSend_antennaPower());
     }
 
     private void updateSampleRateEditText() {
         sampleRateEditText.setText(Integer.toString(Preferences.MISC_PREFERENCE.getSend_sampleRate()));
     }
 
-    private void updateFrequencyeEditText() {
+    private void updateFrequencyEditText() {
         frequencyEditText.setText(Integer.toString(Preferences.MISC_PREFERENCE.getSend_frequency()));
     }
 
-    private void setButtonText(boolean b) {
-        if (b)
-            playButton.setText(R.string.morse_button_stop);
+    private void updatePayloadTextEditText() {
+        payloadTextEditText.setText(Preferences.MISC_PREFERENCE.getSend_payloadText());
+        if(Preferences.MISC_PREFERENCE.getSend_txMode() == Modulation.TxMode.RAWIQ)
+            payloadTextEditText.setEnabled(false);
         else
-            playButton.setText(R.string.morse_button_send);
+            payloadTextEditText.setEnabled(true);
+    }
+
+    private void updateTxModeSpinner() {
+        txModeSpinner.setSelection(Preferences.MISC_PREFERENCE.getSend_txMode().ordinal());
+    }
+
+    private void updateButtonText() {
+        switch (txState) {
+            case TXOFF:
+                playButton.setText(R.string.morse_button_send);
+                break;
+            case MODULATION:
+                playButton.setText(R.string.morse_button_stop_modulation);
+                break;
+            case TXACTIVE:
+                playButton.setText(R.string.morse_button_stop_tx);
+                break;
+            default:
+                break;
+        }
     }
 
     @Subscribe
@@ -186,7 +254,9 @@ public class TransmitView extends LinearLayout {
         MainActivity.instance.runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                setButtonText(sending = event.isTransmitting());
+                txState = event.getState();
+                Log.i(LOGTAG, "onEvent: now in state " + txState);
+                updateButtonText();
             }
         });
     }

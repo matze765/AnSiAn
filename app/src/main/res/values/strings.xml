@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>    
-    <string name="morse_button_stop">Stop</string>
+    <string name="morse_button_stop_modulation">Stop (modulating...)</string>
+    <string name="morse_button_stop_tx">Stop (transmitting...)</string>
     <string name="morse_button_send">Send</string>
     <string name="morse_code_sending">Playing morse code: </string>
 	 <string name="app_name">AnSiAn</string>

@@ -12,11 +12,28 @@
         android:orientation="horizontal">
 
         <TextView
+            android:id="@+id/tv_txModeLabel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignBaseline="@+id/sp_txMode"
+            android:layout_alignParentLeft="true"
+            android:text="TX Mode" />
+
+        <Spinner
+            android:id="@+id/sp_txMode"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:layout_toRightOf="@+id/tv_txModeLabel"
+            android:entries="@array/tx_modes"/>
+
+        <TextView
             android:id="@+id/tv_sampRateLabel"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignBaseline="@+id/et_sampRate"
             android:layout_alignParentLeft="true"
+            android:layout_below="@+id/tv_txModeLabel"
             android:text="Sample Rate (Sps)" />
 
         <EditText
@@ -25,6 +42,7 @@
             android:layout_height="wrap_content"
             android:layout_alignParentRight="true"
             android:layout_toRightOf="@+id/tv_sampRateLabel"
+            android:layout_below="@+id/sp_txMode"
             android:ems="10"
             android:inputType="number"
             android:text="1000000" />
@@ -48,6 +66,25 @@
             android:ems="10"
             android:inputType="number"
             android:text="97000000" />
+
+        <TextView
+            android:id="@+id/tv_payloadTextLabel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignBaseline="@+id/et_payloadText"
+            android:layout_alignParentLeft="true"
+            android:layout_below="@+id/et_freq"
+            android:text="Payload Text" />
+
+        <EditText
+            android:id="@+id/et_payloadText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:layout_below="@+id/et_freq"
+            android:layout_toRightOf="@+id/tv_payloadTextLabel"
+            android:ems="10"
+            android:text="Hello World" />
 
     </RelativeLayout>
 
