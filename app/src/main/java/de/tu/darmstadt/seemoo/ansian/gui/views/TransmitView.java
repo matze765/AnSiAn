@@ -66,10 +66,14 @@ public class TransmitView extends LinearLayout {
             public void onItemSelected(AdapterView<?> adapterView, View view, int position, long l) {
                 Modulation.TxMode txMode = Modulation.TxMode.values()[txModeSpinner.getSelectedItemPosition()];
                 Preferences.MISC_PREFERENCE.setSend_txMode(txMode);
-                if(txMode == Modulation.TxMode.RAWIQ)
+                if(txMode == Modulation.TxMode.RAWIQ) {
                     payloadTextEditText.setEnabled(false);
-                else
+                    sampleRateEditText.setEnabled(true);
+                } else {
                     payloadTextEditText.setEnabled(true);
+                    sampleRateEditText.setEnabled(false);
+                    sampleRateEditText.setText("1000000");
+                }
             }
 
             @Override
@@ -223,10 +227,14 @@ public class TransmitView extends LinearLayout {
 
     private void updatePayloadTextEditText() {
         payloadTextEditText.setText(Preferences.MISC_PREFERENCE.getSend_payloadText());
-        if(Preferences.MISC_PREFERENCE.getSend_txMode() == Modulation.TxMode.RAWIQ)
+        if(Preferences.MISC_PREFERENCE.getSend_txMode() == Modulation.TxMode.RAWIQ) {
             payloadTextEditText.setEnabled(false);
-        else
+            sampleRateEditText.setEnabled(true);
+        } else {
             payloadTextEditText.setEnabled(true);
+            sampleRateEditText.setEnabled(false);
+            sampleRateEditText.setText("1000000");
+        }
     }
 
     private void updateTxModeSpinner() {
