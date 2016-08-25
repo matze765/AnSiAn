@@ -19,7 +19,7 @@ public class PSK31 extends Demodulation {
     private int bitBufferStart = 0;
     private StringBuilder letterBits = new StringBuilder();
 
-    private static final String[][] lookupTable = {
+    public static final String[][] lookupTable = {
         {"1010101011" , "\\x00"}, {"1011011011" , "\\x01"}, {"1011101101" , "\\x02"}, {"1101110111" , "\\x03"},
         {"1011101011" , "\\x04"}, {"1101011111" , "\\x05"}, {"1011101111" , "\\x06"}, {"1011111101" , "\\x07"},
         {"1011111111" , "\\x08"}, {"11101111"   , "\\x09"}, {"11101"      , "\\x0A"}, {"1101101111" , "\\x0B"},

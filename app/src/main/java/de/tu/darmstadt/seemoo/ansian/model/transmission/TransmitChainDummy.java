@@ -14,6 +14,7 @@ import de.tu.darmstadt.seemoo.ansian.control.events.morse.TransmitEvent;
 import de.tu.darmstadt.seemoo.ansian.model.SamplePacket;
 import de.tu.darmstadt.seemoo.ansian.model.modulation.Modulation;
 import de.tu.darmstadt.seemoo.ansian.model.modulation.Morse;
+import de.tu.darmstadt.seemoo.ansian.model.modulation.PSK31;
 import de.tu.darmstadt.seemoo.ansian.model.preferences.Preferences;
 import de.tu.darmstadt.seemoo.ansian.tools.Signed8BitIQConverter;
 
@@ -60,16 +61,20 @@ public class TransmitChainDummy implements Runnable {
         Modulation.TxMode mode = Preferences.MISC_PREFERENCE.getSend_txMode();
         String payloadString = Preferences.MISC_PREFERENCE.getSend_payloadText();
         String filename = Preferences.MISC_PREFERENCE.getSend_filename();
+        int sampleRate = Preferences.MISC_PREFERENCE.getSend_sampleRate();
 
         switch (mode) {
             case MORSE:
-                modulationInstance = new Morse(payloadString, Preferences.MISC_PREFERENCE.getMorse_wpm(), 1000000);
+                modulationInstance = new Morse(payloadString, Preferences.MISC_PREFERENCE.getMorse_wpm(), sampleRate);
                 break;
             case RAWIQ:
                 TransmitEvent event = new TransmitEvent(TransmitEvent.State.TXACTIVE, TransmitEvent.Sender.TXCHAIN);
                 event.setIqFile(filename);
                 EventBus.getDefault().post(event);
                 return;
+            case PSK31:
+                modulationInstance = new PSK31(payloadString, sampleRate);
+                break;
             default:
                 Log.e(LOGTAG, "modulation: invalid mode: " + mode + "; abort!");
                 EventBus.getDefault().post(new TransmitEvent(TransmitEvent.State.TXOFF, TransmitEvent.Sender.TXCHAIN));

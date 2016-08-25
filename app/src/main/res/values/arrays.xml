@@ -200,5 +200,6 @@
     <string-array name="tx_modes">
         <item>Raw IQ File</item>
         <item>Morse</item>
+        <item>PSK31</item>
     </string-array>
 </resources>
