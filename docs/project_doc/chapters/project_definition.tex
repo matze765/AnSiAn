@@ -1,0 +1,98 @@
+\chapter{Project Definition\label{ch:project_definition}}
+
+This section defines the features that will be implemented throughout the
+project and schedules them into three sprints.
+
+\section{Features}
+
+The new features can be divided into mandatory features, that will have high
+priority within this project, and optional features, that will be implemented
+if time permits. As can be seen in \autoref{sec:time_schedule}, the third
+sprint is reserved for either optional features or completing mandatory
+features and the documentation.
+
+\subsection{Mandatory Features}
+
+The following features are scheduled for implementation during the first and
+second sprint:
+\begin{itemize}
+	\item \ac{RDS} demodulation \\
+		If the user selects the existing wide-band \ac{FM} demodulation option,
+		the app shall try to detect and demodulate any existing \ac{RDS}
+		signal along with the audio demodulation. The extracted information
+		shall be displayed on the screen.
+	\item \ac{PSK31} demodulation \\
+		If the user selects either of the single side band demodulation modes
+		(\ac{USB} and \ac{LSB}), he or she shall have the option to enable
+		\ac{PSK31} demodulation along with or instead of the audio demodulation.
+		The demodulated text string shall appear and scroll through the
+		analyzer window.
+	\item Extraction of RDS-, Morse- and \ac{PSK31}-data to logfiles \\
+		If the user selects to demodulate any digital mode, the demodulated
+		text shall be written to a log file specified by the user.
+	\item Support for the rad1o badge \\
+		The rad1o badge, which is a modified low-cost replica of the HackRF,
+		shall be supported as a signal source by \ac{AnSiAn}.
+	\item Transmission support for HackRF and rad1o \\
+		If \ac{AnSiAn} is used with an \ac{SDR} capable of transmitting signals,
+		it shall offer options to send signals in the following ways:
+		\begin{itemize}
+			\item Replay I/O samples from a file
+			\item Generate and send Morse code from text
+			\item FM-modulate and send audio from a file
+		\end{itemize}
+\end{itemize}
+
+\subsection{Optional Features}
+
+The optional features are scheduled in the third and last sprint. However,
+they will only be added to the feature set if the last sprint is not needed
+in order to compensate for delays on the mandatory features. The optional features are
+listed in the order of priority:
+\begin{itemize}
+	\item Walkie-Talkie Mode \\
+		The user shall have the possibility to put \ac{AnSiAn} into a Walkie-
+		Talkie mode. In this mode, the application will demodulate an FM channel
+		and the user can quickly switch between demodulation and transmission
+		of audio recorded from the internal microphone.
+	\item Packet Radio demodulation\\
+		A new mode \emph{Packet Radio} shall be added to \ac{AnSiAn}. Once selected, it shall allow the user
+		to tune to a Packet Radio channel and display information about 
+		demodulated packets on the screen. If time permits, it might even
+		be possible to implement a transmission feature for Packet Radio.
+\end{itemize}
+
+
+\section{Time Schedule}
+\label{sec:time_schedule}
+
+The project will have two developers, Dennis Mantz and Max Engelhardt,
+working in three sprints. There are three milestones corresponding to
+the sprints, labeled Alpha, Beta and Final Version. They each add an independent
+and self-contained set of features to the application:
+
+\begin{itemize}
+	\item Software Design (due 12.05.)
+	\item Sprint 1: Alpha Version (due 09.06.)
+	\begin{itemize}
+		\item \ac{RDS} demodulation
+		\item \ac{PSK31} demodulation
+		\item Extraction of \ac{RDS}-, Morse- and \ac{PSK31}-data to logfiles
+	\end{itemize}
+	\item Sprint 2: Beta Version (due 21.07.)
+	\begin{itemize}
+		\item Support for the rad1o badge
+		\item Transmission support for HackRF and rad1o
+		\begin{itemize}
+			\item Replay I/O samples from a file
+			\item Generate and send Morse code from text
+			\item FM-modulate and send audio from a file
+		\end{itemize}
+	\end{itemize}
+	\item Sprint 3: Final Version (due 25.08.)
+	\begin{itemize}
+		\item Complete leftovers from previous sprints
+		\item Walkie-Talkie Mode (optional)
+		\item Packet Radio demodulation (optional)
+	\end{itemize}
+\end{itemize}

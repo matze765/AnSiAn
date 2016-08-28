@@ -36,7 +36,9 @@ del btaux.bbl
 del btaux.blg
 del btbbl.aux
 del btbbl.bbl
-del btbbl.blg
+del btbbl.blg
+
+del chapters\*.aux
 :: view pdf after compilation
 
 start %filename%.pdf
