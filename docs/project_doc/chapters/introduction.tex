@@ -4,18 +4,23 @@
 \glsresetall % Resets all acronyms to not used
 \setcounter{table}{0} % fix table numbering
 
-\ac{AnSiAn} is an Android application by the Secure Mobile Network Lab (SEEMOO) at 
-Technische Universität Darmstadt. It features a graphical signal analyzer that can be used with common \acp{SDR} like the
-HackRF and the RTL-SDR. The project is based on RF~Analyzer, an application by
-Dennis Mantz. \ac{AnSiAn} currently extends RF~Analyzer by the following features: 
+\ac{AnSiAn} is an Android application developed by the Secure Mobile Network Lab (SEEMOO) at 
+Technische Universität Darmstadt. It allows for common \ac{SDR} platforms, such as the HackRF and the RTL-SDR, to be used with Android devices. This enables a user to inconspicuously sniff and analyze wireless signals on the go.
+
+The project is based on the open-source app RFAnalyzer by Dennis Mantz \cite{RFAnalyzer_GitHub}, which features visual browsing through the frequency domain and demodulation of e.g. \ac{AM} and \ac{FM} signals. It has been further developed by Markus Grau and Steffen Kreis into what is now \ac{AnSiAn} in 2015.
+
+To date, \ac{AnSiAn} adds to following features on top of RFAnalyzer:
+
 \begin{itemize}
-	\item Time Domain Signal Graph (Waveform)
-	\item Morse Decoder
-	\item Scanner
-	\item Codebase structured according to the \ac{MVC} pattern
+	\item Waveform graph of received signalsu
+	\item Morse Demodulation and Decoding
+	\item RF Scanner that allows for visually scanning a broad spectrum for signals
+	\item Restructured \ac{GUI} with better usability
+	\item Restructured codebase that follows the \ac{MVC} pattern
 \end{itemize}
 
-This lab aims to further extend the feature set of \ac{AnSiAn} while also
-making the app more stable and refining existing features. The description of
-the project goals are listed in \autoref{ch:project_definition}.
+While this makes \ac{AnSiAn} a powerful tool for mobile signal analysis and processing, further features such as support for additional modulation techniques are desirable. This lab aims to further develop \ac{AnSiAn} in order to extend its feature set, improve app stability and refine existing features.
 
+A detailed descrpition and explanation of the project goals and their planned schedule is given in \autoref{ch:project_definition}. \autoref{ch:project_progress} covers the actual project progress over time as well as encountered problems, delays and unplanned features in each phase of the project. Details on the design and implementation of features and bugfixes are given in \autoref{ch:design_and_implementation}.
+%\autoref{ch:perspective} discusses the future perspective of AnSiAn and suggests what could be done next to further improve the app.
+\autoref{ch:conclusion} concludes this documentation.
