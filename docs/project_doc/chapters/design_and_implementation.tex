@@ -124,6 +124,7 @@ also helps by providing reference data of the different stages
 of demodulation. 
 
 \subsubsection{RDS modulation scheme}
+\label{sec:rds_modulation_scheme}
 
 \ac{RDS} uses \ac{BPSK} with Manchester encoding. The signal is
 transmitted with an offset of 57 kHz relative to the center frequency
@@ -168,48 +169,6 @@ in block B (see \autoref{fig:rds_group0A}).
 	\label{fig:rds_group0A}
 \end{figure}
 
-\begin{table}
-	\begin{center}
-		\begin{tabular}{ c c l }
-		 Group Type & Group Version & Description \\\hline
-		 0 & A & Basic tuning and switching information only \\
-		 0 & B & Basic tuning and switching information only \\
-		 1 & A & Programme Item Number and slow labelling codes\\
-		 1 & B & Programme Item Number \\
-		 2 & A & RadioText only \\
-		 2 & B & RadioText only \\
-		 3 & A & Applications Identification for ODA only \\
-		 3 & B & Open Data Applications\\
-		 4 & A & Clock-time and date only \\
-		 4 & B & Open Data Applications\\
-		 5 & A & Transparent Data Channels \\
-		 5 & B & Transparent Data Channels \\
-		 6 & A & In House applications or ODA \\
-		 6 & B & In House applications or ODA \\
-		 7 & A & Radio Paging or ODA \\
-		 7 & B & Open Data Applications\\
-		 8 & A & Traffic Message Channel or ODA \\
-		 8 & B & Open Data Applications\\
-		 9 & A & Emergency Warning System or ODA \\
-		 9 & B & Open Data Applications\\
-		10 & A & Programme Type Name\\
-		10 & B & Open Data Applications\\
-		11 & A & Open Data Applications\\
-		11 & B & Open Data Applications\\
-		12 & A & Open Data Applications\\
-		12 & B & Open Data Applications\\
-		13 & A & Enhanced Radio Paging or ODA\\
-		13 & B & Open Data Applications\\
-		14 & A & Enhanced Other Networks information only \\
-		14 & B & Enhanced Other Networks information only \\
-		15 & A & Defined in RBDS [15] only\\
-		15 & B & Fast switching information only \\\hline
-		\end{tabular}
-		\caption{RDS Group Types}
-		\label{tab:rds_groups}
-	\end{center}
-\end{table}
-
 \autoref{tab:rds_groups} lists all group types and their descriptions.
 The \ac{RDS} demodulation in AnSiAn only decodes types 0 and 2 because they contain
 the basic information which is also often displayed on the radio
@@ -219,18 +178,18 @@ receiver.
 \subsubsection{Evaluation in Octave}
 
 Developing a signal processing application on Android has many drawbacks. One
-issue is that it is very hard to debug the actuall signal processing components
+issue is that it is very hard to debug the actual signal processing components
 because of the lack of proper tools to visualize and analyze the data that is
 being processed. It is also not possible to do rapid prototyping without
-sufficient signal processing libaries available. Therefore the \ac{RDS}
+sufficient signal processing libraries available. Therefore the \ac{RDS}
 demodulator was first developed in Octave and afterwards ported to Android.
 
 For development and testing it is better to work on recorded samples instead
-of live captures. This makes tests reproducable and simplify the development
+of live captures. This makes tests reproducible and simplify the development
 environment. The file was recorded using the record feature of RF Analyzer. It
 can be imported to Octave by using the \emph{read\_cuchar\_binary()} script
 provided by the GNU Radio project. After each step the produced output data
-can be written back to an \emph{IQ} in order to use it in the Android application.
+can be written back to an \emph{IQ} file in order to use it in the Android application.
 This way it is possible to develop each component of the demodulation process
 separately and the output can be visualized on the developing machine.
 
@@ -391,6 +350,180 @@ A screenshot of the application demodulating the \ac{RDS} signal of the
 
 
 \subsection{PSK31}
+
+\ac{PSK31} refers to phase shift keying modulation using a baud rate of 31.25
+Hz.  It was developed by Peter Martinez in 1998 to introduce a narrow bandwidth
+digital mode for live chatting. Because of the simple and efficient modulation
+and coding scheme (e.g. it does not have an error correction mechanism) it is
+very widespread amongst amateur radio operators.
+
+A typical setup for \ac{PSK31} operation is a \ac{SSB} transceiver connected
+to the sound card of a computer. The audio channel that is fed into the computer
+can contain multiple parallel \ac{PSK31} transmissions, which are demodulated
+using a special software.
+
+PSK31 is usually operated in \ac{USB} mode and shall therefore be available
+in \ac{AnSiAn} when the \ac{USB} demodulator is active.
+As with the \ac{RDS} demodulator the algorithm to demodulate and decode \ac{PSK31}
+is first evaluated in Octave and later ported to the \ac{AnSiAn} application.
+
+\subsubsection{PSK31 modulation scheme}
+
+\ac{PSK31} in its basic form uses \ac{BPSK} to transmit binary information by
+sending a single side band signal with either a 180 degree phase shift (digital
+'1') or without a phase shift (digital '0'). Additionally a root raised cosine
+filter is used in order to smooth the phase shift and therefore keep the
+bandwidth narrow.  Each symbol contains information about one bit and is always
+32 ms long.
+
+\autoref{fig:psk31_modulation} shows the modulated \ac{PSK31} signal. As already
+explained in \autoref{sec:rds_modulation_scheme}, the signal may be demodulated
+by using a second order loop (e.g. a costas loop) in order to recover the phase
+information and correct for small frequency variations. However the simple approach
+using envelope detection is also possible. The \ac{BPSK} code used for \ac{RDS}
+demodulation can be partly reused and only needs some modifications as \ac{PSK31}
+does not use Manchester Encoding.
+
+\begin{figure}
+	\centering
+	\includegraphics[width=1\linewidth]{gfx/psk31/psk31_modulation.png}
+	\caption{PSK31 modulation scheme: Each symbol is 32ms long. A $180°$ phase
+	shift indicates a '0', no phase shift indicates a '1'}
+	\label{fig:psk31_modulation}
+\end{figure}
+
+\subsubsection{PSK31 coding scheme}
+
+\ac{PSK31} uses a variable length encoding called \emph{Varicode} which assigns
+frequently used characters a shorter code similar to morse. Characters are separated
+by two consecutive zeros. \autoref{tab:psk31_varicode} in the appendix lists all
+characters and their varicode encodings.
+
+\subsubsection{Evaluation in Octave}
+
+The demodulation algorithm in octave comprises the following steps:
+\begin{enumerate}
+	\item Downmixing the \ac{USB} signal to baseband.
+	\item \ac{USB} demodulation (complex bandpass filter to
+		get only the upper side band). See \autoref{fig:psk31_signal_spectrum} b.
+	\item Downsampling in order to reduce the workload for the PSK31 demodulation.
+	\item Envelope detection. See \autoref{fig:psk31_envelope}.
+	\item Find the beginning of a '0' symbol by searching for a minimum in the
+		envelope of the signal. Determine whether the next symbol is a '0' (another
+		minimum is found around 32ms from the beginning of the current symbol) or
+		a '1' (no minimum at the beginning of the next symbol). If another '0' was
+		detected, the timing can be corrected by centering the minimum at the beginning
+		of the signal and search on from there.
+\end{enumerate}
+
+\begin{figure}
+\subfloat[Raw spectrum. The PSK31 signal is at around 55 KHz.]{%
+  \includegraphics[clip,width=1\linewidth]{gfx/psk31/psk31_raw_signal.png}%
+}
+
+\subfloat[Spectrum after downmixing and filtering (USB demodulation)]{%
+  \includegraphics[clip,width=1\linewidth]{gfx/psk31/psk31_usb_demod.png}%
+}
+\caption{PSK31 signal in the frequency domain (spectrum)}
+\label{fig:psk31_signal_spectrum}
+\end{figure}
+
+\begin{figure}
+	\centering
+	\includegraphics[width=1\linewidth]{gfx/psk31/psk31_envelope.png}
+	\caption{Envelope of the downsampled, USB demodulated signal.}
+	\label{fig:psk31_envelope}
+\end{figure}
+
+The octave code used to execute the steps mentioned above is shown in the
+listing below:
+
+\begin{lstlisting}[label=lst:octave_psk31, caption=Octave implementation of the PSK31 demodulator, language=none]
+% load signal
+signal = read_cuchar_binary ("rtlsdr_434570917Hz_1000000Sps.iq");
+fs = 1000000;
+
+% downmixing (signal is at ~ 55 Khz)
+fc = 55000;
+t = linspace(0, length(signal)/fs, length(signal))';
+carrier = e.^(2*pi*-fc*t*i);
+down = carrier .* signal;
+
+% USB demod (bandpass filter [200Hz-1000Hz])
+bpfilter = firls(300, [0 200 200 1000 1000 fs/2]./(fs/2), [0 0 0 1 0 0]);
+filtered = filter(bpfilter, 1, down);
+
+% downsampling
+downsampled = decimate(filtered, 16);
+
+% BPSK demodulation
+bits = psk31_bpsk_demodulate(downsampled, fs/16);
+
+% Varicode decoding
+psk31_decode(bits)
+\end{lstlisting}
+
+The \emph{psk31\_bpsk\_demodulate()} function is shown in the following listing:
+
+\begin{lstlisting}[label=lst:octave_psk31_bpsk, caption=Octave implementation of the BPSK demodulation, language=none]
+function demod = psk31_bpsk_demodulate(signal, fs)
+  % PSK31 baud rate is 31.25 Hz
+  samples_per_symbol = fs/31.25
+  samples_per_symbol = ceil(samples_per_symbol)
+  envelope = abs(signal);
+  
+  % Find the first minimum
+  [minimum, idx1] = min(envelope(1:samples_per_symbol))
+  
+  bits = [];
+  while (idx1 + samples_per_symbol*2 < length(envelope))
+    % search for a minimum at the position of the next sample
+    % (minimum near idx1 + samples_per_symbol)
+    from = round(idx1+samples_per_symbol*0.5);
+    to   = round(idx1+samples_per_symbol*1.5);
+    [minimum, idx2] = min(envelope(from:to));
+    idx2 = idx2 + from;
+    
+    % calc mean of all samples between idx1 and idx2 and calc threshold = mean/2
+    m = mean(envelope(idx1:idx2));
+    threshold = m/2;
+    
+    % Check whether we have a minimum (->0) or not (->1).
+    if (envelope(idx2) > threshold)
+      % In this case we have a bit 1.
+      bits = [bits 1];
+      idx1 = idx1 + samples_per_symbol;
+    else
+      % In this case we have a bit 0.
+      bits = [bits 0];
+      idx1 = idx2;
+    endif
+  endwhile
+  demod = bits;
+\end{lstlisting}
+
+\subsubsection{Android Implementation}
+
+For the Android implementation the \emph{BPSK} class is modified to handle both
+\ac{BPSK} variations needed in \ac{AnSiAn}:
+\begin{itemize}
+	\item RDS: BPSK with Manchester Encoding
+	\item PSK31: BPSK without Manchester Encoding
+\end{itemize}
+
+Additionally the class \emph{PSK31} is added which is a subclass of \emph{Demodulation}.
+It integrates with the existing \emph{USB} class to provide PSK31 demodulation
+when USB demodulation is active.
+
+A screenshot of the application demodulating a \ac{PSK31} signal is shown in 
+\autoref{fig:psk31_android_screenshot}.
+
+\begin{figure}
+	\centering
+	\includegraphics[width=1\linewidth]{gfx/psk31/psk31_android_screenshot.png}
+	\caption{Screenshot of the PSK31 demodulator on a Nexus 7}
+	\label{fig:psk31_android_screenshot}
+\end{figure}
 
 
 \section{GUI}
