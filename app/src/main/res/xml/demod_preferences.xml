@@ -64,12 +64,6 @@
             android:summaryOff="@string/pref_fm_rds_summ_off"
             android:summaryOn="@string/pref_fm_rds_summ_on"
             android:title="@string/pref_fm_rds_title" />
-        <SwitchPreference
-            android:defaultValue="true"
-            android:key="usb_psk31"
-            android:summaryOff="@string/pref_usb_psk31_summ_off"
-            android:summaryOn="@string/pref_usb_psk31_summ_on"
-            android:title="@string/pref_usb_psk31_title" />
         <ListPreference
             android:defaultValue="1"
             android:dialogTitle="@string/pref_performance_selector_title"
@@ -79,6 +73,17 @@
             android:summary="@string/pref_performance_selector_summary"
             android:title="@string/pref_performance_selector_title" />
     </PreferenceCategory>
+
+    <PreferenceCategory android:title="USB">
+        <SwitchPreference
+            android:defaultValue="true"
+            android:key="usb_psk31"
+            android:summaryOff="@string/pref_usb_psk31_summ_off"
+            android:summaryOn="@string/pref_usb_psk31_summ_on"
+            android:title="@string/pref_usb_psk31_title" />
+    </PreferenceCategory>
+
+
 
     <PreferenceCategory android:title="Logging">
 

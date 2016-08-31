@@ -32,9 +32,9 @@ public class FrequencyDialog extends MyDialogFragment {
     private static final String LOGTAG = "FrequencyDialog";
     final double maxFreqMHz = SourceControl.getSource().getMaxFrequency() / 1000000f;
     private NumberPicker frequencyPicker;
-    private CheckBox cb_bandwidth;
-    private EditText et_bandwidth;
-    private Spinner sp_bandwidthUnit;
+    // private CheckBox cb_bandwidth;
+    // private EditText et_bandwidth;
+    // private Spinner sp_bandwidthUnit;
     private TextView tv_warning;
     private Spinner frequencyUnitSpinner;
 
@@ -89,9 +89,9 @@ public class FrequencyDialog extends MyDialogFragment {
             }
         });
 
-        cb_bandwidth = (CheckBox) view.findViewById(R.id.cb_tune_to_frequency_bandwidth);
-        et_bandwidth = (EditText) view.findViewById(R.id.et_tune_to_frequency_bandwidth);
-        sp_bandwidthUnit = (Spinner) view.findViewById(R.id.sp_tune_to_frequency_bandwidth_unit);
+        //cb_bandwidth = (CheckBox) view.findViewById(R.id.cb_tune_to_frequency_bandwidth);
+        //et_bandwidth = (EditText) view.findViewById(R.id.et_tune_to_frequency_bandwidth);
+        //sp_bandwidthUnit = (Spinner) view.findViewById(R.id.sp_tune_to_frequency_bandwidth_unit);
         tv_warning = (TextView) view.findViewById(R.id.tv_tune_to_frequency_warning);
 
         if (SourceControl.getSource() == null)
@@ -101,6 +101,7 @@ public class FrequencyDialog extends MyDialogFragment {
         if (StateHandler.isRecording())
             tv_warning.setVisibility(View.VISIBLE);
 
+        /*
         cb_bandwidth.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
@@ -113,7 +114,7 @@ public class FrequencyDialog extends MyDialogFragment {
         sp_bandwidthUnit.setSelection(2);
         // TODOcb_bandwidth.setChecked(preferences.isSetBandwidth());
         et_bandwidth.setText("" + Preferences.GUI_PREFERENCE.getBandwidth());
-        // TODO sp_bandwidthUnit.setSelection(preferences.getBandwidthUnit());
+        // TODO sp_bandwidthUnit.setSelection(preferences.getBandwidthUnit()); */
         return view;
     }
 
@@ -129,6 +130,7 @@ public class FrequencyDialog extends MyDialogFragment {
                     // AnalyzerSurface.getInstance()
                     // .setVirtualFrequency(newFreq);
 
+                    /* this feature currently breaks all demodulators, so it's deactivated
                     // Set bandwidth (virtual sample rate):
                     if (cb_bandwidth.isChecked() && et_bandwidth.getText().length() != 0) {
                         float bandwidth = Float.valueOf(et_bandwidth.getText().toString());
@@ -142,14 +144,15 @@ public class FrequencyDialog extends MyDialogFragment {
                         //SourceControl.getSource().setSampleRate(
                         //       SourceControl.getSource().getNextHigherOptimalSampleRate((int) bandwidth));
 
-                        // safe preferences:
+                        // save preferences:
                         // TODOpreferences.setBandwidthSet(cb_bandwidth.isChecked());
 
                         // TODO
-                        // preferences.setBandwidth(et_bandwidth.getText().toString());
+                        preferences.setBandwidth(et_bandwidth.getText().toString());
                         // TODOpreferences.setBandwidthUnit(sp_bandwidthUnit.getSelectedItemPosition());
 
-                    }
+
+                    }*/
                 } catch (NumberFormatException e) {
                     Log.e(LOGTAG, "tuneToFrequency: Error while setting frequency: " + e.getMessage());
                 }

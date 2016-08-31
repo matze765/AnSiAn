@@ -34,6 +34,7 @@
 
     </LinearLayout>
 
+    <!-- Breaks demodulation chain; feature deactivated
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -56,6 +57,6 @@
             android:layout_height="wrap_content"
             android:id="@+id/sp_tune_to_frequency_bandwidth_unit"
             android:entries="@array/frequency_units"/>
-    </LinearLayout>
+    </LinearLayout> -->
 
 </LinearLayout>
