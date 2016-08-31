@@ -531,12 +531,203 @@ A screenshot of the application demodulating a \ac{PSK31} signal is shown in
 \subsection{Transmit Tab}
 
 \section{Support for new SDR Platforms}
+
+\ac{AnSiAn} supports different \ac{SDR} hardware such as:
+\begin{itemize}
+	\item RTL-SDR dongle
+	\item HackRF
+\end{itemize}
+
+The architecture of the app allows to easily add support for additional hardware,
+as long as it provides IQ data samples and an Android driver is available.
+
 \subsection{rad1o}
+
+The \emph{rad1o} is a \ac{SDR} platform with the same design as the
+\emph{HackRF} that was used as badge for the \emph{Chaos Communication Camp}
+2015. Some modifications to the design were made in order to reduce costs and
+therefore minor differences exist compared to a HackRF (e.g. the option to
+activate the antenna power is missing for the \emph{rad1o}).
+
+The \emph{rad1o} offers the same USB interface as the \emph{HackRF} and can be
+used with the same driver, which is \emph{hackrf\_android}. The driver only needs
+two minor modifications:
+\begin{enumerate}
+	\item If the driver detects a rad1o, the option to enable the antenna power
+		is disabled.
+	\item Because the \emph{rad1o} has a different USB product ID, the driver has
+		to be extended in order to also detect a \emph{rad1o} as valid \emph{HackRF}.
+\end{enumerate}
+
+Both changes have been applied to the \emph{hackrf\_android} driver. Unfortunately, the
+creators of \ac{AnSiAn} have replaced the driver library with a plain copy of the driver
+source code, which makes it hard to update it to a newer version. Therefore the
+driver code was removed from \ac{AnSiAn} and replaced again with the current version
+of the driver library.
+
+This is the only change necessary to add support for the new \ac{SDR} hardware. 
+The rad1o can now be used by selecting the \emph{HackRF} source in \ac{AnSiAn}.
+
+
 \subsection{SDRPlay}
 
+The \emph{SDRplay} is a low cost \ac{SDR} with a frequency range between 100 kHz and
+2 GHz. It has a 12-bit \ac{ADC} and therefore suffers less from quantification noise
+than the \emph{HackRF} and the \emph{RTL-SDR} (both having a 8-bit \ac{ADC}).
+Additionally it provides passive \ac{RF} filters on the front end to prevent strong
+out-of-band noise from distorting the input signal.
+
+Martin Marinov developed an Android driver for the \emph{SDRplay} dongle, which
+is currently in beta state. The API is similar to the \emph{RTL-SDR} driver which is
+developed by the same person.
+
+\subsubsection{Implementation}
+
+The \emph{SDRplay} driver is started by an Intend with an URL of the format
+\emph{'iqsrc://\ldots'}. It takes an IP address and TCP port as arguments and
+will open a socket respectively. The host app can the connect to the socket and
+will receive the samples via TCP. Control commands such as changing the
+frequency, sample rate or other parameters can be sent through the TCP socket
+to the driver. A list of supported commands can be found on the GitHub page
+of the driver. They are listed in \autoref{tab:sdrplay_cmds}.
+
+
+\begin{table}
+	\begin{center}
+		\begin{tabular}{l c l}
+			Command name & Code & Description \\\hline
+			SET\_FREQ & 0x01 & Change the tuning (center) frequency of the dongle \\
+			SET\_SAMPLE\_RATE & 0x02 & Change the sample rate of the dongle \\
+			SET\_GAIN\_MODE & 0x03 & Change gain mode (auto or manual) \\
+			SET\_GAIN & 0x04 & Change gain value (if gain mode is manual) \\
+			SET\_FREQ\_CORRECTION & 0x05 & Change frequency correction value (in ppm) \\
+			SET\_IF\_TUNER\_GAIN & 0x06 & Change \ac{IF} gain \\
+			SET\_TEST\_MODE & 0x07 & Turn on test mode \\
+			SET\_AGC\_MODE & 0x08 & Activate or deactivate \ac{AGC} \\
+			SET\_DIRECT\_SAMPLING & 0x09 & Activate or deactivate direct sampling mode \\
+			SET\_OFFSET\_TUNING & 0x0a & Activate or deactivate offset tuning \\
+			EXIT & 0x7e & Cause the driver to turn off itself \\
+			GAIN\_BY\_PERCENTAGE & 0x7f & Change gain value as percentage \\
+			ENABLE\_16\_BIT\_SIGNED & 0x80 & Enable 16 bit unsigned sample size (SDRplay only) \\\hline
+		\end{tabular}
+		\caption{Commands for the RTL-SDR / SDRplay driver by Martin Marinov}
+		\label{tab:sdrplay_cmds}
+	\end{center}
+\end{table}
+
+
+
+\subsubsection{Open Issues}
+
+As the \emph{SDRplay} Android driver is still in beta stage, the support in AnSiAn has
+also still beta status. 12-bit samples are currently not working correctly and
+therefore \ac{AnSiAn} uses the RTL-SDR compatibility mode of the driver which
+delivers stripped 8-bit samples. However, the 12-bit converter code is ready to
+be used and might be enabled in future versions of \ac{AnSiAn}.
+
+
 \section{Transmission}
+
+RF Analyzer as well as \ac{AnSiAn} both have a receive-only signal processing
+chain, even though they support \ac{SDR} devices which are capable of transmitting
+signals, such as the \emph{HackRF}.
+The implementation of a complete transmission chain is split into multiple steps
+to go along with the Agile approach.
+
+In the first step the transmission chain will only include the \emph{IQ Sink} which is
+able to replay a recorded IQ file. The file has to have the correct format according
+to the \ac{SDR} hardware and the sample rate cannot be adjusted.
+
+The second step will provide \emph{Modulators} for some digital and analog modes along
+with a dummy transmission chain which will use the modulator to create an IQ
+file and feed it to the \emph{IQ sink} directly.
+
+In the final step the dummy chain is replaced by the complete transmission chain
+which includes:
+\begin{itemize}
+	\item the \emph{Modulators} from step two
+	\item the \emph{Interpolator} which is able to adjust the sample rate at the 
+		output of the \emph{Modulators} to a value that is supported by the \emph{IQ Sink}
+	\item a float-to-binary converter which will output the samples in the correct
+		binary format according to the \ac{SDR} hardware
+\end{itemize}
+
+After the final step the transmission chain will be able to modulate and transmit
+signals in real-time, assuming the Android device is capable of the necessary
+calculations.
+
+Step one and two are part of the third sprint and provide a proof-of-concept
+implementation to demonstrate the transmission capabilities of the app.
+Step three will be left for future work on the application as well as the
+addition of more modulators.
+
+
 \subsection{Transmission of Raw I/Q Files}
-\subsection{Morse Modulator}
-\subsection{PSK31 Modulator}
 
 
+
+\subsection{Modulators}
+
+Each \emph{Modulator} will provide an interface to retrieve the next packet of
+modulated samples. The payload data (e.g. audio or text) might be given at
+instantiation time or through a queue (in order to enable real-time transmission).
+
+As mentioned above, the step two implementation will include a dummy transmission
+chain that reads the output of the \emph{Modulator}, converts it to binary IQ
+data and writes it to a temporary file which will then be transmitted by the
+\emph{Transmitter} implemented in the previous section.
+
+
+\subsubsection{Morse Modulator}
+
+The morse modulator takes a string as input payload and produces a baseband
+signal with dits and dahs respectively. The morse encoder from the previous
+\ac{AnSiAn} version can be reused to transform the payload text into a
+sequence of dits ('.'), dahs ('-'), breaks ('\textvisiblespace') and word
+boundaries ('/'). Each character in this sequence corresponds to a predefined
+packet of IQ samples (see \autoref{tab:morse_modulation}).
+
+Because the dit and dahs each also contains silence of the length of one dit at
+the beginning, the letter separator ('\textvisiblespace') and the word separator
+('/') need to be one dit length shorter than they actually are.
+
+To increase the modulation performance, the complex sinusoid is generated
+ahead of time and the character translation only consists of a copy operation.
+
+\begin{table}
+	\begin{center}
+		\begin{tabular}{c l}
+			Morse element & Corresponding IQ sample structure \\\hline
+			. & one dit length of silence + one dit length of tone \\
+			- & one dit length of silence + three dit lengths of tone \\
+			\textvisiblespace & two dit lengths of silence \\
+			/ & six dit lengths of silence \\\hline
+		\end{tabular}
+		\caption{Translation from morse elements to IQ samples}
+		\label{tab:morse_modulation}
+	\end{center}
+\end{table}
+
+
+\subsubsection{PSK31 Modulator}
+
+The PSK31 modulator also takes a string as input payload, encodes it with
+Varicode and modulates the bits with \ac{BPSK}. The Varicode dictionary of
+the PSK31 demodulator can be reused to perform the first step of creating
+the bitstream from the payload text. The \ac{BPSK} modulation simply outputs
+the samples based on the current state (phase) of the modulator (see
+\autoref{tab:bpsk_modulation}).
+
+\begin{table}
+	\begin{center}
+		\begin{tabular}{c c | c}
+			Previous state (phase) & Current bit & BPSK output \\\hline
+			0° & 0 & $cos(\frac{\pi \cdot 31.25 Hz \cdot t}{f_s})$ \\
+			180° & 0 & $-cos(\frac{\pi \cdot 31.25 Hz \cdot t}{f_s})$ \\
+			0° & 1 & 1 \\
+			180° & 1 & -1 \\\hline
+		\end{tabular}
+		\caption{Output of the BPSK modulation based on its previous state}
+		\label{tab:bpsk_modulation}
+	\end{center}
+\end{table}
