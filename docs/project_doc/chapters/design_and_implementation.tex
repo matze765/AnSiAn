@@ -59,6 +59,18 @@ after memory optimizations, language=none]
 05-12 17:28:24.520 D/dalvikvm: GC_FOR_ALLOC freed 4263K, 18% free 20341K/24664K, paused 49ms, total 49ms
 \end{lstlisting}
 
+Another significant performance improvement can be gained by synchronising
+the calculation of the \ac{FFT} to the refresh cycle of the application
+\ac{GUI}. This simple change reduces the number of time the \ac{FFT} algorithm
+has to be executed and releases processing resources for other calculations
+(e.g. in the demodulation path). 
+
+Unfortunately, it turned out that the Morse demodulation
+algorithm of the previous version of \ac{AnSiAn} was working in the frequency
+domain and relied on continuous \ac{FFT} samples without gaps.
+As result this performance improvement comes at the cost of reimplementing
+the Morse demodulation algorithm in order to work on time domain samples
+instead.
 
 
 \section{Demodulators}
@@ -91,24 +103,20 @@ depicted in \autoref{fig:demod_text_eventbus} and explained in the following.
 	\label{fig:demod_text_eventbus}
 \end{figure}
 
-Two new classes \texttt{PSK31} and \texttt{RDS}, that inherit from
-\texttt{Demodulation}, need to be implemented to represent the new demodulation 
-mechanisms.
-
-As \ac{PSK31} demodulation works on the envelope of the received signal
-and \ac{AM} demodulation essentially performs envelope detection, \texttt{PSK31}
-uses an instance of \texttt{AM} for envelope detection.
-
-\ac{RDS} transmits metadata for \ac{FM} radio channels. It is therefore desirable for the 
-\ac{RDS} demodulation mode to not only display this metadata, but to also play the 
-\ac{FM}-modulated audio at the same time. The \texttt{RDS} class uses an
-instance of \texttt{FM} for this purpose.
+Two new classes \texttt{PSK31} and \texttt{RDS} are integrated into the
+existing demodulation classes for \ac{USB} and \ac{FM}. \ac{PSK31} demodulation
+works on the envelope of the received \ac{USB} signal.  \ac{RDS} transmits
+metadata for \ac{FM} radio channels, which is why the \ac{RDS} demodulation
+needs to work on an intermediate result of the wide-band \ac{FM} demodulation
+class. Through a new option in the app settings it will be possible to enable
+or disable the demodulation of the embedded digital modes when the
+corresponding analog mode is selected.
 
 Like the existing architecture, the new architecture will use the EventBus
 library to pass the demodulated text to the \ac{GUI}. The existing View
 \texttt{MorseReceiveView} is refactored into a universal
 \texttt{De\-mo\-du\-la\-tion\-In\-fo\-View} that displays the text output of any selected 
-demodulator. Demodulators pass \texttt{DemodTextEvent}s and 
+demodulator. Demodulators pass
 \texttt{DemodInfoEvent}s via the EventBus to the \texttt{De\-mo\-du\-la\-tion\-In\-fo\-View}, 
 which contain demodulated text and further information (e.g. baud rates or raw 
 dits and dahs) and are displayed in separate lines.
@@ -292,7 +300,7 @@ demodulator was first developed in Octave and afterwards ported to Android.
 For development and testing it is better to work on recorded samples instead
 of live captures. This makes tests reproducible and simplify the development
 environment. The file was recorded using the record feature of RF Analyzer. It
-can be imported to Octave by using the \emph{read\_cuchar\_binary()} script
+can be imported to Octave by using the \texttt{read\_cuchar\_binary()} script
 provided by the GNU Radio project. After each step the produced output data
 can be written back to an \emph{IQ} file in order to use it in the Android application.
 This way it is possible to develop each component of the demodulation process
@@ -354,8 +362,8 @@ The demodulation is done in the following steps:
 The octave code used to execute the steps mentioned above is shown in the
 listing below:
 
-\begin{lstlisting}[label=lst:octave_rds, caption=Octave implementation of the RDS demodulator, language=none]
-signal = read_cuchar_binary ("~/Downloads/2016-06-01-20-17-18_rtlsdr_100550000Hz_1000000Sps.iq" );
+\begin{lstlisting}[label=lst:octave_rds, caption=Octave implementation of the RDS demodulator, language=octave]
+signal = read_cuchar_binary ("rtlsdr_100550000Hz_1000000Sps.iq");
 t = linspace(0, length(signal)/1000000, length(signal))';
 carrier = e.^(2*pi*-245000*t*i);
 down = carrier .* signal;
@@ -368,16 +376,16 @@ rdsbase = demod(1:length(rdscarrier)) .* rdscarrier ;
 frds = fir1(300, 2400/1000000*2);
 rdsbase_filtered = filter(frds,1,rdsbase);
 downsampled = decimate(rdsbase_filtered, 16).*80;
-write_cuchar_binary (downsampled, "~/Downloads/rds_baseband_62500sps.iq");
+write_cuchar_binary (downsampled, "rds_baseband_62500sps.iq");
 bits = rds_bpsk_demodulate(downsampled, 62500);
 rds_decode(bits)
 \end{lstlisting}
 
-The \emph{quad\_demod()} function does the quadrature demodulation
-(FM demodulation). The \emph{rds\_bpsk\_demodulate()} function is shown
+The \texttt{quad\_demod()} function does the quadrature demodulation
+(FM demodulation). The \texttt{rds\_bpsk\_demodulate()} function is shown
 in the following listing:
 
-\begin{lstlisting}[label=lst:octave_rds_bpsk, caption=Octave implementation of the BPSK demodulation, language=none]
+\begin{lstlisting}[label=lst:octave_rds_bpsk, caption=Octave implementation of the BPSK demodulation, language=octave]
 function demod = rds_bpsk_demodulate(signal, fs)
   samples_per_symbol = fs/1187.5
   samples_per_symbol = ceil(samples_per_symbol)
@@ -492,7 +500,7 @@ does not use Manchester Encoding.
 \begin{figure}
 	\centering
 	\includegraphics[width=1\linewidth]{gfx/psk31/psk31_modulation.png}
-	\caption{PSK31 modulation scheme: Each symbol is 32ms long. A $180°$ phase
+	\caption{PSK31 modulation scheme: Each symbol is 32ms long. A 180° phase
 	shift indicates a '0', no phase shift indicates a '1'}
 	\label{fig:psk31_modulation}
 \end{figure}
@@ -543,7 +551,7 @@ The demodulation algorithm in octave comprises the following steps:
 The octave code used to execute the steps mentioned above is shown in the
 listing below:
 
-\begin{lstlisting}[label=lst:octave_psk31, caption=Octave implementation of the PSK31 demodulator, language=none]
+\begin{lstlisting}[label=lst:octave_psk31, caption=Octave implementation of the PSK31 demodulator, language=octave]
 % load signal
 signal = read_cuchar_binary ("rtlsdr_434570917Hz_1000000Sps.iq");
 fs = 1000000;
@@ -568,9 +576,9 @@ bits = psk31_bpsk_demodulate(downsampled, fs/16);
 psk31_decode(bits)
 \end{lstlisting}
 
-The \emph{psk31\_bpsk\_demodulate()} function is shown in the following listing:
+The \texttt{psk31\_bpsk\_demodulate()} function is shown in the following listing:
 
-\begin{lstlisting}[label=lst:octave_psk31_bpsk, caption=Octave implementation of the BPSK demodulation, language=none]
+\begin{lstlisting}[label=lst:octave_psk31_bpsk, caption=Octave implementation of the BPSK demodulation, language=octave]
 function demod = psk31_bpsk_demodulate(signal, fs)
   % PSK31 baud rate is 31.25 Hz
   samples_per_symbol = fs/31.25
@@ -609,15 +617,15 @@ function demod = psk31_bpsk_demodulate(signal, fs)
 
 \subsubsection{Android Implementation}
 
-For the Android implementation the \emph{BPSK} class is modified to handle both
+For the Android implementation the \texttt{BPSK} class is modified to handle both
 \ac{BPSK} variations needed in \ac{AnSiAn}:
 \begin{itemize}
 	\item RDS: BPSK with Manchester Encoding
 	\item PSK31: BPSK without Manchester Encoding
 \end{itemize}
 
-Additionally the class \emph{PSK31} is added which is a subclass of \emph{Demodulation}.
-It integrates with the existing \emph{USB} class to provide PSK31 demodulation
+Additionally the class \texttt{PSK31} is added which is a subclass of \texttt{Demodulation}.
+It integrates with the existing \texttt{USB} class to provide PSK31 demodulation
 when USB demodulation is active.
 
 A screenshot of the application demodulating a \ac{PSK31} signal is shown in 
@@ -671,7 +679,7 @@ driver code was removed from \ac{AnSiAn} and replaced again with the current ver
 of the driver library.
 
 This is the only change necessary to add support for the new \ac{SDR} hardware. 
-The rad1o can now be used by selecting the \emph{HackRF} source in \ac{AnSiAn}.
+The \emph{rad1o} can now be used by selecting the \emph{HackRF} source in \ac{AnSiAn}.
 
 
 \subsection{SDRPlay}
@@ -689,7 +697,7 @@ developed by the same person.
 \subsubsection{Implementation}
 
 The \emph{SDRplay} driver is started by an Intend with an URL of the format
-\emph{'iqsrc://\ldots'}. It takes an IP address and TCP port as arguments and
+\texttt{'iqsrc://\ldots'}. It takes an IP address and TCP port as arguments and
 will open a socket respectively. The host app can the connect to the socket and
 will receive the samples via TCP. Control commands such as changing the
 frequency, sample rate or other parameters can be sent through the TCP socket
@@ -737,23 +745,39 @@ RF Analyzer as well as \ac{AnSiAn} both have a receive-only signal processing
 chain, even though they support \ac{SDR} devices which are capable of transmitting
 signals, such as the \emph{HackRF}.
 The implementation of a complete transmission chain is split into multiple steps
-to go along with the Agile approach.
+to go along with the Agile approach (see \autoref{fig:tx_chain}).
 
-In the first step the transmission chain will only include the \emph{IQ Sink} which is
+\begin{figure}
+\subfloat[Step 1: Raw IQ File Transmission]{%
+  \includegraphics[clip,width=1\linewidth]{gfx/TX_chain_step1.png}%
+}
+
+\subfloat[Step 2: Modulated data is written to an IQ file and send afterwards]{%
+  \includegraphics[clip,width=1\linewidth]{gfx/TX_chain_step2.png}%
+}
+
+\subfloat[Step 3: Real-time modulation, interpolation, conversion and transmission]{%
+  \includegraphics[clip,width=1\linewidth]{gfx/TX_chain_final.png}%
+}
+\caption{Incremental implementation steps of the transmission chain}
+\label{fig:tx_chain}
+\end{figure}
+
+In the first step the transmission chain will only include the \texttt{IQ Sink} which is
 able to replay a recorded IQ file. The file has to have the correct format according
 to the \ac{SDR} hardware and the sample rate cannot be adjusted.
 
-The second step will provide \emph{Modulators} for some digital and analog modes along
+The second step will provide \texttt{Modulators} for some digital and analog modes along
 with a dummy transmission chain which will use the modulator to create an IQ
-file and feed it to the \emph{IQ sink} directly.
+file and feed it to the \texttt{IQ sink} directly.
 
 In the final step the dummy chain is replaced by the complete transmission chain
 which includes:
 \begin{itemize}
-	\item the \emph{Modulators} from step two
-	\item the \emph{Interpolator} which is able to adjust the sample rate at the 
-		output of the \emph{Modulators} to a value that is supported by the \emph{IQ Sink}
-	\item a float-to-binary converter which will output the samples in the correct
+	\item the \texttt{Modulators} from step two
+	\item the \texttt{Interpolator} which is able to adjust the sample rate at the 
+		output of the \texttt{Modulators} to a value that is supported by the \texttt{IQ Sink}
+	\item a \texttt{float-to-binary} converter which will output the samples in the correct
 		binary format according to the \ac{SDR} hardware
 \end{itemize}
 
@@ -773,14 +797,14 @@ addition of more modulators.
 
 \subsection{Modulators}
 
-Each \emph{Modulator} will provide an interface to retrieve the next packet of
+Each \texttt{Modulator} will provide an interface to retrieve the next packet of
 modulated samples. The payload data (e.g. audio or text) might be given at
 instantiation time or through a queue (in order to enable real-time transmission).
 
 As mentioned above, the step two implementation will include a dummy transmission
-chain that reads the output of the \emph{Modulator}, converts it to binary IQ
+chain that reads the output of the \texttt{Modulator}, converts it to binary IQ
 data and writes it to a temporary file which will then be transmitted by the
-\emph{Transmitter} implemented in the previous section.
+\texttt{Transmitter} implemented in the previous section.
 
 
 \subsubsection{Morse Modulator}
@@ -816,7 +840,7 @@ ahead of time and the character translation only consists of a copy operation.
 
 \subsubsection{PSK31 Modulator}
 
-The PSK31 modulator also takes a string as input payload, encodes it with
+The \texttt{PSK31} modulator also takes a string as input payload, encodes it with
 Varicode and modulates the bits with \ac{BPSK}. The Varicode dictionary of
 the PSK31 demodulator can be reused to perform the first step of creating
 the bitstream from the payload text. The \ac{BPSK} modulation simply outputs
