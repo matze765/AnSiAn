@@ -73,9 +73,9 @@ the Morse demodulation algorithm in order to work on time domain samples
 instead.
 
 
-\section{Demodulators}
+\section{Demodulation}
 
-This section describes the design and implementation process of the developed demodulators. \autoref{sec:demod_design} covers where and how the new \ac{RDS} and \ac{PSK31} demodulators were integrated into the existing architecture and which changes were necessary. Due to performance issues with the old frequency-domain-based Morse demodulator, it had to be rewritten. This process is described in \label{sec:morse_demod}. The implementation of the new \ac{RDS} and \ac{PSK31} demodulators is covered in Sections \ref{sec:rds} and \ref{sec:psk31} respectively.
+This section describes the design and implementation process of the developed demodulation features. \autoref{sec:demod_design} covers where and how the new demodulators and the logging functionality were integrated into the existing architecture and which changes were necessary. Due to performance issues with the old frequency-domain-based Morse demodulator, it had to be rewritten. This process is described in \label{sec:morse_demod}. The implementation of the new \ac{RDS} and \ac{PSK31} demodulators is covered in Sections \ref{sec:rds} and \ref{sec:psk31} respectively. \autoref{sec:logging} addresses the implemented logging functionality for demodulator output.
 
 
 \subsection{Design and Structural Changes\label{sec:demod_design}}
@@ -108,7 +108,7 @@ existing demodulation classes for \ac{USB} and \ac{FM}. \ac{PSK31} demodulation
 works on the envelope of the received \ac{USB} signal.  \ac{RDS} transmits
 metadata for \ac{FM} radio channels, which is why the \ac{RDS} demodulation
 needs to work on an intermediate result of the wide-band \ac{FM} demodulation
-class. Through a new option in the app settings it will be possible to enable
+class. Through a new option in the app settings, it will be possible to enable
 or disable the demodulation of the embedded digital modes when the
 corresponding analog mode is selected.
 
@@ -120,6 +120,8 @@ demodulator. Demodulators pass
 \texttt{DemodInfoEvent}s via the EventBus to the \texttt{De\-mo\-du\-la\-tion\-In\-fo\-View}, 
 which contain demodulated text and further information (e.g. baud rates or raw 
 dits and dahs) and are displayed in separate lines.
+
+The new class \texttt{Logger} will also listen for \texttt{DemodInfoEvent}s and, if logfiles for demodulator output are enabled by the user, persist the demodulated data to these logfiles.
 
 \subsection{Re-Implementation of Morse Demodulator\label{sec:morse_demod}}
 
@@ -220,8 +222,6 @@ A screenshot of the running Morse demodulator can be seen in \autoref{fig:morse_
 	\caption{Screenshot of the Morse demodulator on a Nexus 5X}
 	\label{fig:morse_screenshot_new}
 \end{figure}
-
-
 
 
 
@@ -637,6 +637,12 @@ A screenshot of the application demodulating a \ac{PSK31} signal is shown in
 	\caption{Screenshot of the PSK31 demodulator on a Nexus 7}
 	\label{fig:psk31_android_screenshot}
 \end{figure}
+
+\subsection{Logging\label{sec:logging}}
+
+As explained in \autoref{sec:demod_design}, digital demodulators use the EventBus library to pass demodulated text and other information to the user interface. In order to not only display but also persist this data, the class \texttt{Logger} listens to \texttt{DemodInfoEvent}s from the modulators and, if logging is enabled in the preferences by the user, writes them to logfiles.
+
+\texttt{DemodInfoEvent} has an attribute \texttt{position}, which can be either \texttt{TOP} or \texttt{BOTTOM}, depending on whether the contained text is to be displayed on the upper or the lower line of \texttt{DemodulationInfoView}. Accordingly, the \texttt{Logger} maintains one logfile for the upper and the lower line. Every \texttt{DemodInfoEvent} is logged to one of these files depending on their \texttt{position} attribute. The paths of the logfiles can be defined in the Demod preferences.
 
 
 \section{Support for new SDR Platforms}

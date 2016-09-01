@@ -6,52 +6,7 @@
 \chapter{Appendix}\label{ch:Appendix}
 \glsresetall % Resets all acronyms to not used
 
-
-\begin{table}
-	\begin{center}
-		\begin{tabular}{ c c l }
-		 Group & Group & \\
-		 Type & Version & Description \\\hline
-		 0 & A & Basic tuning and switching information only \\
-		 0 & B & Basic tuning and switching information only \\
-		 1 & A & Programme Item Number and slow labelling codes\\
-		 1 & B & Programme Item Number \\
-		 2 & A & RadioText only \\
-		 2 & B & RadioText only \\
-		 3 & A & Applications Identification for ODA only \\
-		 3 & B & Open Data Applications\\
-		 4 & A & Clock-time and date only \\
-		 4 & B & Open Data Applications\\
-		 5 & A & Transparent Data Channels \\
-		 5 & B & Transparent Data Channels \\
-		 6 & A & In House applications or ODA \\
-		 6 & B & In House applications or ODA \\
-		 7 & A & Radio Paging or ODA \\
-		 7 & B & Open Data Applications\\
-		 8 & A & Traffic Message Channel or ODA \\
-		 8 & B & Open Data Applications\\
-		 9 & A & Emergency Warning System or ODA \\
-		 9 & B & Open Data Applications\\
-		10 & A & Programme Type Name\\
-		10 & B & Open Data Applications\\
-		11 & A & Open Data Applications\\
-		11 & B & Open Data Applications\\
-		12 & A & Open Data Applications\\
-		12 & B & Open Data Applications\\
-		13 & A & Enhanced Radio Paging or ODA\\
-		13 & B & Open Data Applications\\
-		14 & A & Enhanced Other Networks information only \\
-		14 & B & Enhanced Other Networks information only \\
-		15 & A & Defined in RBDS [15] only\\
-		15 & B & Fast switching information only \\\hline
-		\end{tabular}
-		\caption{RDS Group Types}
-		\label{tab:rds_groups}
-	\end{center}
-\end{table}
-
-
-\begin{longtable}{ r l || r l }
+\begin{longtable}{ r l || r l }[h]
 	Character & Encoding & Character & Encoding \\\hline
 	NUL & 1010101011 				&	!   & 111111111  \\
 	SOH & 1011011011 				&	"   & 101011111  \\
@@ -120,4 +75,50 @@
 	\caption{Varicode Table}
 	\label{tab:psk31_varicode}
 \end{longtable}
+
+\begin{table}[h]
+	\begin{center}
+		\begin{tabular}{ c c l }
+		 Group & Group & \\
+		 Type & Version & Description \\\hline
+		 0 & A & Basic tuning and switching information only \\
+		 0 & B & Basic tuning and switching information only \\
+		 1 & A & Programme Item Number and slow labelling codes\\
+		 1 & B & Programme Item Number \\
+		 2 & A & RadioText only \\
+		 2 & B & RadioText only \\
+		 3 & A & Applications Identification for ODA only \\
+		 3 & B & Open Data Applications\\
+		 4 & A & Clock-time and date only \\
+		 4 & B & Open Data Applications\\
+		 5 & A & Transparent Data Channels \\
+		 5 & B & Transparent Data Channels \\
+		 6 & A & In House applications or ODA \\
+		 6 & B & In House applications or ODA \\
+		 7 & A & Radio Paging or ODA \\
+		 7 & B & Open Data Applications\\
+		 8 & A & Traffic Message Channel or ODA \\
+		 8 & B & Open Data Applications\\
+		 9 & A & Emergency Warning System or ODA \\
+		 9 & B & Open Data Applications\\
+		10 & A & Programme Type Name\\
+		10 & B & Open Data Applications\\
+		11 & A & Open Data Applications\\
+		11 & B & Open Data Applications\\
+		12 & A & Open Data Applications\\
+		12 & B & Open Data Applications\\
+		13 & A & Enhanced Radio Paging or ODA\\
+		13 & B & Open Data Applications\\
+		14 & A & Enhanced Other Networks information only \\
+		14 & B & Enhanced Other Networks information only \\
+		15 & A & Defined in RBDS [15] only\\
+		15 & B & Fast switching information only \\\hline
+		\end{tabular}
+		\caption{RDS Group Types}
+		\label{tab:rds_groups}
+	\end{center}
+\end{table}
+
+
+
 
