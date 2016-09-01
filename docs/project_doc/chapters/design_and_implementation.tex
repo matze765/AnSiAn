@@ -59,7 +59,7 @@ after memory optimizations, language=none]
 05-12 17:28:24.520 D/dalvikvm: GC_FOR_ALLOC freed 4263K, 18% free 20341K/24664K, paused 49ms, total 49ms
 \end{lstlisting}
 
-Another significant performance improvement can be gained by synchronising
+Another significant performance improvement can be gained by synchronizing
 the calculation of the \ac{FFT} to the refresh cycle of the application
 \ac{GUI}. This simple change reduces the number of time the \ac{FFT} algorithm
 has to be executed and releases processing resources for other calculations
@@ -68,14 +68,14 @@ has to be executed and releases processing resources for other calculations
 Unfortunately, it turned out that the Morse demodulation
 algorithm of the previous version of \ac{AnSiAn} was working in the frequency
 domain and relied on continuous \ac{FFT} samples without gaps.
-As result this performance improvement comes at the cost of reimplementing
+As result this performance improvement comes at the cost of re-implementing
 the Morse demodulation algorithm in order to work on time domain samples
 instead.
 
 
 \section{Demodulators}
 
-This section describes the design and implementation process of the developed demodulators. \autoref{sec:demod_design} covers where and how the new \ac{RDS} and \ac{PSK31} demodulators were integrated into the existing architecture and which changes were necessary. Due to performance issues with the old frequency-domain-based Morse demodulator, it had to be rewritten. This process is described in \label{sec:morse_demod}. The implementation of the new \ac{RDS} and \ac{PSK31} demodulators is coverd in Sections \ref{sec:rds} and \ref{sec:psk31} respectively.
+This section describes the design and implementation process of the developed demodulators. \autoref{sec:demod_design} covers where and how the new \ac{RDS} and \ac{PSK31} demodulators were integrated into the existing architecture and which changes were necessary. Due to performance issues with the old frequency-domain-based Morse demodulator, it had to be rewritten. This process is described in \label{sec:morse_demod}. The implementation of the new \ac{RDS} and \ac{PSK31} demodulators is covered in Sections \ref{sec:rds} and \ref{sec:psk31} respectively.
 
 
 \subsection{Design and Structural Changes\label{sec:demod_design}}
@@ -123,7 +123,7 @@ dits and dahs) and are displayed in separate lines.
 
 \subsection{Re-Implementation of Morse Demodulator\label{sec:morse_demod}}
 
-As explained in \autoref{sec:cleanup.mem}, the original version of \ac{AnSiAn} calculated \acp{FFT} excessively often and thus offered bad performance. \ac{AnSiAn}'s original Morse demodulator, which operated in the frequency domain, relied on frequent \ac{FFT} calculations and did not work after the optimizatons described in \autoref{sec:cleanup.mem}. In order to still demodulate Morse with the new efficient architecture, the Morse demodulator needed to be re-written to work in the time domain rather than the computationally expensive frequency domain.
+As explained in \autoref{sec:cleanup.mem}, the original version of \ac{AnSiAn} calculated \acp{FFT} excessively often and thus offered bad performance. \ac{AnSiAn}'s original Morse demodulator, which operated in the frequency domain, relied on frequent \ac{FFT} calculations and did not work after the optimizations described in \autoref{sec:cleanup.mem}. In order to still demodulate Morse with the new efficient architecture, the Morse demodulator needed to be re-written to work in the time domain rather than the computationally expensive frequency domain.
 
 \subsubsection{Requirements}
 
@@ -135,7 +135,7 @@ Aside from demodulating and decoding Morse transmissions, the old demodulator of
   \item Optional \ac{AM} audio demodulation along with Morse demodulation
 \end{itemize}
 
-In automatic mode, the demodulor automatically estimates the high/low threshold and the duration of a dit based on a set of samples, that needs to be collected before the actual demodulation can start. Manual mode requires the user to explicitly specify the dit duration and uses the current squelch as threshold. In semi-automatic mode, the user specifies the dit duration while the threshold is determined automatically.
+In automatic mode, the demodulator automatically estimates the high/low threshold and the duration of a dit based on a set of samples, that needs to be collected before the actual demodulation can start. Manual mode requires the user to explicitly specify the dit duration and uses the current squelch as threshold. In semi-automatic mode, the user specifies the dit duration while the threshold is determined automatically.
 
 With the new demodulator getting its samples from the \texttt{Decimator} rather than the \texttt{FFTCalcThread}, the practice of using the squelch as threshold is no longer applicable, as samples below the squelch level do not get passed to the \texttt{Demodulator}. The new implementation of the Morse demodulator thus only supports ``automatic'' and ``manual'' mode with respect to dit duration. The threshold is always determined automatically.
 
@@ -162,11 +162,11 @@ For envelope detection, $\sqrt{I^{2}+Q^{2}}$ is used, with $I$ and $Q$ being the
 
 The threshold, that determines whether a given sample is a ``low'' or a ``high'' sample (i.e. if it is part of a dit/dah or a pause), is initialized based on the initialization data collected during the COLLECT\_{}SAMPLES step and continuously updated for every processed sample. It is calculated as $bottom + \frac{peak - bottom}{2}$, with $bottom$ being the lowest envelope and $peak$ being the highest envelope seen since the demodulator's initialization.
 
-If automatic mode is enabled, the dit duration is determined by counting streaks of consecutive ``high'' (i.e. bigger than the threshold) samples in the initialization data. The observed streak lengths are then adjusted by adding the number of observed streaks with one sample more or less (i.e. $o_{new}(x) = o(x-1) + o(x)+ o(x+1)$ with $o(x)$ being the number of occurences of a continuous high-streak of $x$ samples). This is done to cope with outliers. The most frequently observed streak length is assumed to be the number of samples per dit. If this number of samples corresponds to less than \SI{7}{\milli\second} of samples, it is assumed that the initialization data was of poor quality and the demodulator reinitializes itself.
+If automatic mode is enabled, the dit duration is determined by counting streaks of consecutive ``high'' (i.e. bigger than the threshold) samples in the initialization data. The observed streak lengths are then adjusted by adding the number of observed streaks with one sample more or less (i.e. $o_{new}(x) = o(x-1) + o(x)+ o(x+1)$ with $o(x)$ being the number of occurrences of a continuous high-streak of $x$ samples). This is done to cope with outliers. The most frequently observed streak length is assumed to be the number of samples per dit. If this number of samples corresponds to less than \SI{7}{\milli\second} of samples, it is assumed that the initialization data was of poor quality and the demodulator reinitializes itself.
 
 In DEMOD state, streaks of continuous high and low values are counted in the currently processed samples packets. The length of a streak and its value (i.e. high or low) are then decoded to find out whether it encodes a dit, dah or a short, medium or long pause. If a medium pause (encodes the end of character symbol) is detected, the previous dits and dahs are passed to the \texttt{Decoder} class, which translates them into a character. The \texttt{Decoder} class was already used by the old demodulator, originally taken from the open-source project Morsecoder and could be recycled for the new demodulator.
 
-To implement automatic re-initialization, the demodulator uses \texttt{ErrorBitSet}s, which are essentially ring buffers for boolean values. Two \texttt{ErrorBitSet}s are used; one for demodulation (i.e. translating streak lengths into dits, dahs and pauses) and one for decoding (i.e. translating dits and dahs into characters). Every entry represents a successful or unsuccessful decoding/demodulation attempt. The size of the \texttt{ErrorBitSet} that tracks demodulation success is 100, the size for the decoding success \texttt{ErrorBitSet} is 30. If the success rate drops below 50\%, the demodulator re-initializes itselt and re-determines the threshold and, if automatic mode is enabled, dit duration.
+To implement automatic re-initialization, the demodulator uses \texttt{ErrorBitSet}s, which are essentially ring buffers for boolean values. Two \texttt{ErrorBitSet}s are used; one for demodulation (i.e. translating streak lengths into dits, dahs and pauses) and one for decoding (i.e. translating dits and dahs into characters). Every entry represents a successful or unsuccessful decoding/demodulation attempt. The size of the \texttt{ErrorBitSet} that tracks demodulation success is 100, the size for the decoding success \texttt{ErrorBitSet} is 30. If the success rate drops below 50\%, the demodulator re-initializes itself and re-determines the threshold and, if automatic mode is enabled, dit duration.
 
 
 \autoref{lst:morse_demod_method} shows an excerpt of the demodulator's core method \texttt{demodulate(SamplePacket input, SamplePacket output)}. The operation of the demodulator, which was described in this section, can be recognized in it.
@@ -248,12 +248,12 @@ it with itself 3 times. The complete FM spectrum can be seen in
 
 After the \ac{RDS} baseband signal has been retrieved from the \ac{FM} signal
 there are multiple ways of demodulating the \ac{BPSK} modulation. A sophisticated
-approach tries to recover the phase synchronised \ac{RDS} carrier from the
+approach tries to recover the phase synchronized \ac{RDS} carrier from the
 signal by using e.g. a form of \ac{PLL} or Costas Loop. The symbols can then
 be extracted by multiplying the carrier with the modulated signal and apply
 a threshold operation to get bits.
 
-A much simpler approach is to analyze the envelope of the signal and dectect
+A much simpler approach is to analyze the envelope of the signal and detect
 bits based on known shapes of ones and zeros in the waveform.
 \autoref{fig:rds_envelope} shows the envelope and the pattern of symbols
 which can be detected.
@@ -294,7 +294,7 @@ Developing a signal processing application on Android has many drawbacks. One
 issue is that it is very hard to debug the actual signal processing components
 because of the lack of proper tools to visualize and analyze the data that is
 being processed. It is also not possible to do rapid prototyping without
-sufficient signal processing libraries available. Therefore the \ac{RDS}
+sufficient signal processing libraries available. Therefore, the \ac{RDS}
 demodulator was first developed in Octave and afterwards ported to Android.
 
 For development and testing it is better to work on recorded samples instead
@@ -484,15 +484,15 @@ is first evaluated in Octave and later ported to the \ac{AnSiAn} application.
 
 \ac{PSK31} in its basic form uses \ac{BPSK} to transmit binary information by
 sending a single side band signal with either a 180 degree phase shift (digital
-'1') or without a phase shift (digital '0'). Additionally a root raised cosine
+'1') or without a phase shift (digital '0'). Additionally, a root raised cosine
 filter is used in order to smooth the phase shift and therefore keep the
 bandwidth narrow.  Each symbol contains information about one bit and is always
 32 ms long.
 
 \autoref{fig:psk31_modulation} shows the modulated \ac{PSK31} signal. As already
 explained in \autoref{sec:rds_modulation_scheme}, the signal may be demodulated
-by using a second order loop (e.g. a costas loop) in order to recover the phase
-information and correct for small frequency variations. However the simple approach
+by using a second order loop (e.g. a Costas loop) in order to recover the phase
+information and correct for small frequency variations. However, the simple approach
 using envelope detection is also possible. The \ac{BPSK} code used for \ac{RDS}
 demodulation can be partly reused and only needs some modifications as \ac{PSK31}
 does not use Manchester Encoding.
@@ -508,7 +508,7 @@ does not use Manchester Encoding.
 \subsubsection{PSK31 coding scheme}
 
 \ac{PSK31} uses a variable length encoding called \emph{Varicode} which assigns
-frequently used characters a shorter code similar to morse. Characters are separated
+frequently used characters a shorter code similar to Morse. Characters are separated
 by two consecutive zeros. \autoref{tab:psk31_varicode} in the appendix lists all
 characters and their varicode encodings.
 
@@ -624,7 +624,7 @@ For the Android implementation the \texttt{BPSK} class is modified to handle bot
 	\item PSK31: BPSK without Manchester Encoding
 \end{itemize}
 
-Additionally the class \texttt{PSK31} is added which is a subclass of \texttt{Demodulation}.
+Additionally, the class \texttt{PSK31} is added which is a subclass of \texttt{Demodulation}.
 It integrates with the existing \texttt{USB} class to provide PSK31 demodulation
 when USB demodulation is active.
 
@@ -655,7 +655,7 @@ as long as it provides IQ data samples and an Android driver is available.
 The \emph{rad1o} is a \ac{SDR} platform with the same design as the
 \emph{HackRF} that was used as badge for the \emph{Chaos Communication Camp}
 2015. Some modifications to the design were made in order to reduce costs and
-therefore minor differences exist compared to a HackRF (e.g. the option to
+therefore, minor differences exist compared to a HackRF (e.g. the option to
 activate the antenna power is missing for the \emph{rad1o}).
 
 The \emph{rad1o} offers the same USB interface as the \emph{HackRF} and can be
@@ -670,7 +670,7 @@ two minor modifications:
 
 Both changes have been applied to the \emph{hackrf\_android} driver. Unfortunately, the
 creators of \ac{AnSiAn} have replaced the driver library with a plain copy of the driver
-source code, which makes it hard to update it to a newer version. Therefore the
+source code, which makes it hard to update it to a newer version. Therefore, the
 driver code was removed from \ac{AnSiAn} and replaced again with the current version
 of the driver library.
 
@@ -682,8 +682,8 @@ The \emph{rad1o} can now be used by selecting the \emph{HackRF} source in \ac{An
 
 The \emph{SDRplay} is a low cost \ac{SDR} with a frequency range between 100 kHz and
 2 GHz. It has a 12-bit \ac{ADC} and therefore suffers less from quantification noise
-than the \emph{HackRF} and the \emph{RTL-SDR} (both having a 8-bit \ac{ADC}).
-Additionally it provides passive \ac{RF} filters on the front end to prevent strong
+than the \emph{HackRF} and the \emph{RTL-SDR} (both having an 8-bit \ac{ADC}).
+Additionally, it provides passive \ac{RF} filters on the front end to prevent strong
 out-of-band noise from distorting the input signal.
 
 Martin Marinov developed an Android driver for the \emph{SDRplay} dongle, which
@@ -736,14 +736,11 @@ be used and might be enabled in future versions of \ac{AnSiAn}.
 
 
 \section{Transmission\label{sec:transmission}}
-<<<<<<< Updated upstream
-=======
 
 RF Analyzer as well as \ac{AnSiAn} both have a receive-only signal processing chain, even though they support \ac{SDR} devices which are capable of transmitting signals, such as the \emph{HackRF}. This section covers the design and (partial) implementation of a transmission chain to make use of supported devices' transmission capabilities.
 
 
 \subsection{Design}
->>>>>>> Stashed changes
 
 The implementation of a complete transmission chain is split into multiple steps
 to go along with the Agile approach (see \autoref{fig:tx_chain}).
@@ -815,8 +812,8 @@ data and writes it to a temporary file which will then be transmitted by the
 
 \subsubsection{Morse Modulator}
 
-The morse modulator takes a string as input payload and produces a baseband
-signal with dits and dahs respectively. The morse encoder from the previous
+The Morse modulator takes a string as input payload and produces a baseband
+signal with dits and dahs respectively. The Morse encoder from the previous
 \ac{AnSiAn} version can be reused to transform the payload text into a
 sequence of dits ('.'), dahs ('-'), breaks ('\textvisiblespace') and word
 boundaries ('/'). Each character in this sequence corresponds to a predefined
@@ -838,7 +835,7 @@ ahead of time and the character translation only consists of a copy operation.
 			\textvisiblespace & two dit lengths of silence \\
 			/ & six dit lengths of silence \\\hline
 		\end{tabular}
-		\caption{Translation from morse elements to IQ samples}
+		\caption{Translation from Morse elements to IQ samples}
 		\label{tab:morse_modulation}
 	\end{center}
 \end{table}
@@ -930,6 +927,6 @@ As the newly implemented transmission and modulation feature described in \autor
 
 By clicking the menu on the bottom right and then ``Set Frequency'', \ac{AnSiAn} enables the user to quickly tune to a desired frequency without having to scroll through the spectrum. In the original version, this dialog also offers the user to optionally set the sampling rate (called bandwidth in the dialog) to an arbitrary value. By default, this option is enabled and the corresponding field is filled with a value that is not the current sampling rate. A user who only wants to jump to another frequency might therefore inadvertently change the sampling rate.
 
-This has serious consequences, as the demodulation chain can currently only process sampling rates of \SI{1}{\mega{}samples\per\second}. For other sampling rates, the \texttt{Decimator} stops working and does not provide the \texttt{Demodulator} with samples any more. The user does not get any visual feedback on this and can only observe that audio and text demodulation stop working for no apparent reason. As patching the decimator to efficiently support other sampling rates would be a major task, it was decided remove the possibility to change the sample rate in order to prevent users from inadvertently breaking demodulation. 
+This has serious consequences, as the demodulation chain can currently only process sampling rates of \SI{1}{\mega{}samples\per\second}. For other sampling rates, the \texttt{Decimator} stops working and does not provide the \texttt{Demodulator} with samples any more. The user does not get any visual feedback on this and can only observe that audio and text demodulation stop working for no apparent reason. As patching the decimator to efficiently support other sampling rates would be a major task, it was decided remove the possibility to change the sample rate in order to prevent users from inadvertently breaking demodulation.
 
 The old and the new frequency selection dialogs can be seen in \autoref{fig:freq_dialog}.
