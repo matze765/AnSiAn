@@ -281,7 +281,7 @@ in block B (see \autoref{fig:rds_group0A}).
 	\label{fig:rds_group0A}
 \end{figure}
 
-\autoref{tab:rds_groups} lists all group types and their descriptions.
+\autoref{tab:rds_groups} (see appendix) lists all group types and their descriptions.
 The \ac{RDS} demodulation in AnSiAn only decodes types 0 and 2 because they contain
 the basic information which is also often displayed on the radio
 receiver.
@@ -297,9 +297,9 @@ sufficient signal processing libraries available. Therefore, the \ac{RDS}
 demodulator was first developed in Octave and afterwards ported to Android.
 
 For development and testing it is better to work on recorded samples instead
-of live captures. This makes tests reproducible and simplify the development
+of live captures. This makes tests reproducible and simplifies the development
 environment. The file was recorded using the record feature of RF Analyzer. It
-can be imported to Octave by using the \texttt{read\_cuchar\_binary()} script
+can be imported in Octave by using the \texttt{read\_cuchar\_binary()} script
 provided by the GNU Radio project. After each step the produced output data
 can be written back to an \emph{IQ} file in order to use it in the Android application.
 This way it is possible to develop each component of the demodulation process
@@ -353,7 +353,7 @@ The demodulation is done in the following steps:
 
 \begin{figure}
 	\centering
-	\includegraphics[width=1\linewidth]{gfx/rds/rds_magnitude_waveform.png}
+	\includegraphics[width=1.1\linewidth]{gfx/rds/rds_magnitude_waveform.png}
 	\caption{RDS waveform after take the absolute values}
 	\label{fig:rds_waveform}
 \end{figure}
@@ -442,10 +442,10 @@ function demod = rds_bpsk_demodulate(signal, fs)
 
 For the Android implementation two classes are added to the AnSiAn codebase:
 \begin{itemize}
-	\item BPSK: This class handles the \ac{BPSK} demodulation and can be
+	\item \texttt{BPSK}: This class handles the \ac{BPSK} demodulation and can be
 		reused by other demodulators using the \ac{BPSK} modulation scheme
 		(e.g. PSK31).
-	\item RDS: This class integrates in the existing FM class for frequency
+	\item \texttt{RDS}: This class integrates in the existing FM class for frequency
 		demodulation. It handles the decoding and processing of \ac{RDS}
 		groups. 
 \end{itemize}
@@ -465,7 +465,7 @@ A screenshot of the application demodulating the \ac{RDS} signal of the
 
 \ac{PSK31} refers to phase shift keying modulation using a baud rate of 31.25
 Hz.  It was developed by Peter Martinez in 1998 to introduce a narrow bandwidth
-digital mode for live chatting. Because of the simple and efficient modulation
+digital mode for live chatting \cite{martinez1998psk31}. Because of the simple and efficient modulation
 and coding scheme (e.g. it does not have an error correction mechanism) it is
 very widespread amongst amateur radio operators.
 
@@ -619,7 +619,7 @@ function demod = psk31_bpsk_demodulate(signal, fs)
 For the Android implementation the \texttt{BPSK} class is modified to handle both
 \ac{BPSK} variations needed in \ac{AnSiAn}:
 \begin{itemize}
-	\item RDS: BPSK with Manchester Encoding
+	\item RDS: BPSK with Manchester and Differential Encoding
 	\item PSK31: BPSK without Manchester Encoding
 \end{itemize}
 
@@ -641,7 +641,7 @@ A screenshot of the application demodulating a \ac{PSK31} signal is shown in
 
 As explained in \autoref{sec:demod_design}, digital demodulators use the EventBus library to pass demodulated text and other information to the user interface. In order to not only display but also persist this data, the class \texttt{Logger} listens to \texttt{DemodInfoEvent}s from the modulators and, if logging is enabled in the preferences by the user, writes them to logfiles.
 
-\texttt{DemodInfoEvent} has an attribute \texttt{position}, which can be either \texttt{TOP} or \texttt{BOTTOM}, depending on whether the contained text is to be displayed on the upper or the lower line of \texttt{DemodulationInfoView}. Accordingly, the \texttt{Logger} maintains one logfile for the upper and the lower line. Every \texttt{DemodInfoEvent} is logged to one of these files depending on their \texttt{position} attribute. The paths of the logfiles can be defined in the Demod preferences.
+\texttt{DemodInfoEvent} has an attribute \texttt{position}, which can be either \texttt{TOP} or \texttt{BOTTOM}, depending on whether the contained text is to be displayed on the upper or the lower line of \texttt{DemodulationInfoView}. Accordingly, the \texttt{Logger} maintains one logfile for the upper and the lower line. Every \texttt{DemodInfoEvent} is logged to one of these files depending on their \texttt{position} attribute. The paths of the logfiles can be defined in the \textsc{Demod} preferences.
 
 
 \section{Support for new SDR Platforms}
@@ -667,7 +667,7 @@ The \emph{rad1o} offers the same USB interface as the \emph{HackRF} and can be
 used with the same driver, which is \emph{hackrf\_android}. The driver only needs
 two minor modifications:
 \begin{enumerate}
-	\item If the driver detects a rad1o, the option to enable the antenna power
+	\item If the driver detects a \emph{rad1o}, the option to enable the antenna power
 		is disabled.
 	\item Because the \emph{rad1o} has a different USB product ID, the driver has
 		to be extended in order to also detect a \emph{rad1o} as valid \emph{HackRF}.
@@ -699,36 +699,11 @@ developed by the same person.
 
 The \emph{SDRplay} driver is started by an Intend with an URL of the format
 \texttt{'iqsrc://\ldots'}. It takes an IP address and TCP port as arguments and
-will open a socket respectively. The host app can the connect to the socket and
+will open a socket respectively. The host app can then connect to the socket and
 will receive the samples via TCP. Control commands such as changing the
 frequency, sample rate or other parameters can be sent through the TCP socket
 to the driver. A list of supported commands can be found on the GitHub page
-of the driver. They are listed in \autoref{tab:sdrplay_cmds}.
-
-
-\begin{table}
-	\begin{center}
-		\begin{tabular}{l c l}
-			Command name & Code & Description \\\hline
-			SET\_FREQ & 0x01 & Change the tuning (center) frequency of the dongle \\
-			SET\_SAMPLE\_RATE & 0x02 & Change the sample rate of the dongle \\
-			SET\_GAIN\_MODE & 0x03 & Change gain mode (auto or manual) \\
-			SET\_GAIN & 0x04 & Change gain value (if gain mode is manual) \\
-			SET\_FREQ\_CORRECTION & 0x05 & Change frequency correction value (in ppm) \\
-			SET\_IF\_TUNER\_GAIN & 0x06 & Change \ac{IF} gain \\
-			SET\_TEST\_MODE & 0x07 & Turn on test mode \\
-			SET\_AGC\_MODE & 0x08 & Activate or deactivate \ac{AGC} \\
-			SET\_DIRECT\_SAMPLING & 0x09 & Activate or deactivate direct sampling mode \\
-			SET\_OFFSET\_TUNING & 0x0a & Activate or deactivate offset tuning \\
-			EXIT & 0x7e & Cause the driver to turn off itself \\
-			GAIN\_BY\_PERCENTAGE & 0x7f & Change gain value as percentage \\
-			ENABLE\_16\_BIT\_SIGNED & 0x80 & Enable 16 bit unsigned sample size (SDRplay only) \\\hline
-		\end{tabular}
-		\caption{Commands for the RTL-SDR / SDRplay driver by Martin Marinov}
-		\label{tab:sdrplay_cmds}
-	\end{center}
-\end{table}
-
+of the driver. They are listed in \autoref{tab:sdrplay_cmds} in the appendix.
 
 
 \subsubsection{Open Issues}
@@ -812,7 +787,7 @@ instantiation time or through a queue (in order to enable real-time transmission
 As mentioned above, the step two implementation will include a dummy transmission
 chain that reads the output of the \texttt{Modulator}, converts it to binary IQ
 data and writes it to a temporary file which will then be transmitted by the
-\texttt{Transmitter} implemented in the previous section.
+\texttt{IQSink} implemented in the previous section.
 
 
 \subsubsection{Morse Modulator}
@@ -873,7 +848,7 @@ the samples based on the current state (phase) of the modulator (see
 
 \section{GUI\label{sec:gui}}
 
-In order to expose the newly implemented features and their parameters to the user, changes to the user interface of \ac{AnSiAn} were necessary. \autoref{sec:prefs} describes the changes made in the preferences menu and \autoref{sec:transmit_tab} covers the \ac{GUI} of the new Transmit Tab. \label{sec:freq_dialog} addresses a change in the frequency selection dialog that was made to avoid unexpected behavior.
+In order to expose the newly implemented features and their parameters to the user, changes to the user interface of \ac{AnSiAn} were necessary. \autoref{sec:prefs} describes the changes made in the preferences menu and \autoref{sec:transmit_tab} covers the \ac{GUI} of the new Transmit Tab. \autoref{sec:freq_dialog} addresses a change in the frequency selection dialog that was made to avoid unexpected behavior.
 
 
 \subsection{Preferences\label{sec:prefs}}
@@ -891,9 +866,9 @@ In order to expose the newly implemented features and their parameters to the us
 \label{fig:demod_prefs}
 \end{figure}
 
-\ac{AnSiAn} features a preference menu with four tabs that can be seen in \autoref{fig:demod_prefs}. In the original \ac{AnSiAn}, one of these tabs is the Morse tab that holds options for Morse demodulation and audio generation. As the new version of \ac{AnSiAn} replaces Morse audio generation with actual modulation and transmit capability and supports \ac{RDS} and \ac{PSK31} as additional digital demodulation schemes, it was decided to refactor the Morse preference tab into a general Demod preference tab while bundling transmission preferences for all available transmission modes in the Transmit Tab on the main screen (see \autoref{sec:transmit_tab}).
+\ac{AnSiAn} features a preference menu with four tabs that can be seen in \autoref{fig:demod_prefs}. In the original \ac{AnSiAn}, one of these tabs is the Morse tab that holds options for Morse demodulation and audio generation. As the new version of \ac{AnSiAn} replaces Morse audio generation with actual modulation and transmit capability and supports \ac{RDS} and \ac{PSK31} as additional digital demodulation schemes, it was decided to refactor the Morse preference tab into a general \textsc{Demod} preference tab while bundling transmission preferences for all available transmission modes in the \textsc{Transmit} Tab on the main screen (see \autoref{sec:transmit_tab}).
 
-As can be seen in \autoref{fig:demod_prefs}, the Demod preference tab holds preferences for various demodulation modes. It also offers a switch to turn on \ac{PSK31} demodulation on using the \{ac{USB} demodulator as well as options to turn on logging of demodulated data and to specify the respective logfiles (both not in the screenshot). 
+As can be seen in \autoref{fig:demod_prefs}, the \textsc{Demod} preference tab holds preferences for various demodulation modes. It also offers a switch to turn on \ac{PSK31} demodulation on using the \ac{USB} demodulator as well as options to turn on logging of demodulated data and to specify the respective logfiles (both not in the screenshot). 
 
 \subsection{Transmit Tab\label{sec:transmit_tab}}
 
