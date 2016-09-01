@@ -26,8 +26,8 @@ import de.tu.darmstadt.seemoo.ansian.model.demodulation.Demodulation.DemoType;
 import de.tu.darmstadt.seemoo.ansian.model.preferences.Preferences;
 import de.tu.darmstadt.seemoo.ansian.model.sources.RtlsdrSource;
 import de.tu.darmstadt.seemoo.ansian.model.sources.SDRplaySource;
+import de.tu.darmstadt.seemoo.ansian.model.transmission.IQSink;
 import de.tu.darmstadt.seemoo.ansian.model.transmission.TransmitChainDummy;
-import de.tu.darmstadt.seemoo.ansian.model.transmission.Transmitter;
 
 /**
  * <h1>AnSiAn - Main Activity</h1>
@@ -80,7 +80,7 @@ public class MainActivity extends AppCompatActivity {
 		new Logger();
 
 		// TODO: move somewhere more sensible
-		new Transmitter();
+		new IQSink();
 		new TransmitChainDummy();
 
 		// Set view for this activity

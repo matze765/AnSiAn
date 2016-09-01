@@ -27,16 +27,16 @@ import de.tu.darmstadt.seemoo.ansian.model.preferences.Preferences;
  * Created by Max on 23.08.2016.
  */
 
-public class Transmitter implements HackrfCallbackInterface, Runnable {
+public class IQSink implements HackrfCallbackInterface, Runnable {
 
-    private static final String LOGTAG = "Transmitter";
+    private static final String LOGTAG = "IQSink";
 
     private boolean stopRequested;
     private String filename;
     private Hackrf hackrf;
     private static final int QUEUE_SIZE = 8000000;
 
-    public Transmitter() {
+    public IQSink() {
         EventBus.getDefault().register(this);
         stopRequested = false;
     }
