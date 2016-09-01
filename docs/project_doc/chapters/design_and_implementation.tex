@@ -16,8 +16,8 @@ The original RF Analyzer application's architecture is based on
 blocking queues that synchronize the various signal processing threads
 and efficiently manage memory buffers. Unfortunately, this
 architecture was partly dropped by the developers of \ac{AnSiAn} when
-changing to a new architecture based on the EventBus library. As a result, memory
-allocation management does not work as efficiently with the current version
+changing to a new architecture that is based on the EventBus library. As a result, memory
+allocation management does not work as efficiently with the original version
 of \ac{AnSiAn}.
 
 Instead of using cycling buffers for inter-thread-communication, \ac{AnSiAn} uses
@@ -38,16 +38,16 @@ before memory optimizations, language=none]
 05-12 17:55:04.420 D/dalvikvm: GC_FOR_ALLOC freed 4454K, 14% free 54759K/62984K, paused 30ms, total 30ms
 \end{lstlisting}
 
-In order to fix this performance issue, the architecture is reverted
+In order to fix this performance issue, the architecture was reverted
 to using blocking queues and cycling buffers in places where large memory buffers are passed
-between threads. EventBus is still used for delivering information
+between threads. EventBus is still used to deliver information
 which is not tied to large buffers. A schema of the new architecture
-is depicted in \autoref{fig:queue_architecture}. 
+is depicted in \autoref{fig:queue_architecture}.
 
 In this architecture, the buffers cycle between the threads. The re-usage
 of buffers helps to reduce the memory allocation and garbage collection
 overhead to a minimum. \autoref{lst:after_mem_optimization} shows the
-logcat output after the architecture changes have been applied. The \ac{GC}
+logcat output after the architectural changes have been applied. The \ac{GC}
 only needs to run every 10 to 20 seconds.
 
 
@@ -59,23 +59,23 @@ after memory optimizations, language=none]
 05-12 17:28:24.520 D/dalvikvm: GC_FOR_ALLOC freed 4263K, 18% free 20341K/24664K, paused 49ms, total 49ms
 \end{lstlisting}
 
-Another significant performance improvement can be gained by synchronizing
+Another significant performance improvement can be achieved by synchronizing
 the calculation of the \ac{FFT} to the refresh cycle of the application
-\ac{GUI}. This simple change reduces the number of time the \ac{FFT} algorithm
+\ac{GUI}. This simple change reduces the number of times the \ac{FFT} algorithm
 has to be executed and releases processing resources for other calculations
-(e.g. in the demodulation path). 
+(e.g. the demodulation path). 
 
 Unfortunately, it turned out that the Morse demodulation
-algorithm of the previous version of \ac{AnSiAn} was working in the frequency
+algorithm of \ac{AnSiAn} was working in the frequency
 domain and relied on continuous \ac{FFT} samples without gaps.
-As result this performance improvement comes at the cost of re-implementing
+As result, this performance improvement comes at the cost of re-implementing
 the Morse demodulation algorithm in order to work on time domain samples
 instead.
 
 
 \section{Demodulation}
 
-This section describes the design and implementation process of the developed demodulation features. \autoref{sec:demod_design} covers where and how the new demodulators and the logging functionality were integrated into the existing architecture and which changes were necessary. Due to performance issues with the old frequency-domain-based Morse demodulator, it had to be rewritten. This process is described in \label{sec:morse_demod}. The implementation of the new \ac{RDS} and \ac{PSK31} demodulators is covered in Sections \ref{sec:rds} and \ref{sec:psk31} respectively. \autoref{sec:logging} addresses the implemented logging functionality for demodulator output.
+This section describes the design and implementation process of the developed demodulation features. \autoref{sec:demod_design} covers where and how the new demodulators and the logging functionality were integrated into the existing architecture and which changes were necessary. Due to performance issues with the old frequency-domain-based Morse demodulator, it had to be re-written. This process is described in \label{sec:morse_demod}. The implementation of the new \ac{RDS} and \ac{PSK31} demodulators is covered in Sections \ref{sec:rds} and \ref{sec:psk31} respectively. \autoref{sec:logging} addresses the implemented logging functionality for demodulator output.
 
 
 \subsection{Design and Structural Changes\label{sec:demod_design}}
@@ -89,7 +89,7 @@ demodulation methods such as \texttt{AM}, \texttt{FM} and \texttt{Morse}.
 \ac{AnSiAn} utilizes the EventBus library in order to pass demodulated Morse text
 to the \ac{GUI}. Demodulated audio data is passed to the
 \texttt{AudioSink} thread by enqueuing it into its input queue.
-This mechanism is explained in more detail in \autoref{sec:cleanup.mem}.
+This mechanism was explained in more detail in \autoref{sec:cleanup.mem}.
 
 
 In order to extend \ac{AnSiAn} with demodulation functionality for \ac{PSK31} and \ac{RDS}, 
@@ -103,16 +103,15 @@ depicted in \autoref{fig:demod_text_eventbus} and explained in the following.
 	\label{fig:demod_text_eventbus}
 \end{figure}
 
-Two new classes \texttt{PSK31} and \texttt{RDS} are integrated into the
-existing demodulation classes for \ac{USB} and \ac{FM}. \ac{PSK31} demodulation
-works on the envelope of the received \ac{USB} signal.  \ac{RDS} transmits
+Two new classes \texttt{PSK31} and \texttt{RDS} are created and instantiated as attributes by the existing demodulation classes for \ac{USB} and \ac{FM}. \ac{PSK31} demodulation
+works on the envelope of the received \ac{USB} signal. \ac{RDS} transmits
 metadata for \ac{FM} radio channels, which is why the \ac{RDS} demodulation
 needs to work on an intermediate result of the wide-band \ac{FM} demodulation
-class. Through a new option in the app settings, it will be possible to enable
+class. Through a new option in the app settings, it is possible to enable
 or disable the demodulation of the embedded digital modes when the
 corresponding analog mode is selected.
 
-Like the existing architecture, the new architecture will use the EventBus
+Like the existing architecture, the new architecture uses the EventBus
 library to pass the demodulated text to the \ac{GUI}. The existing View
 \texttt{MorseReceiveView} is refactored into a universal
 \texttt{De\-mo\-du\-la\-tion\-In\-fo\-View} that displays the text output of any selected 
@@ -139,7 +138,7 @@ Aside from demodulating and decoding Morse transmissions, the old demodulator of
 
 In automatic mode, the demodulator automatically estimates the high/low threshold and the duration of a dit based on a set of samples, that needs to be collected before the actual demodulation can start. Manual mode requires the user to explicitly specify the dit duration and uses the current squelch as threshold. In semi-automatic mode, the user specifies the dit duration while the threshold is determined automatically.
 
-With the new demodulator getting its samples from the \texttt{Decimator} rather than the \texttt{FFTCalcThread}, the practice of using the squelch as threshold is no longer applicable, as samples below the squelch level do not get passed to the \texttt{Demodulator}. The new implementation of the Morse demodulator thus only supports ``automatic'' and ``manual'' mode with respect to dit duration. The threshold is always determined automatically.
+With the new demodulator getting its samples from the \texttt{Decimator} rather than the \texttt{FFTCalcThread}, the practice of using the squelch as threshold is no longer applicable, as samples below the squelch level do not get passed to the \texttt{Demodulator}. The new implementation of the Morse demodulator thus only supports ``automatic'' and ``manual'' mode with respect to dit duration; the threshold is always determined automatically.
 
 
 \subsubsection{Implementation}
@@ -153,25 +152,25 @@ With the new demodulator getting its samples from the \texttt{Decimator} rather 
 
 The re-written Morse demodulator has five states that are displayed in \autoref{fig:morse_states} and explained in the following.
 
-\paragraph{INIT} In this state, the demodulator initializes its internal state. Samples received while the demodulator is in this state, are discarded and not demodulated (in case \ac{AM} demodulation is activated, audio still gets demodulated).
-\paragraph{COLLECT\_{}SAMPLES} The demodulator calculates and stores the envelope of all received samples in a buffer. In case \ac{AM} demodulation is activated, audio gets demodulated.
-\paragraph{INIT\_{}STATS} The collected samples from the previous state are used to initialize the threshold and, optionally, the dit duration. Samples received while the demodulator is in this state, are discarded and not demodulated (in case \ac{AM} demodulation is activated, audio still gets demodulated).
+\paragraph{INIT} In this state, the demodulator initializes its internal state. Samples received while in this state are discarded and not demodulated. In case \ac{AM} demodulation is activated, audio still is demodulated.
+\paragraph{COLLECT\_{}SAMPLES} The demodulator calculates and stores the envelope of all received samples in a buffer. In case \ac{AM} demodulation is activated, audio is demodulated.
+\paragraph{INIT\_{}STATS} The collected samples from the previous state are used to initialize the threshold and, optionally, the dit duration. Samples received while in this state are discarded and not demodulated. In case \ac{AM} demodulation is activated, audio still is demodulated.
 \paragraph{DEMOD} Received samples are demodulated on-the-fly. If demodulation or decoding error rates are beyond a threshold, the demodulator re-initializes.
 \paragraph{STOPPED} The demodulator should not be running; all samples are discarded.
 \paragraph{}
 
-For envelope detection, $\sqrt{I^{2}+Q^{2}}$ is used, with $I$ and $Q$ being the inphase and quadrature components of the sample, respectively. This is computationally more expensive than using the existing \ac{AM} demodulator to detect the envelope, but produces more exact results and comes without the unwanted automatic gain control of the \ac{AM} demodulator. For efficient memory management, the envelope of the currently processed sample packet is not always stored in a new array. Instead, a buffer is allocated once and overwritten with the current envelope each time a new sample packet is processed. If \ac{AM} demodulation is enabled, the detected envelope is copied from the buffer to the output-packet (which is passed to the \texttt{AudioSink}).
+For envelope detection, $\sqrt{I^{2}+Q^{2}}$ is used, with $I$ and $Q$ being the inphase and quadrature components of the sample, respectively. This is computationally more expensive than using the existing \ac{AM} demodulator to detect the envelope, but produces more exact results and comes without the unwanted automatic gain control of the \ac{AM} demodulator. For efficient memory management, the envelope of the currently processed sample packet is not always stored in a new array. Instead, a buffer is allocated once and overwritten with the current envelope each time a new sample packet is processed. If \ac{AM} demodulation is enabled, the envelope is copied from the buffer to the demodulator output, which is passed to the \texttt{AudioSink}.
 
-The threshold, that determines whether a given sample is a ``low'' or a ``high'' sample (i.e. if it is part of a dit/dah or a pause), is initialized based on the initialization data collected during the COLLECT\_{}SAMPLES step and continuously updated for every processed sample. It is calculated as $bottom + \frac{peak - bottom}{2}$, with $bottom$ being the lowest envelope and $peak$ being the highest envelope seen since the demodulator's initialization.
+The threshold, that determines whether a given sample is a ``low'' or a ``high'' sample (i.e. if it is part of a dit/dah or a pause), is initialized based on the initialization data collected during the COLLECT\_{}SAMPLES step and continuously updated for every processed sample. It is calculated as $bottom + \frac{peak - bottom}{2}$, with $bottom$ being the lowest and $peak$ being the highest amplitude seen since the demodulator's initialization.
 
 If automatic mode is enabled, the dit duration is determined by counting streaks of consecutive ``high'' (i.e. bigger than the threshold) samples in the initialization data. The observed streak lengths are then adjusted by adding the number of observed streaks with one sample more or less (i.e. $o_{new}(x) = o(x-1) + o(x)+ o(x+1)$ with $o(x)$ being the number of occurrences of a continuous high-streak of $x$ samples). This is done to cope with outliers. The most frequently observed streak length is assumed to be the number of samples per dit. If this number of samples corresponds to less than \SI{7}{\milli\second} of samples, it is assumed that the initialization data was of poor quality and the demodulator reinitializes itself.
 
-In DEMOD state, streaks of continuous high and low values are counted in the currently processed samples packets. The length of a streak and its value (i.e. high or low) are then decoded to find out whether it encodes a dit, dah or a short, medium or long pause. If a medium pause (encodes the end of character symbol) is detected, the previous dits and dahs are passed to the \texttt{Decoder} class, which translates them into a character. The \texttt{Decoder} class was already used by the old demodulator, originally taken from the open-source project Morsecoder and could be recycled for the new demodulator.
+In DEMOD state, streaks of continuous high and low values in the currently processed samples packet are counted. The length of a streak and its value (i.e. high or low) are then decoded to find out whether it encodes a dit, dah or a short, medium or long pause. If a medium pause (encodes the end of character symbol) is detected, the previous dits and dahs are passed to the \texttt{Decoder} class, which translates them into a character. The \texttt{Decoder} class was already used by the old demodulator. It was originally taken from the open-source project Morsecoder and recycled for the new Morse demodulator.
 
-To implement automatic re-initialization, the demodulator uses \texttt{ErrorBitSet}s, which are essentially ring buffers for boolean values. Two \texttt{ErrorBitSet}s are used; one for demodulation (i.e. translating streak lengths into dits, dahs and pauses) and one for decoding (i.e. translating dits and dahs into characters). Every entry represents a successful or unsuccessful decoding/demodulation attempt. The size of the \texttt{ErrorBitSet} that tracks demodulation success is 100, the size for the decoding success \texttt{ErrorBitSet} is 30. If the success rate drops below 50\%, the demodulator re-initializes itself and re-determines the threshold and, if automatic mode is enabled, dit duration.
+To implement automatic re-initialization, the demodulator uses \texttt{Er\-ror\-Bit\-Set}s, which are essentially ring buffers for boolean values. Two \texttt{Er\-ror\-Bit\-Set}s are used; one for demodulation (i.e. translating streak lengths into dits, dahs and pauses) and one for decoding (i.e. translating dits and dahs into characters). Every entry represents a successful or unsuccessful decoding/demodulation attempt. The size of the \texttt{Er\-ror\-Bit\-Set} that tracks demodulation success is 100, the size for the decoding success \texttt{Er\-ror\-Bit\-Set} is 30. If the success rate drops below 50\%, the demodulator re-initializes itself and thus re-determines the threshold and, if automatic mode is enabled, dit duration.
 
 
-\autoref{lst:morse_demod_method} shows an excerpt of the demodulator's core method \texttt{demodulate(SamplePacket input, SamplePacket output)}. The operation of the demodulator, which was described in this section, can be recognized in it.
+\autoref{lst:morse_demod_method} shows an excerpt of the demodulator's core method \texttt{de\-mo\-du\-late()}. The operation of the demodulator, as described in this section, can be recognized in it.
 
 \begin{lstlisting}[label=lst:morse_demod_method, caption=The demodulate method of the new Morse demodulator (excerpt), language=java]
 switch (this.state) {
