@@ -885,7 +885,7 @@ As can be seen in \autoref{fig:demod_prefs}, the \textsc{Demod} preference tab h
 \label{fig:transmit_tab}
 \end{figure}
 
-The original \ac{AnSiAn} had a \textsc{Morse} tab that offered information about the state of the Morse demodulator, the possibility to manually re-initialize the demodulator and enabled the user to generate and play Morse audio from text. It can be seen in \label{fig:transmit_tab}.
+The original \ac{AnSiAn} had a \textsc{Morse} tab that offered information about the state of the Morse demodulator, the possibility to manually re-initialize the demodulator and enabled the user to generate and play Morse audio from text. It can be seen in \autoref{fig:transmit_tab}.
 
 As the newly implemented transmission and modulation feature described in \autoref{sec:transmission} needed a graphical interface, it was decided to refactor the old \textsc{Morse} tab into a \textsc{Transmit} tab that gives the user access to the transmission features. It can be seen in \autoref{fig:transmit_tab} and provides options for the HackRF's features, such as amplification and \ac{VGA} gain. The spinner on the top lets the user select a transmit mode. Available modes are Raw IQ File, Morse and \ac{PSK31}. Fields are hidden, shown or disabled based on the selected mode, i.e. the Morse-specific options for dit duration and Morse frequency are hidden on selecting \ac{PSK31}.
 
