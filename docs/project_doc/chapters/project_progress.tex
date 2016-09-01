@@ -1,10 +1,67 @@
 \chapter{Project Progress\label{ch:project_progress}}
 
+This chapter documents the progress of the project throughout the three
+sprints (alpha, beta and final version). Each sprint had a prepended
+planning phase in which the sprint targets were discussed and potentially
+adjusted. This procedure goes along well with the Agile Manifesto which
+encourages the design of a complex system in small incremental parts.
+
+The detailed process, as well as the planned targets and actual
+results for each sprint are mentioned in the sections below.
 
 \section{Sprint 1: Alpha Version}
+
+The planned features for the first sprint were:
+\begin{itemize}
+	\item RDS demodulation
+	\item PSK31 demodulation
+	\item Logging the output of digital demodulators (Morse, RDS and PSK31)
+\end{itemize}
+
+Unfortunately, there were many unforseen task that had to be treated
+before the new features could actually be implemented. These are:
+\begin{itemize}
+	\item Android Studio migration
+	\item Memory management optimizations
+	\item Refactoring tasks on the Morse \ac{GUI}
+	\item Bugfix: Broken scanner mode with \emph{HackRF}
+\end{itemize}
+
+Therefore the PSK31 demodulation mode was delayed to sprint two. The
+logging feature was shifted to the last sprint when both RDS and
+PSK31 are finished.
 
 
 \section{Sprint 2: Beta Version}
 
+Because of the exam phase the feature set for sprint two was conscously
+kept small and the transmission related features were pushed to sprint
+three. The features planned for the second sprint were:
+\begin{itemize}
+	\item RDS demodulation optimizations
+	\item PSK31 demodulation
+	\item Morse demodulation (refactoring)
+	\item SDPplay support
+\end{itemize}
+
+Additionally to the planned features a bugfix was included to fix the
+broken recording feature of \ac{AnSiAn}, which help in developing the
+PSK31 demodulation algorithm.
 
 \section{Sprint 3: Final Version}
+
+The final sprint included the remaining mandatory features:
+\begin{itemize}
+	\item Rad1o support
+	\item Logging the output of digital demodulators (Morse, RDS and PSK31)
+	\item Transmission
+		\begin{itemize}
+			\item Raw IQ file
+			\item Morse transmission
+		\end{itemize}
+\end{itemize}
+
+Also many \ac{GUI} fixes and cleanups were included into the final version
+as well as an additional PSK31 transmission feature and a finalized
+Morse demodulation algorithm.
+
