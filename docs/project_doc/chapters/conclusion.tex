@@ -1,2 +1,25 @@
 \chapter{Conclusion\label{ch:conclusion}}
 
+\ac{AnSiAn} as fork of RF Analyzer has made huge structural changes to the
+application architecture in order to implement a clean \ac{MVC} pattern.
+Although this has improved the code quality and maintainability it also
+introduced issues as described in \autoref{sec:cleanup.mem}. These issues and
+their impact on other parts of the app (see \autoref{sec:morse_demod}) had to
+be addressed before implementing the new features listed in
+\autoref{sec:features}. There were also additional features such as support for
+the SDRplay hardware or PSK31 transmission, that were added after the initial
+feature list was created and therefore influenced the time schedule.
+
+Nevertheless, all mandatory features apart from some minor exceptions
+were successfully implemented. This includes new digital demodulation
+modes (PSK31 and RDS), logging of demodulator outputs, support for the
+rad1o badge and transmission functionality along with some basic transmission
+modes (Morse and PSK31) as well as plain IQ file replay. Not implemented
+was the \ac{FM}-modulated transmission of audio files and the optional features:
+Walky-Talky-Mode and packet radio demodulation.
+
+Some open tasks and improvements remain to be done in future work on the
+application. These include the implementation of the complete transmission
+chain as outlined in \autoref{sec:transmission}, additional modulation modes
+and improvements on the \ac{BPSK} demodulation algorithm by switching to
+a \ac{PLL}-based approach.
