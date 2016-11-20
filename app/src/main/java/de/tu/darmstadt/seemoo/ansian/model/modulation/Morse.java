@@ -28,6 +28,7 @@ public class Morse extends Modulation {
         this.sampleRate = samplerate;
         Encoder morseEncoder = new Encoder();
         String morseEncoded = "/" + morseEncoder.encode(payload) + "/";
+        //String morseEncoded = "//./";
         this.morseCode = morseEncoded.toCharArray();
         this.currentSymbolIndex = 0;
         updateValues();
@@ -38,6 +39,7 @@ public class Morse extends Modulation {
     public SamplePacket getNextSamplePacket() {
         if (currentSymbolIndex >= morseCode.length)
             return null;
+
         switch (morseCode[currentSymbolIndex]) {
             case '.':
                 insertSilenceAndSine(1, 1);
@@ -75,7 +77,6 @@ public class Morse extends Modulation {
 
     private void updateValues() {
         this.samplesPerDit = (int) (1200f / wpm * sampleRate / 1000);
-        this.currentSymbol = new SamplePacket(6 * samplesPerDit);
         this.sine = new float[3 * samplesPerDit];
         this.cosine = new float[3 * samplesPerDit];
         long frequency = Preferences.MISC_PREFERENCE.getMorse_frequency();
@@ -87,6 +88,7 @@ public class Morse extends Modulation {
     }
 
     private void insertSilenceAndSine(int durationInDitsSilence, int durationInDitsSine) {
+        currentSymbol = new SamplePacket((durationInDitsSilence + durationInDitsSine) * samplesPerDit);
         float[] re = currentSymbol.getRe();
         float[] im = currentSymbol.getIm();
         Arrays.fill(re, 0, durationInDitsSilence * samplesPerDit, 0f);

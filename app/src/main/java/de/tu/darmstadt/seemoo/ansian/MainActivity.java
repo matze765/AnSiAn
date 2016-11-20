@@ -15,6 +15,7 @@ import de.greenrobot.event.Subscribe;
 import de.tu.darmstadt.seemoo.ansian.control.DataHandler;
 import de.tu.darmstadt.seemoo.ansian.control.SourceControl;
 import de.tu.darmstadt.seemoo.ansian.control.StateHandler;
+import de.tu.darmstadt.seemoo.ansian.control.TxDataHandler;
 import de.tu.darmstadt.seemoo.ansian.control.events.DemodulationEvent;
 import de.tu.darmstadt.seemoo.ansian.gui.misc.AnsianNotification;
 import de.tu.darmstadt.seemoo.ansian.gui.misc.MyToast;
@@ -26,8 +27,7 @@ import de.tu.darmstadt.seemoo.ansian.model.demodulation.Demodulation.DemoType;
 import de.tu.darmstadt.seemoo.ansian.model.preferences.Preferences;
 import de.tu.darmstadt.seemoo.ansian.model.sources.RtlsdrSource;
 import de.tu.darmstadt.seemoo.ansian.model.sources.SDRplaySource;
-import de.tu.darmstadt.seemoo.ansian.model.transmission.IQSink;
-import de.tu.darmstadt.seemoo.ansian.model.transmission.TransmitChainDummy;
+import de.tu.darmstadt.seemoo.ansian.model.transmission.TransmissionChain;
 
 /**
  * <h1>AnSiAn - Main Activity</h1>
@@ -80,8 +80,7 @@ public class MainActivity extends AppCompatActivity {
 		new Logger();
 
 		// TODO: move somewhere more sensible
-		new IQSink();
-		new TransmitChainDummy();
+		new TransmissionChain();
 
 		// Set view for this activity
 		setContentView(R.layout.activity_main);

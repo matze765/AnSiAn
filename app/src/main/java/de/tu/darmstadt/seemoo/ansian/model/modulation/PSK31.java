@@ -28,6 +28,7 @@ public class PSK31 extends Modulation {
 
     @Override
     public SamplePacket getNextSamplePacket() {
+        this.currentSymbol = new SamplePacket(samplesPerSymbol);
         if(currentSymbolIndex >= bits.length)
             return null;
         float[] re = currentSymbol.getRe();
@@ -56,7 +57,6 @@ public class PSK31 extends Modulation {
 
     private void updateValues() {
         this.samplesPerSymbol = (int) (sampleRate / 31.25f);
-        this.currentSymbol = new SamplePacket(samplesPerSymbol);
         this.cosine = new float[samplesPerSymbol];
         this.cosineNegative = new float[samplesPerSymbol];
         for(int i = 0; i < cosine.length; i++) {

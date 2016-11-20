@@ -1,5 +1,7 @@
 package de.tu.darmstadt.seemoo.ansian.tools;
 
+import android.util.Log;
+
 import de.tu.darmstadt.seemoo.ansian.model.SamplePacket;
 
 /**
@@ -107,7 +109,22 @@ public class Signed8BitIQConverter extends IQConverter {
 			buffer[2*i] =   (byte) (re[i] * 128);
 			buffer[2*i+1] = (byte) (im[i] * 128);
 			count++;
-			if (count >= buffer.length)
+			if (count*2 >= buffer.length)
+				break;
+		}
+		return count*2;
+	}
+
+	public int fillSamplePacketIntoByteBuffer(SamplePacket samplePacket, byte[] buffer, int offset) {
+		float[] re = samplePacket.getRe();
+		float[] im = samplePacket.getIm();
+		int count = 0;
+		for (int i = offset; i < samplePacket.size(); i++) {
+
+			buffer[2*(i-offset)] =   (byte) (re[i] * 128);
+			buffer[2*(i-offset)+1] = (byte) (im[i] * 128);
+			count++;
+			if (count*2 >= buffer.length)
 				break;
 		}
 		return count*2;
