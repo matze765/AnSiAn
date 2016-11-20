@@ -129,7 +129,6 @@ public class IQConverter implements Runnable {
 
                     // looping through the packet as long as it can fill an entire buffer
                     while(currentOffset + (bufferSize/2) <= packetSize){
-                        Log.d(LOGTAG, "currentOffset="+currentOffset);
                         byte[] buffer = this.iqsink.getBufferFromBufferPool();
                         converter.fillSamplePacketIntoByteBuffer(packet, buffer, currentOffset);
                         target.put(buffer);
