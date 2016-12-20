@@ -1,0 +1,70 @@
+% !TeX spellcheck = en_US
+
+\chapter{Project Progress}
+
+At the very beginning of this project a detailed project plan has been defined. We divided each feature into a list of subsequent tasks and estimated the work required to complete them. 
+
+This chapter reviews the progress throughout the project. At the each release we analyze how much time has been spent on the single tasks and if our initial planning needs to be adapted.
+
+
+\section{Alpha Release: 22.12.2016}
+
+The goal was to implement Feature 1 (Transmission Chain) and Feature 2 (RDS Transmission). This goal has been achieved. Additionally we started to document the implementation, which was initially planned to be done at the end of the project. 
+
+\begin{table}
+\centering
+\caption{Expected and Actual Workload for Features in Alpha Release}
+\label{tab:alpha:features}
+\begin{tabular}{ l | c | c }
+	 & expected  & actual \\ \hline
+	Transmission Chain & 50h & 24h \\  \hline
+	RDS Transmission & 35h & 55h \\ \hline
+	Documentation & 0h & 7h \\ \hline \hline
+	Total & 85h & 86h 
+\end{tabular}
+\end{table}
+
+Table~\ref{tab:alpha:features} shows the total workloads that were required to implement the features. We can see that we overestimated the transmission chain feature and underestimated the RDS feature. In total the required time is roughly as expected. 
+
+\begin{table}
+	\centering
+	\caption{Expected and Actual Workload for Feature 1: Transmission Chain}
+	\label{tab:alpha:feature1}
+	\begin{tabular}{ l | c | c }
+		& expected  & actual \\ \hline
+		Task 1: Investigation of Existing Code & 5h & 3h \\  \hline
+		Task 2: Rewrite Modulator  & 10h & 9h \\ \hline
+		Task 3: Implementation Interpolator & 10h & 0h \\ \hline
+		Task 4: Refactor Existing Code and Finalize & 5h& 2h  \\ \hline
+		Task 5: Integration & 10h & 4h  \\ \hline
+		Task 6: Regression Testing & 10h & 6h  \\ \hline \hline 
+		Total & 50h & 24h 
+	\end{tabular}
+\end{table}
+
+Table~\ref{tab:alpha:feature1} lists the single tasks for Feature 1. We decided to leave out the Interpolator at first (see Section~\ref{sec:impl:feature1}). All other tasks were much easier as expected. Even the Integration and Testing with the already existing transmission modes went very well. 
+	
+	\begin{table}
+		\centering
+		\caption{Expected and Actual Workload for Feature 2: RDS Transmission}				\label{tab:alpha:feature2}
+		\begin{tabular}{ l | c | c }
+			& expected  & actual \\ \hline
+			Task 7: Investigation of Existing Code&  5h & 5h \\ \hline
+			Task 8: Implementation in MATLAB & 5h & 6h  \\ \hline
+			Task 9: Portation to Java & 15h & 17h  \\ \hline
+			Task 10: Testing and Bug Fixing & 10h & 26h \\ \hline \hline
+			Total & 35h & 55h
+		\end{tabular}
+	\end{table}
+	
+	Table~\ref{tab:alpha:feature2} evaluates the required time for the tasks in Feature 2. Tasks 7, 8 and 9 were nearly completed within the expected time, while the testing and debugging took much longer than expected. We highly underestimated the complexity of finding bugs in signal processing code on Android. Since we are dependent on the HackRF hardware and driver, most of the testing needs to be done on the actual smartphone. This means that it requires a lot of manual work - although we tried to implement some automated testing (see \ref{sec:impl:feature2}). 
+	
+	\begin{figure}
+		\centering
+		\includegraphics[width=1\linewidth]{gfx/Agilefant_Alpha.jpg}
+		\caption{Workload Distribution for Alpha Release (04.11.2016-22.12.2016)}
+		\label{fig:agilefant_alpha}
+	\end{figure}
+	
+	Figure~\ref{fig:agilefant_alpha} gives the distribution of the workload as exported from our tracking tool Agilefant. The workload was not well distributed at the beginning, mainly focused on single weekends with long breaks in between. During the last weeks before the deadline this became slightly more distributed. 
+
