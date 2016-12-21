@@ -66,83 +66,25 @@ public class RDS extends Modulation {
 
         this.sampleRate = sampleRate;
 
-        /*
-        // load rds signal from file
-        String extDira = Environment.getExternalStorageDirectory().getAbsolutePath();
-        File filea = new File(extDira + "/AnSiAn/matlab_rdslabs_rdssignal.bin");
-
-        try {
-            BufferedInputStream bis = new BufferedInputStream(new FileInputStream(filea));
-            byte[] buffer = new byte[(int) filea.length()];
-            bis.read(buffer, 0, buffer.length);
-            this.preCalculatedPacket = new float[buffer.length];
-
-            for(int i=0;i<preCalculatedPacket.length;i++){
-                preCalculatedPacket[i] = ((float) buffer[i])/128.0f;
-            }
-
-        }catch(IOException e){
-            e.printStackTrace();
-        } */
-
-        //0, 0, 1, 0, 0, 0, 1, 1, 0 ,1,0,1,0,0,1,1
-        //0, 1, 0, 0, 0, 1, 0, 1 01000101
-        //01001101 01001111
-        //01001111 00100011
-
-
-
-
-
-
-
         // generate groups
-        byte[] groups =
-                        {0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 1, 0, 1, 0, 1, 0,
-                        0, 0, 0, 0, 1, 0, 0, 1, 0, 1, 0, 0, 1, 0, 0, 0,
-                        0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 1, 0, 1, 0, 1, 0,
-                         0, 0, 1, 0, 0, 0, 1, 1, 0, 1, 0, 1, 0, 0, 1, 1, //#S
-                        //   0, 1, 0, 0, 1, 1, 0, 1, 0, 1, 0, 0, 0, 0, 0, 1, // MA
+        byte[] groups = this.createBitsFromStationName(stationName);
 
-                        0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 1, 0, 1, 0, 1, 0,
-                        0, 0, 0, 0, 1, 0, 0, 1, 0, 1, 0, 0, 1, 0, 0, 1,
-                        0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 1, 0, 1, 0, 1, 0,
-                        0, 1, 0, 0, 0, 1, 0, 1, 0, 1, 0, 0, 0, 1, 0, 1, // EE
-                         // 0, 1, 0, 1, 0, 1, 0, 0, 0, 1, 0, 1, 1, 0, 1, 0, //TZ
+        Log.d(LOGTAG, "groups="+Arrays.toString(groups));
 
-                        0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 1, 0, 1, 0, 1, 0,
-                        0, 0, 0, 0, 1, 0, 0, 1, 0, 1, 0, 0, 1, 0, 1, 0,
-                        0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 1, 0, 1, 0, 1, 0,
-                        0, 1, 0, 0, 1, 1, 0, 1, 0, 1, 0, 0, 1, 1, 1, 1,// MO
-                        //  0, 1, 0, 0, 0, 1, 0, 1, 0, 0, 1, 1, 0, 0, 0, 1, //E1
-
-                        0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 1, 0, 1, 0, 1, 0,
-                        0, 0, 0, 0, 1, 0, 0, 1, 0, 1, 0, 0, 1, 0, 1, 1,
-                        0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 1, 0, 1, 0, 1, 0,
-                        0, 1, 0, 0, 1, 1, 1, 1, 0, 0, 1, 0, 0, 0, 1, 1  //O#
-                         // 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 1
-
-                        //0, 0, 1, 0, 0, 0, 0, 1 //8!
-
-                };
 
         // calculate check words
         byte[] groupWithCheckwords = this.calculateCheckwords(groups);
-        Log.d(LOGTAG, Arrays.toString(groupWithCheckwords));
 
-        groupWithCheckwords = this.repeat(groupWithCheckwords, 10);
+        groupWithCheckwords = this.repeat(groupWithCheckwords, 4);
+
 
         // do differential encoding
         byte[] differentialEncoded = this.calculateDifferentialEncoding(groupWithCheckwords);
-        Log.d(LOGTAG, Arrays.toString(differentialEncoded));
+
 
         // do manchester encoding and upsample
-        float[] manchesterEncoded = this.calculateManchesterEncodingAndUpsampling(differentialEncoded);
 
-        //Log.d(LOGTAG,Arrays.toString(manchesterEncoded.getRe()));
-        preCalculatedPacket = manchesterEncoded;
-
-
+        preCalculatedPacket = this.calculateManchesterEncodingAndUpsampling(differentialEncoded);
 
         SamplePacket packetManchester = new SamplePacket(preCalculatedPacket.length);
         packetManchester.setSize(preCalculatedPacket.length);
@@ -211,6 +153,7 @@ public class RDS extends Modulation {
             }
         }
     }
+
 
 
     /**
@@ -298,6 +241,89 @@ public class RDS extends Modulation {
         return resultPacket;
     }
 
+    private byte[] createBitsFromStationName(String stationName){
+        if(stationName.length() > 8){
+            stationName = stationName.substring(0, 9);
+        }
+
+        while(stationName.length() < 8){
+            stationName = stationName.concat(" ");
+        }
+
+
+        // chose a random program identifier
+        char PI = (char) (Math.random()*255);
+
+
+        char[] bytes = new char[32];
+
+        // GROUP 1
+        bytes[0] = 0x10;
+        bytes[1] = PI;
+
+        bytes[2] = 0x9;
+        bytes[3] = 0x48;
+
+        bytes[4] = 0x10;
+        bytes[5] = PI;
+
+        bytes[6] = stationName.charAt(0);
+        bytes[7] = stationName.charAt(1);
+
+        // GROUP 2
+        bytes[8] = 0x10;
+        bytes[9] = PI;
+
+        bytes[10] = 0x9;
+        bytes[11] = 0x49;
+
+        bytes[12] = 0x10;
+        bytes[13] = PI;
+
+        bytes[14] = stationName.charAt(2);
+        bytes[15] = stationName.charAt(3);
+
+        // GROUP 3
+        bytes[16] = 0x10;
+        bytes[17] = PI;
+
+        bytes[18] = 0x9;
+        bytes[19] = 0x4a;
+
+        bytes[20] = 0x10;
+        bytes[21] = PI;
+
+        bytes[22] =  stationName.charAt(4);
+        bytes[23] =  stationName.charAt(5);
+
+        // GROUP 4
+
+        bytes[24] = 0x10;
+        bytes[25] = PI;
+
+        bytes[26] = 0x9;
+        bytes[27] = 0x4b;
+
+        bytes[28] = 0x10;
+        bytes[29] = PI;
+
+        bytes[30] = stationName.charAt(6);
+        bytes[31] =  stationName.charAt(7);
+
+
+        // convert to bits
+
+        byte[] bits = new byte[bytes.length*8];
+        for(int i=0;i<bytes.length;i++){
+            char c = 128;
+            for(int j=0;j<8;j++){
+                bits[i*8+j] = (byte) ((bytes[i]&c)>>(7  -j));
+                c >>= 1;
+            }
+        }
+        return bits;
+    }
+
     /**
      * Repeats an arbitrary byte array.
      *
@@ -378,7 +404,7 @@ public class RDS extends Modulation {
             byte[] checksum = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
             for (int i = 0; i < checksum.length; i++) {
                 for (int j = 0; j < G.length; j++)
-                    checksum[i] += (byte) (bits[blockIdx + j] * G[j][i]);
+                    checksum[i] += (byte) (bits[blockIdx*16 + j] * G[j][i]);
             }
 
             // add offset word
