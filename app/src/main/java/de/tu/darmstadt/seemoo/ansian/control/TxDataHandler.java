@@ -18,7 +18,7 @@ import de.tu.darmstadt.seemoo.ansian.model.SamplePacket;
  */
 
 public class TxDataHandler {
-    private static final int TRANSMIT_PACKET_QUEUE_SIZE = 20;
+    private static final int TRANSMIT_PACKET_QUEUE_SIZE = 5;
     private static final int TRANSMIT_IQ_QUEUE_SIZE = 200;
     private static TxDataHandler instance;
 

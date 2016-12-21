@@ -2,9 +2,13 @@ package de.tu.darmstadt.seemoo.ansian;
 
 import java.io.File;
 
+import android.Manifest;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.media.AudioManager;
 import android.os.Bundle;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.Menu;
@@ -123,6 +127,12 @@ public class MainActivity extends AppCompatActivity {
 
 		// Notification
 		notification = new AnsianNotification(this);
+		// TODO: move that to a better location. only execute when mic is needed
+		Log.d(LOGTAG, "permission_on_micro="+ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO));
+		if(ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO)!= PackageManager.PERMISSION_GRANTED){
+
+			ActivityCompat.requestPermissions(this,new String[]{Manifest.permission.RECORD_AUDIO},0);
+		}
 	}
 
 	@Override

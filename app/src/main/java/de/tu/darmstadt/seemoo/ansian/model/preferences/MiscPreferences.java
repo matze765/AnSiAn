@@ -44,6 +44,7 @@ public class MiscPreferences extends MySharedPreferences {
     private int recordingStoppAfterUnit;
     private int recordingSampleRate;
 
+
     private de.tu.darmstadt.seemoo.ansian.model.demodulation.Demodulation.DemoType demodulation;
     private SourceType sourceType;
 
@@ -74,6 +75,9 @@ public class MiscPreferences extends MySharedPreferences {
     // morse transmission
     private int morse_wpm;
     private int morse_frequency;
+
+    //rds
+    private int rds_audio_source;
 
     /**
      * Will check if any preference conflicts with the current state of the app
@@ -139,6 +143,10 @@ public class MiscPreferences extends MySharedPreferences {
         morse_wpm = getInt("morse_wpm", 6);
         morse_frequency = getInt("morse_frequency", 1000);
 
+        // rds transmission
+        rds_audio_source = getInt("rds_audio_source",0);
+
+
     }
 
     public void savePreference() {
@@ -202,6 +210,10 @@ public class MiscPreferences extends MySharedPreferences {
         // morse transmission
         editor.putInt("morse_wpm", morse_wpm);
         editor.putInt("morse_frequency", morse_frequency);
+
+
+        // rds
+        editor.putInt("rds_audio_source", rds_audio_source);
 
         Log.d(LOGTAG, "Preferences saved: " + editor.commit());
     }
@@ -570,5 +582,13 @@ public class MiscPreferences extends MySharedPreferences {
 
     public void setMorse_wpm(int morse_wpm) {
         this.morse_wpm = morse_wpm;
+    }
+
+    public int getRds_audio_source() {
+        return rds_audio_source;
+    }
+
+    public void setRds_audio_source(int rds_audio_source) {
+        this.rds_audio_source = rds_audio_source;
     }
 }

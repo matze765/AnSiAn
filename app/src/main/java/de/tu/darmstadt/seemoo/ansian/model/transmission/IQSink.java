@@ -37,12 +37,6 @@ public class IQSink implements Runnable {
     private Hackrf hackrf = null;
     private BlockingQueue<byte[]> hackRFSink = null;
 
-    /**
-     * @param hackrf HackRF instance that is ready for transmission
-     */
-    public IQSink(Hackrf hackrf) {
-        this.hackrf = hackrf;
-    }
 
     /**
      * Sets the required parameters of the HackRF like sampleRate, frequency, gain, etc.
@@ -133,4 +127,9 @@ public class IQSink implements Runnable {
     public int getPacketSize() {
         return this.hackrf.getPacketSize();
     }
+
+    public void setHackrf(Hackrf hackrf) {
+        this.hackrf = hackrf;
+    }
 }
+

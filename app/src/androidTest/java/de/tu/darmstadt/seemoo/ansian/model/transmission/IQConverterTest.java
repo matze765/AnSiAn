@@ -14,7 +14,7 @@ import de.tu.darmstadt.seemoo.ansian.control.TxDataHandler;
 import de.tu.darmstadt.seemoo.ansian.model.SamplePacket;
 
 /**
- * Created by MATZE on 19.11.2016.
+ * @author Matthias Kannwischer
  */
 public class IQConverterTest extends ApplicationTestCase<Application> {
 
@@ -282,7 +282,7 @@ public class IQConverterTest extends ApplicationTestCase<Application> {
 
     private class IQSinkFake extends IQSink{
         public IQSinkFake(){
-            super(null);
+            super();
         }
 
         public byte[] getBufferFromBufferPool() {

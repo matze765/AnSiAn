@@ -1,13 +1,13 @@
 apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion 22
+    compileSdkVersion 23
     buildToolsVersion "23.0.3"
 
     defaultConfig {
         applicationId "de.tu.darmstadt.seemoo.ansian"
-        minSdkVersion 14
-        targetSdkVersion 22
+        minSdkVersion 23
+        targetSdkVersion 23
     }
 
     buildTypes {
@@ -24,7 +24,7 @@ android {
 
 dependencies {
     compile files('libs/eventbus-3.0.0-beta1.jar')
-    compile 'com.android.support:appcompat-v7:22.2.1'
-    compile 'com.android.support:support-v13:22.2.1'
+    compile 'com.android.support:appcompat-v7:23.0.1'
+    compile 'com.android.support:support-v13:23.0.1'
     compile project(':hackrf_android')
 }

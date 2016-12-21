@@ -201,5 +201,10 @@
         <item>Raw IQ File</item>
         <item>Morse</item>
         <item>PSK31</item>
+        <item>RDS</item>
+    </string-array>
+    <string-array name="audio_sources">
+        <item>File</item>
+        <item>Microphone</item>
     </string-array>
 </resources>

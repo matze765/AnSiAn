@@ -33,6 +33,9 @@ public class TransmissionChain implements HackrfCallbackInterface {
     private Thread modulatorThread;
     private Thread iqConverterThread;
     private Thread iqSinkThread;
+    private IQSink iqSink;
+    private Modulator modulator;
+
 
     public TransmissionChain() {
         EventBus.getDefault().register(this);
@@ -55,6 +58,10 @@ public class TransmissionChain implements HackrfCallbackInterface {
             case MODULATION:
 
                 Context context = MainActivity.instance;
+                iqSink = new IQSink();
+                //iqSink = new FileSink();
+                modulator = new Modulator(iqSink);
+
                 // Initialize the HackRF (i.e. open the USB device, which requires the
                 // user to give permissions)
                 Log.d(LOGTAG, "Initializing HackRF");
@@ -104,11 +111,13 @@ public class TransmissionChain implements HackrfCallbackInterface {
         Log.d(LOGTAG, "starting up transmission chain");
 
         // we need an iqSink instance to access the buffer pool from Modulator and IQConverter
-        IQSink iqSink = new IQSink(hackrf);
+        //IQSink iqSink = new FileSink(hackrf);
+
+        iqSink.setHackrf(hackrf);
         iqSink.setup();
 
         // create threads
-        this.modulatorThread = new Thread(new Modulator(iqSink));
+        this.modulatorThread = new Thread(modulator);
         this.iqConverterThread = new Thread(new IQConverter(iqSink));
         this.iqSinkThread = new Thread(iqSink);
 

@@ -86,11 +86,31 @@
             android:ems="10"
             android:text="Hello World" />
 
+
+        <TextView
+            android:id="@+id/tv_audioSource"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignBaseline="@+id/sp_audioSource"
+            android:layout_alignParentLeft="true"
+            android:layout_below="@+id/et_payloadText"
+            android:text="AudioSource" />
+
+        <Spinner
+            android:id="@+id/sp_audioSource"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:layout_below="@+id/et_payloadText"
+            android:layout_toRightOf="@+id/tv_audioSource"
+            android:entries="@array/audio_sources" />
+
+
         <LinearLayout
             android:id="@+id/ll_morseWPM"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_below="@+id/et_payloadText"
+            android:layout_below="@+id/sp_audioSource"
             android:layout_weight="1"
             android:orientation="vertical">
 

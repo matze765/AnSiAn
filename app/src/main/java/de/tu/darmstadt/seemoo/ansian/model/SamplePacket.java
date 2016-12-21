@@ -52,6 +52,19 @@ public class SamplePacket {
 	}
 
 	/**
+	 * Constructor that uses a given float array as real part. imaginary part will be allocated
+	 * @param re the real part
+	 */
+	public SamplePacket(float[] re) {
+		this.timestamp = System.currentTimeMillis();
+		this.re = re;
+		this.im = new float[re.length];
+		this.frequency = 0;
+		this.sampleRate =0;
+		this.size = re.length;
+	}
+
+	/**
 	 * @return the reference to the array of real parts
 	 */
 	public float[] getRe() {

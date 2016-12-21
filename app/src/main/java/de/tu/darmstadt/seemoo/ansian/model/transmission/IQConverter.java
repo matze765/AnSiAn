@@ -35,7 +35,7 @@ public class IQConverter implements Runnable {
 
     // defines the time the IQConverter waits for data to arrive in the queue
     // after this time the IQConverter transmit the last buffer and then kills itself
-    private static final int TIMEOUT_MILLISECONDS = 3000;
+    private static final int TIMEOUT_MILLISECONDS = 1000;
 
     private IQSink iqsink;
 
@@ -72,7 +72,7 @@ public class IQConverter implements Runnable {
 
 
             while (true) {
-                SamplePacket packet = source.poll(1, TimeUnit.SECONDS);
+                SamplePacket packet = source.poll(TIMEOUT_MILLISECONDS, TimeUnit.MILLISECONDS);
 
                 Log.d(LOGTAG, "removed packet from transmitPacketQueue remainingCapacity="+source.remainingCapacity());
                 if(packet == null){

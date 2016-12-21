@@ -40,6 +40,8 @@ public class TransmitView extends LinearLayout {
     private CheckBox antennaPowerCheckBox;
     private EditText sampleRateEditText;
     private EditText frequencyEditText;
+    private TextView audioSourceLabel;
+    private Spinner audioSource;
     private Button playButton;
     private static TransmitEvent.State txState = TransmitEvent.State.TXOFF;
     private static final String LOGTAG = "TransmitView";
@@ -75,6 +77,8 @@ public class TransmitView extends LinearLayout {
         morseWPMLabel = (TextView) findViewById(R.id.morseWPMLabel);
         morseWPMSeekBar = (SeekBar) findViewById(R.id.morseWPMSeekBar);
         playButton = (Button) findViewById(R.id.transmitButton);
+        audioSourceLabel = (TextView) findViewById(R.id.tv_audioSource);
+        audioSource = (Spinner) findViewById(R.id.sp_audioSource);
 
         txModeSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
@@ -88,6 +92,8 @@ public class TransmitView extends LinearLayout {
                         morseWPMLabel.setVisibility(View.GONE);
                         morseFrequencyLabel.setVisibility(View.GONE);
                         morseFrequencyEditText.setVisibility(View.GONE);
+                        audioSource.setVisibility(View.GONE);
+                        audioSourceLabel.setVisibility(View.GONE);
                         sampleRateEditText.setEnabled(true);
                         break;
                     case MORSE:
@@ -96,6 +102,8 @@ public class TransmitView extends LinearLayout {
                         morseWPMLabel.setVisibility(View.VISIBLE);
                         morseFrequencyLabel.setVisibility(View.VISIBLE);
                         morseFrequencyEditText.setVisibility(View.VISIBLE);
+                        audioSource.setVisibility(View.GONE);
+                        audioSourceLabel.setVisibility(View.GONE);
                         sampleRateEditText.setEnabled(false);
                         sampleRateEditText.setText("1000000");
                         break;
@@ -105,9 +113,20 @@ public class TransmitView extends LinearLayout {
                         morseWPMLabel.setVisibility(View.GONE);
                         morseFrequencyLabel.setVisibility(View.GONE);
                         morseFrequencyEditText.setVisibility(View.GONE);
+                        audioSource.setVisibility(View.GONE);
+                        audioSourceLabel.setVisibility(View.GONE);
                         sampleRateEditText.setEnabled(false);
                         sampleRateEditText.setText("1000000");
                         break;
+                    case RDS:
+                        payloadTextEditText.setEnabled(true);
+                        morseWPMSeekBar.setVisibility(View.GONE);
+                        morseWPMLabel.setVisibility(View.GONE);
+                        morseFrequencyLabel.setVisibility(View.GONE);
+                        morseFrequencyEditText.setVisibility(View.GONE);
+                        audioSource.setVisibility(View.VISIBLE);
+                        audioSourceLabel.setVisibility(View.VISIBLE);
+
                     default:
                 }
             }
@@ -117,6 +136,22 @@ public class TransmitView extends LinearLayout {
 
             }
         });
+
+        audioSource.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+
+            @Override
+            public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
+                Preferences.MISC_PREFERENCE.setRds_audio_source(audioSource.getSelectedItemPosition());
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> adapterView) {
+
+            }
+        });
+
+
+
 
         payloadTextEditText.addTextChangedListener(new TextWatcher() {
             @Override
@@ -287,6 +322,7 @@ public class TransmitView extends LinearLayout {
         updateMorseWPMSeekBar();
         updateMorseFrequencyEditText();
         vgaGainSeekBar.setProgress(Preferences.MISC_PREFERENCE.getSend_vgaGain());
+        audioSource.setSelection(Preferences.MISC_PREFERENCE.getRds_audio_source());
     }
 
     private void updateVgaGainLabel() {

@@ -9,8 +9,10 @@ public abstract class Modulation {
 
     protected int sampleRate;
 
+
+
     public static enum TxMode {
-        RAWIQ, MORSE, PSK31;
+        RAWIQ, MORSE, PSK31, RDS;
     }
 
     public abstract SamplePacket getNextSamplePacket();
