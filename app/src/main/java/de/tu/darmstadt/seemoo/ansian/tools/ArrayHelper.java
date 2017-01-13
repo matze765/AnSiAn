@@ -1,5 +1,7 @@
 package de.tu.darmstadt.seemoo.ansian.tools;
 
+import android.util.Log;
+
 import java.lang.reflect.Array;
 import java.util.Arrays;
 
@@ -158,4 +160,101 @@ public class ArrayHelper {
 		System.arraycopy(second, 0, res, firstLength, secondLength);
 		return res;
 	}
+
+
+	/**
+	 * Multiplies two float arrays. They are expected to have equal length.
+	 *
+	 * @param firstOperandAndResult the first operand will also be used as result
+	 * @param secondOperand second operand of the addition
+	 */
+	public static void packetMultiply(float[] firstOperandAndResult, float[] secondOperand) {
+		for (int i = 0; i < firstOperandAndResult.length; i++) {
+			firstOperandAndResult[i] = firstOperandAndResult[i] * secondOperand[i];
+		}
+	}
+
+	/**
+	 * Multiplies each element of a float array with a constant float.
+	 *
+	 * @param firstOperandAndResult the first operand will also be used as result
+	 * @param constant that will be multiplied with each element of the array
+	 */
+	public static void packetMultiply(float[] firstOperandAndResult, float constant) {
+		for (int i = 0; i < firstOperandAndResult.length; i++) {
+			firstOperandAndResult[i] = firstOperandAndResult[i] * constant;
+		}
+	}
+
+	/**
+	 * Adds two float arrays. They are expected to have equal length.
+	 *
+	 * @param firstOperandAndResult the first operand will also be used as result
+	 * @param secondOperand second operand of the addition
+	 */
+	public static void packetAdd(float[] firstOperandAndResult, float[] secondOperand) {
+		for (int i = 0; i < firstOperandAndResult.length; i++) {
+			firstOperandAndResult[i] = firstOperandAndResult[i] + secondOperand[i];
+		}
+	}
+
+	/**
+	 * Normalizes a packet, such that the highest peak is slightly under 1.0
+	 *
+	 * @param operandAndResult source and target of the operation
+	 */
+	public static void packetNormalize(float[] operandAndResult) {
+
+		// get max
+		float max = Float.MIN_VALUE;
+		for (int i = 0; i < operandAndResult.length; i++) {
+			if (operandAndResult[i] > max) {
+				max = operandAndResult[i];
+			}
+
+		}
+
+		// increase max a bit to prevent 1.0
+		max += 0.001;
+
+
+		// normalize
+		for (int i = 0; i < operandAndResult.length; i++) {
+			operandAndResult[i] = operandAndResult[i] / max;
+		}
+	}
+	/**
+	 * Implements the up sampling by a integer factor
+	 * @param buffer the real signal
+	 * @param factor integer factor
+	 * @return upsampled signal (length = buffer.length*factor)
+	 */
+	public static float[] upsample(float[] buffer, int factor) {
+
+		float[] result = new float[buffer.length * factor];
+		for (int i = 0; i < buffer.length; i++) {
+			for (int j = 0; j < factor; j++) {
+				result[i * 23 + j] = buffer[i];
+			}
+		}
+		return result;
+	}
+	/**
+	 * Repeats an arbitrary byte array.
+	 *
+	 * @param array input array that will be repeated
+	 * @param repeatCount number of repetitions (0= no repetition)
+	 * @return the repeated array (length = array.length * (repeatCount+1)
+	 */
+	public static byte[] repeat(byte[] array, int repeatCount) {
+		repeatCount++;
+		byte[] repeated = new byte[array.length * repeatCount];
+		for (int i = 0; i < repeatCount; i++) {
+			System.arraycopy(array, 0, repeated, i * array.length, array.length);
+		}
+
+		return repeated;
+	}
+
+
 }

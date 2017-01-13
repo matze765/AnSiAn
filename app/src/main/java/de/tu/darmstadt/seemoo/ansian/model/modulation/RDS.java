@@ -21,6 +21,7 @@ import java.util.jar.Manifest;
 
 import de.tu.darmstadt.seemoo.ansian.model.SamplePacket;
 import de.tu.darmstadt.seemoo.ansian.model.filter.FirFilter;
+import de.tu.darmstadt.seemoo.ansian.tools.ArrayHelper;
 
 /**
  * Implementation of the FM+RDS modulation.
@@ -75,7 +76,7 @@ public class RDS extends Modulation {
         // calculate check words
         byte[] groupWithCheckwords = this.calculateCheckwords(groups);
 
-        groupWithCheckwords = this.repeat(groupWithCheckwords, 4);
+        groupWithCheckwords = ArrayHelper.repeat(groupWithCheckwords, 4);
 
 
         // do differential encoding
@@ -101,7 +102,7 @@ public class RDS extends Modulation {
         filter1.filterReal(packetManchester, filteredPacket, 0, preCalculatedPacket.length);
 
         preCalculatedPacket = filteredPacket.getRe();
-        this.packetNormalize(preCalculatedPacket);
+        ArrayHelper.packetNormalize(preCalculatedPacket);
 
 
         // create pilot and tone
@@ -109,11 +110,11 @@ public class RDS extends Modulation {
         float[] pilot = this.createTone(PILOT_FREQUENCY, this.sampleRate, this.preCalculatedPacket.length);
         float[] tone = this.createTone(TONE_FREQUENCY, this.sampleRate, this.preCalculatedPacket.length);
 
-        this.packetMultiply(preCalculatedPacket, tone);
+        ArrayHelper.packetMultiply(preCalculatedPacket, tone);
 
-        this.packetMultiply(preCalculatedPacket, 0.3f);
+        ArrayHelper.packetMultiply(preCalculatedPacket, 0.3f);
 
-        this.packetAdd(preCalculatedPacket, pilot);
+        ArrayHelper.packetAdd(preCalculatedPacket, pilot);
 
 
         Log.d(LOGTAG, "finished preparing a packet with length=" + preCalculatedPacket.length);
@@ -214,7 +215,7 @@ public class RDS extends Modulation {
             float[] buffer = new float[requiredAudioSamples];
 
             this.recorder.read(buffer, 0, buffer.length, AudioRecord.READ_BLOCKING);
-            upsampled = this.upsample(buffer, (int) Math.ceil((float) this.sampleRate / AUDIO_SAMPLERATE));
+            upsampled = ArrayHelper.upsample(buffer, (int) Math.ceil((float) this.sampleRate / AUDIO_SAMPLERATE));
 
 
             Log.d(LOGTAG, "upsampled_length=" + upsampled.length);
@@ -224,9 +225,9 @@ public class RDS extends Modulation {
         // upsampled is a bit too long, so we throw away a few samples here
         float[] result = new float[preCalculatedPacket.length];
         System.arraycopy(upsampled, 0, result, 0, result.length);
-        this.packetNormalize(upsampled);
-        this.packetAdd(result, preCalculatedPacket);
-        this.packetNormalize(result);
+        ArrayHelper.packetNormalize(upsampled);
+        ArrayHelper.packetAdd(result, preCalculatedPacket);
+        ArrayHelper.packetNormalize(result);
 
 
         /*
@@ -324,39 +325,7 @@ public class RDS extends Modulation {
         return bits;
     }
 
-    /**
-     * Repeats an arbitrary byte array.
-     *
-     * @param array input array that will be repeated
-     * @param repeatCount number of repetitions (0= no repetition)
-     * @return the repeated array (length = array.length * (repeatCount+1)
-     */
-    private byte[] repeat(byte[] array, int repeatCount) {
-        repeatCount++;
-        byte[] repeated = new byte[array.length * repeatCount];
-        for (int i = 0; i < repeatCount; i++) {
-            System.arraycopy(array, 0, repeated, i * array.length, array.length);
-        }
 
-        return repeated;
-    }
-
-    /**
-     * Implements the up sampling by a integer factor
-     * @param buffer the real signal
-     * @param factor integer factor
-     * @return upsampled signal (length = buffer.length*factor)
-     */
-    private float[] upsample(float[] buffer, int factor) {
-        Log.d(LOGTAG, "upsampling buffer from " + buffer.length + " floats to " + factor * buffer.length + " floats");
-        float[] result = new float[buffer.length * factor];
-        for (int i = 0; i < buffer.length; i++) {
-            for (int j = 0; j < factor; j++) {
-                result[i * 23 + j] = buffer[i];
-            }
-        }
-        return result;
-    }
 
 
     /**
@@ -495,69 +464,7 @@ public class RDS extends Modulation {
 
         return result;
     }
-    /**
-     * Multiplies two float arrays. They are expected to have equal length.
-     *
-     * @param firstOperandAndResult the first operand will also be used as result
-     * @param secondOperand second operand of the addition
-     */
-    private void packetMultiply(float[] firstOperandAndResult, float[] secondOperand) {
-        for (int i = 0; i < firstOperandAndResult.length; i++) {
-            firstOperandAndResult[i] = firstOperandAndResult[i] * secondOperand[i];
-        }
-    }
 
-    /**
-     * Multiplies each element of a float array with a constant float.
-     *
-     * @param firstOperandAndResult the first operand will also be used as result
-     * @param constant that will be multiplied with each element of the array
-     */
-    private void packetMultiply(float[] firstOperandAndResult, float constant) {
-        for (int i = 0; i < firstOperandAndResult.length; i++) {
-            firstOperandAndResult[i] = firstOperandAndResult[i] * constant;
-        }
-    }
-
-    /**
-     * Adds two float arrays. They are expected to have equal length.
-     *
-     * @param firstOperandAndResult the first operand will also be used as result
-     * @param secondOperand second operand of the addition
-     */
-    private void packetAdd(float[] firstOperandAndResult, float[] secondOperand) {
-        for (int i = 0; i < firstOperandAndResult.length; i++) {
-            firstOperandAndResult[i] = firstOperandAndResult[i] + secondOperand[i];
-        }
-    }
-
-    /**
-     * Normalizes a packet, such that the highest peak is slightly under 1.0
-     *
-     * @param operandAndResult source and target of the operation
-     */
-    private void packetNormalize(float[] operandAndResult) {
-
-        // get max
-        float max = Float.MIN_VALUE;
-        for (int i = 0; i < operandAndResult.length; i++) {
-            if (operandAndResult[i] > max) {
-                max = operandAndResult[i];
-            }
-
-        }
-
-        // increase max a bit to prevent 1.0
-        max += 0.001;
-
-        Log.d(LOGTAG, "normalization_factor=1/" + max);
-
-
-        // normalize
-        for (int i = 0; i < operandAndResult.length; i++) {
-            operandAndResult[i] = operandAndResult[i] / max;
-        }
-    }
 
 
 }
