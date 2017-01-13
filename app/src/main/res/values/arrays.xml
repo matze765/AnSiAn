@@ -207,4 +207,36 @@
         <item>File</item>
         <item>Microphone</item>
     </string-array>
+
+    <string-array name="frequency_bands">
+        <item>80m</item>
+        <item>60m</item>
+        <item>40m</item>
+        <item>30m</item>
+        <item>20m</item>
+        <item>other</item>
+    </string-array>
+
+    <!-- frequency ranges according to https://de.wikipedia.org/wiki/Amateurfunkband -->
+    <integer-array name="frequency_bands_min">
+        <item>3500000</item>
+        <item>5351500</item>
+        <item>7000000</item>
+        <item>10100000</item>
+        <item>14000000</item>
+
+    </integer-array>
+
+    <integer-array name="frequency_bands_max">
+        <item>3800000</item>
+        <item>5366500</item>
+        <item>7200000</item>
+        <item>10150000</item>
+        <item>14350000</item>
+    </integer-array>
+
+    <string-array name="modulation_modes">
+        <item>FM</item>
+        <item>SSB</item>
+    </string-array>
 </resources>
