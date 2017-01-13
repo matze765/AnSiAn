@@ -1,13 +1,62 @@
 package de.tu.darmstadt.seemoo.ansian.model.modulation;
 
+import android.media.AudioFormat;
+import android.media.AudioRecord;
+import android.media.MediaRecorder;
+import android.util.Log;
+
 import de.tu.darmstadt.seemoo.ansian.model.SamplePacket;
+import de.tu.darmstadt.seemoo.ansian.tools.ArrayHelper;
 
 /**
  * Helper class for frequency modulation
  * @author Matthias Kannwischer
  */
 
-public class FM {
+public class FM  extends Modulation {
+    private static final String LOGTAG = "FM";
+    private AudioRecord recorder;
+    private int sampleRate;
+
+
+    // constants for audio recording
+    private static final int BUFFER_SIZE = 8192;
+    private static final int AUDIO_SAMPLERATE = 44100;
+    private static final int RECORDER_CHANNELS = AudioFormat.CHANNEL_IN_MONO;
+    private static final int RECORDER_AUDIO_ENCODING = AudioFormat.ENCODING_PCM_FLOAT;
+
+    public FM(int sampleRate){
+        this.sampleRate = sampleRate;
+
+
+        this.recorder = new AudioRecord(MediaRecorder.AudioSource.MIC,
+                AUDIO_SAMPLERATE, RECORDER_CHANNELS,
+                RECORDER_AUDIO_ENCODING, 7168);
+        Log.d(LOGTAG, "starting to record");
+
+        if (this.recorder.getState() == AudioRecord.STATE_INITIALIZED) {
+            this.recorder.startRecording();
+        } else {
+            this.recorder = null;
+            Log.e(LOGTAG, "unable to initalize Audio Recorder");
+        }
+    }
+
+    @Override
+    public SamplePacket getNextSamplePacket() {
+        Log.d(LOGTAG, "getNextSamplePacket()");
+        if(this.recorder == null) return null;
+        float[] buffer = new float[BUFFER_SIZE];
+        this.recorder.read(buffer, 0, buffer.length, AudioRecord.READ_BLOCKING);
+
+        float[] upsampled = ArrayHelper.upsample(buffer, (int) Math.ceil((float) this.sampleRate / AUDIO_SAMPLERATE));
+
+        SamplePacket resultPacket = FM.fmmod(upsampled, sampleRate, 75000);
+        Log.d(LOGTAG, "result.size()=" + resultPacket.size());
+        return resultPacket;
+    }
+
+
     /**
      * @param x the signal that should be modulated
      * @param fs the sampling rate of the input and the output signal
@@ -46,5 +95,7 @@ public class FM {
         }
         return sum;
     }
+
+
 }
 
