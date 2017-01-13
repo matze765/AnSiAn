@@ -2,6 +2,8 @@ package de.tu.darmstadt.seemoo.ansian.gui.views;
 
 import android.content.Context;
 import android.graphics.Color;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -9,13 +11,18 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.Button;
+import android.widget.CheckBox;
+import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.SeekBar;
 import android.widget.Spinner;
 import android.widget.TextView;
 
+import de.greenrobot.event.EventBus;
 import de.tu.darmstadt.seemoo.ansian.R;
+import de.tu.darmstadt.seemoo.ansian.control.events.morse.TransmitEvent;
+import de.tu.darmstadt.seemoo.ansian.model.modulation.Modulation;
 import de.tu.darmstadt.seemoo.ansian.model.preferences.Preferences;
 
 /**
@@ -54,6 +61,8 @@ public class WalkieTalkieView extends LinearLayout {
         SeekBar vgaGainSeekBar = (SeekBar) this.findViewById(R.id.vgaGainSeekBar);
         final Button receiveButton = (Button) this.findViewById(R.id.receiveButton);
         final Button transmitButton = (Button) this.findViewById(R.id.transmitButton);
+        CheckBox amplifierCheckBox = (CheckBox) findViewById(R.id.cb_amp);
+        CheckBox antennaPowerCheckBox = (CheckBox) findViewById(R.id.cb_antenna);
 
         frequencyBandSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
@@ -116,25 +125,28 @@ public class WalkieTalkieView extends LinearLayout {
             }
         });
 
+
+
         transmitButton.setOnClickListener(new OnClickListener() {
 
 
             @Override
             public void onClick(View view) {
 
-                if(isTransmitting){
-                    isTransmitting = false;
+                if(!isTransmitting){
+                    isTransmitting = true;
                     transmitButton.setText("STOP");
                     // stop the reception
 
                     // start the transmission
-
+                    Preferences.MISC_PREFERENCE.setSend_txMode(Modulation.TxMode.FM);
+                    EventBus.getDefault().post(new TransmitEvent(TransmitEvent.State.MODULATION, TransmitEvent.Sender.GUI));
                 } else {
-                    isTransmitting = true;
+                    isTransmitting = false;
                     transmitButton.setText("TRANSMIT");
 
                     // stop the transmission
-
+                    EventBus.getDefault().post(new TransmitEvent(TransmitEvent.State.TXOFF, TransmitEvent.Sender.GUI));
 
                     if(isReceiving){
                         // start the reception again
@@ -173,8 +185,41 @@ public class WalkieTalkieView extends LinearLayout {
         });
 
 
+        amplifierCheckBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                Preferences.MISC_PREFERENCE.setSend_amplifier(isChecked);
+            }
+        });
 
+        antennaPowerCheckBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                Preferences.MISC_PREFERENCE.setSend_antennaPower(isChecked);
+            }
+        });
 
+        frequenyEditText.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                try {
+                    int i = Integer.parseInt(s.toString());
+                    Preferences.MISC_PREFERENCE.setSend_frequency(i);
+                } catch (NumberFormatException e) {
+                    // not an integer; ignore
+                }
+            }
+        });
 
         updateVgaGainLabel();
     }

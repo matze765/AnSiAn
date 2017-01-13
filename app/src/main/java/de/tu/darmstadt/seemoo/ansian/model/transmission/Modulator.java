@@ -12,6 +12,7 @@ import de.tu.darmstadt.seemoo.ansian.control.TxDataHandler;
 import de.tu.darmstadt.seemoo.ansian.control.events.BandwidthEvent;
 import de.tu.darmstadt.seemoo.ansian.control.events.morse.TransmitEvent;
 import de.tu.darmstadt.seemoo.ansian.model.SamplePacket;
+import de.tu.darmstadt.seemoo.ansian.model.modulation.FM;
 import de.tu.darmstadt.seemoo.ansian.model.modulation.Modulation;
 import de.tu.darmstadt.seemoo.ansian.model.modulation.Morse;
 import de.tu.darmstadt.seemoo.ansian.model.modulation.PSK31;
@@ -43,7 +44,6 @@ public class Modulator implements Runnable {
         String payloadString = Preferences.MISC_PREFERENCE.getSend_payloadText();
         filename = Preferences.MISC_PREFERENCE.getSend_filename();
         int sampleRate = Preferences.MISC_PREFERENCE.getSend_sampleRate();
-
         int rdsAudioSource = Preferences.MISC_PREFERENCE.getRds_audio_source();
 
 
@@ -61,10 +61,11 @@ public class Modulator implements Runnable {
             case PSK31:
                 modulationInstance = new PSK31(payloadString, sampleRate);
                 break;
-
             case RDS:
-
                 modulationInstance = new RDS(payloadString, sampleRate, rdsAudioSource==0);
+                break;
+            case FM:
+                modulationInstance = new FM(sampleRate);
                 break;
             case RAWIQ:
                 // special case

@@ -12,7 +12,7 @@ public abstract class Modulation {
 
 
     public static enum TxMode {
-        RAWIQ, MORSE, PSK31, RDS;
+        RAWIQ, MORSE, PSK31, RDS, FM;
     }
 
     public abstract SamplePacket getNextSamplePacket();
