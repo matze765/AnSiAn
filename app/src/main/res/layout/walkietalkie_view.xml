@@ -122,6 +122,35 @@
 
         </LinearLayout>
 
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="horizontal">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:id="@+id/squelchLabel"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Squelch: %s" />
+
+                    <SeekBar
+                        android:id="@+id/squelchSeekBar"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:max="110"
+                        android:progress="40" />
+                </LinearLayout>
+
+
+            </LinearLayout>
+
             <Button
                 android:id="@+id/receiveButton"
                 android:layout_width="match_parent"

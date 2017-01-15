@@ -1,6 +1,7 @@
 package de.tu.darmstadt.seemoo.ansian.gui.views;
 
 import android.content.Context;
+import android.graphics.Canvas;
 import android.graphics.Color;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -21,8 +22,15 @@ import android.widget.TextView;
 
 import de.greenrobot.event.EventBus;
 import de.tu.darmstadt.seemoo.ansian.R;
+import de.tu.darmstadt.seemoo.ansian.control.DataHandler;
+import de.tu.darmstadt.seemoo.ansian.control.StateHandler;
+import de.tu.darmstadt.seemoo.ansian.control.events.RequestStateEvent;
+import de.tu.darmstadt.seemoo.ansian.control.events.SquelchChangeEvent;
 import de.tu.darmstadt.seemoo.ansian.control.events.morse.TransmitEvent;
+import de.tu.darmstadt.seemoo.ansian.model.FFTSample;
+import de.tu.darmstadt.seemoo.ansian.model.demodulation.Demodulation;
 import de.tu.darmstadt.seemoo.ansian.model.modulation.Modulation;
+import de.tu.darmstadt.seemoo.ansian.model.preferences.GuiPreferences;
 import de.tu.darmstadt.seemoo.ansian.model.preferences.Preferences;
 
 /**
@@ -35,6 +43,7 @@ public class WalkieTalkieView extends LinearLayout {
     private int selectedFrequencyBand = 0;
     private boolean isTransmitting = false;
     private boolean isReceiving = false;
+    private Thread squelchWatchThread;
 
     public WalkieTalkieView(Context context) {
         this(context, null);
@@ -63,6 +72,8 @@ public class WalkieTalkieView extends LinearLayout {
         final Button transmitButton = (Button) this.findViewById(R.id.transmitButton);
         CheckBox amplifierCheckBox = (CheckBox) findViewById(R.id.cb_amp);
         CheckBox antennaPowerCheckBox = (CheckBox) findViewById(R.id.cb_antenna);
+        SeekBar squelchSeekBar = (SeekBar) this.findViewById(R.id.squelchSeekBar);
+
 
         frequencyBandSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
@@ -116,10 +127,21 @@ public class WalkieTalkieView extends LinearLayout {
                 if(isReceiving){
                     isReceiving = false;
                     receiveButton.setText("START RECEPTION");
-
+                    killSquelchWatchThread();
+                    // if we are currently trasnmitting, we just need to unset the flag to prevent
+                    // switching to reception mode
+                    if(!isTransmitting) {
+                        EventBus.getDefault().post(new RequestStateEvent(StateHandler.State.STOPPED));
+                    }
                 } else {
                     isReceiving = true;
                     receiveButton.setText("STOP RECEPTION");
+                    startSquelchWatchThread();
+                    // if we are currently transmitting, we have to wait until that is stopped
+                    if(!isTransmitting) {
+                        Preferences.MISC_PREFERENCE.setDemodulation(Demodulation.DemoType.WFM);
+                        EventBus.getDefault().post(new RequestStateEvent(StateHandler.State.MONITORING));
+                    }
                 }
 
             }
@@ -136,7 +158,11 @@ public class WalkieTalkieView extends LinearLayout {
                 if(!isTransmitting){
                     isTransmitting = true;
                     transmitButton.setText("STOP");
-                    // stop the reception
+                    if(isReceiving) {
+                        // stop the reception
+                        EventBus.getDefault().post(new RequestStateEvent(StateHandler.State.STOPPED));
+                    }
+
 
                     // start the transmission
                     Preferences.MISC_PREFERENCE.setSend_txMode(Modulation.TxMode.FM);
@@ -150,12 +176,35 @@ public class WalkieTalkieView extends LinearLayout {
 
                     if(isReceiving){
                         // start the reception again
+                        Preferences.MISC_PREFERENCE.setDemodulation(Demodulation.DemoType.WFM);
+                        EventBus.getDefault().post(new RequestStateEvent(StateHandler.State.MONITORING));
                     }
 
                 }
             }
         });
+        squelchSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int i, boolean b) {
 
+                float squelch = i - 100;
+                Preferences.GUI_PREFERENCE.setSquelch(squelch);
+                if(isReceiving) {
+                    EventBus.getDefault().post(new SquelchChangeEvent(squelch));
+                }
+                updateSquelchLabel();
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+
+            }
+        });
 
 
 
@@ -220,12 +269,68 @@ public class WalkieTalkieView extends LinearLayout {
                 }
             }
         });
-
+        updateSquelchLabel();
         updateVgaGainLabel();
+
+
     }
+
 
     private void updateVgaGainLabel() {
         TextView vgaGainLabel = (TextView) this.findViewById(R.id.vgaGainLabel);
         vgaGainLabel.setText(String.format(getContext().getString(R.string.vga_gain_label), Preferences.MISC_PREFERENCE.getSend_vgaGain()));
     }
+
+    private void updateSquelchLabel(){
+        TextView squelchLabel = (TextView) this.findViewById(R.id.squelchLabel);
+        squelchLabel.setText(String.format("Squelch: %s dB", Preferences.GUI_PREFERENCE.getSquelch()));
+    }
+
+    private void startSquelchWatchThread(){
+        squelchWatchThread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                while(true) {
+                    squelchUpdate();
+                    try {
+                        Thread.sleep(500);
+                    } catch (InterruptedException e) {
+                        Log.d(LOGTAG, "squelch watch thread is dying");
+                        break;
+                    }
+                }
+            }
+
+            public void squelchUpdate() {
+                //squelch handling
+                if(StateHandler.isDemodulating()) {
+                    GuiPreferences guiPreferences = Preferences.GUI_PREFERENCE;
+                    float squelch = guiPreferences.getSquelch();
+                    Log.d(LOGTAG, "squelch="+squelch);
+                    long demodFrequency = guiPreferences.getDemodFrequency();
+                    DataHandler.getInstance().requestNewFFTSample();
+                    FFTSample sample = DataHandler.getInstance().getLastFFTSample();
+                    if(sample != null) {
+
+                        float averageSignalStrength =sample.getAverage(demodFrequency,
+                                Preferences.GUI_PREFERENCE.getDemodBandwidth());
+                        Log.d(LOGTAG, "avg="+averageSignalStrength);
+                        Log.d(LOGTAG, "setting squelch statisfied to "+(squelch<averageSignalStrength));
+                        guiPreferences.setSquelchSatisfied(squelch < averageSignalStrength);
+                    }
+                }
+            }
+
+        });
+        squelchWatchThread.start();
+    }
+
+    private void killSquelchWatchThread(){
+        if(squelchWatchThread != null){
+            squelchWatchThread.interrupt();
+            squelchWatchThread = null;
+        }
+    }
+
+
 }
