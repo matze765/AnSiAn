@@ -24,6 +24,8 @@ import de.greenrobot.event.EventBus;
 import de.tu.darmstadt.seemoo.ansian.R;
 import de.tu.darmstadt.seemoo.ansian.control.DataHandler;
 import de.tu.darmstadt.seemoo.ansian.control.StateHandler;
+import de.tu.darmstadt.seemoo.ansian.control.events.FrequencyEvent;
+import de.tu.darmstadt.seemoo.ansian.control.events.RequestFrequencyEvent;
 import de.tu.darmstadt.seemoo.ansian.control.events.RequestStateEvent;
 import de.tu.darmstadt.seemoo.ansian.control.events.SquelchChangeEvent;
 import de.tu.darmstadt.seemoo.ansian.control.events.morse.TransmitEvent;
@@ -31,6 +33,7 @@ import de.tu.darmstadt.seemoo.ansian.model.FFTSample;
 import de.tu.darmstadt.seemoo.ansian.model.demodulation.Demodulation;
 import de.tu.darmstadt.seemoo.ansian.model.modulation.Modulation;
 import de.tu.darmstadt.seemoo.ansian.model.preferences.GuiPreferences;
+import de.tu.darmstadt.seemoo.ansian.model.preferences.MiscPreferences;
 import de.tu.darmstadt.seemoo.ansian.model.preferences.Preferences;
 
 /**
@@ -63,7 +66,8 @@ public class WalkieTalkieView extends LinearLayout {
         LayoutInflater inflater = (LayoutInflater) getContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         inflater.inflate(R.layout.walkietalkie_view, this);
 
-
+        final MiscPreferences miscPreferences = Preferences.MISC_PREFERENCE;
+        final GuiPreferences guiPreferences   = Preferences.GUI_PREFERENCE;
         final EditText frequenyEditText = (EditText) this.findViewById(R.id.et_frequency);
         final SeekBar frequencySeekbar = (SeekBar) this.findViewById(R.id.sb_frequencySeekBar);
         Spinner frequencyBandSpinner = (Spinner) this.findViewById(R.id.sp_frequencyBands);
@@ -73,6 +77,9 @@ public class WalkieTalkieView extends LinearLayout {
         CheckBox amplifierCheckBox = (CheckBox) findViewById(R.id.cb_amp);
         CheckBox antennaPowerCheckBox = (CheckBox) findViewById(R.id.cb_antenna);
         SeekBar squelchSeekBar = (SeekBar) this.findViewById(R.id.squelchSeekBar);
+
+        vgaGainSeekBar.setProgress(miscPreferences.getSend_vgaGain());
+        squelchSeekBar.setProgress((int)guiPreferences.getSquelch()+100);
 
 
         frequencyBandSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
@@ -136,10 +143,13 @@ public class WalkieTalkieView extends LinearLayout {
                 } else {
                     isReceiving = true;
                     receiveButton.setText("STOP RECEPTION");
+
                     startSquelchWatchThread();
+                    Preferences.MISC_PREFERENCE.setDemodulation(Demodulation.DemoType.WFM);
+                    StateHandler.setDemodulationMode(Demodulation.DemoType.WFM);
                     // if we are currently transmitting, we have to wait until that is stopped
                     if(!isTransmitting) {
-                        Preferences.MISC_PREFERENCE.setDemodulation(Demodulation.DemoType.WFM);
+
                         EventBus.getDefault().post(new RequestStateEvent(StateHandler.State.MONITORING));
                     }
                 }
@@ -189,9 +199,6 @@ public class WalkieTalkieView extends LinearLayout {
 
                 float squelch = i - 100;
                 Preferences.GUI_PREFERENCE.setSquelch(squelch);
-                if(isReceiving) {
-                    EventBus.getDefault().post(new SquelchChangeEvent(squelch));
-                }
                 updateSquelchLabel();
             }
 
@@ -263,7 +270,11 @@ public class WalkieTalkieView extends LinearLayout {
             public void afterTextChanged(Editable s) {
                 try {
                     int i = Integer.parseInt(s.toString());
+                    // set transmit frequency
                     Preferences.MISC_PREFERENCE.setSend_frequency(i);
+                    // set receive frequency
+                    EventBus.getDefault().post(new RequestFrequencyEvent(i-100000));
+                    guiPreferences.setDemodFrequency(i);
                 } catch (NumberFormatException e) {
                     // not an integer; ignore
                 }
@@ -287,6 +298,7 @@ public class WalkieTalkieView extends LinearLayout {
     }
 
     private void startSquelchWatchThread(){
+        Log.d(LOGTAG, "starting squelchWatchThread");
         squelchWatchThread = new Thread(new Runnable() {
             @Override
             public void run() {
@@ -306,7 +318,6 @@ public class WalkieTalkieView extends LinearLayout {
                 if(StateHandler.isDemodulating()) {
                     GuiPreferences guiPreferences = Preferences.GUI_PREFERENCE;
                     float squelch = guiPreferences.getSquelch();
-                    Log.d(LOGTAG, "squelch="+squelch);
                     long demodFrequency = guiPreferences.getDemodFrequency();
                     DataHandler.getInstance().requestNewFFTSample();
                     FFTSample sample = DataHandler.getInstance().getLastFFTSample();
@@ -314,8 +325,6 @@ public class WalkieTalkieView extends LinearLayout {
 
                         float averageSignalStrength =sample.getAverage(demodFrequency,
                                 Preferences.GUI_PREFERENCE.getDemodBandwidth());
-                        Log.d(LOGTAG, "avg="+averageSignalStrength);
-                        Log.d(LOGTAG, "setting squelch statisfied to "+(squelch<averageSignalStrength));
                         guiPreferences.setSquelchSatisfied(squelch < averageSignalStrength);
                     }
                 }
@@ -326,6 +335,7 @@ public class WalkieTalkieView extends LinearLayout {
     }
 
     private void killSquelchWatchThread(){
+        Log.d(LOGTAG, "killing squelch watch thread");
         if(squelchWatchThread != null){
             squelchWatchThread.interrupt();
             squelchWatchThread = null;
