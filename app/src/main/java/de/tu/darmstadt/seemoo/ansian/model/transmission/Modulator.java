@@ -13,10 +13,12 @@ import de.tu.darmstadt.seemoo.ansian.control.events.BandwidthEvent;
 import de.tu.darmstadt.seemoo.ansian.control.events.morse.TransmitEvent;
 import de.tu.darmstadt.seemoo.ansian.model.SamplePacket;
 import de.tu.darmstadt.seemoo.ansian.model.modulation.FM;
+import de.tu.darmstadt.seemoo.ansian.model.modulation.LSB;
 import de.tu.darmstadt.seemoo.ansian.model.modulation.Modulation;
 import de.tu.darmstadt.seemoo.ansian.model.modulation.Morse;
 import de.tu.darmstadt.seemoo.ansian.model.modulation.PSK31;
 import de.tu.darmstadt.seemoo.ansian.model.modulation.RDS;
+import de.tu.darmstadt.seemoo.ansian.model.modulation.USB;
 import de.tu.darmstadt.seemoo.ansian.model.preferences.Preferences;
 
 
@@ -66,6 +68,12 @@ public class Modulator implements Runnable {
                 break;
             case FM:
                 modulationInstance = new FM(sampleRate);
+                break;
+            case USB:
+                modulationInstance = new USB(sampleRate);
+                break;
+            case LSB:
+                modulationInstance = new LSB(sampleRate);
                 break;
             case RAWIQ:
                 // special case

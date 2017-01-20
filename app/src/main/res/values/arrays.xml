@@ -237,6 +237,7 @@
 
     <string-array name="modulation_modes">
         <item>FM</item>
-        <item>SSB</item>
+        <item>USB</item>
+        <item>LSB</item>
     </string-array>
 </resources>

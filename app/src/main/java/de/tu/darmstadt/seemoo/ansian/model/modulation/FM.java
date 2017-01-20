@@ -1,12 +1,8 @@
 package de.tu.darmstadt.seemoo.ansian.model.modulation;
 
-import android.media.AudioRecord;
-import android.media.MediaRecorder;
 import android.util.Log;
-
 import de.tu.darmstadt.seemoo.ansian.model.AudioSource;
 import de.tu.darmstadt.seemoo.ansian.model.SamplePacket;
-import de.tu.darmstadt.seemoo.ansian.tools.ArrayHelper;
 
 /**
  * Helper class for frequency modulation

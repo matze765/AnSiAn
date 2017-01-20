@@ -77,9 +77,25 @@ public class WalkieTalkieView extends LinearLayout {
         CheckBox amplifierCheckBox = (CheckBox) findViewById(R.id.cb_amp);
         CheckBox antennaPowerCheckBox = (CheckBox) findViewById(R.id.cb_antenna);
         SeekBar squelchSeekBar = (SeekBar) this.findViewById(R.id.squelchSeekBar);
+        Spinner modulationSpinner = (Spinner) this.findViewById(R.id.sp_modulation);
 
         vgaGainSeekBar.setProgress(miscPreferences.getSend_vgaGain());
         squelchSeekBar.setProgress((int)guiPreferences.getSquelch()+100);
+
+
+        modulationSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
+                miscPreferences.setDemodulation(getCurrentRxMode());
+                miscPreferences.setSend_txMode(getCurrentTxMode());
+                StateHandler.setDemodulationMode(getCurrentRxMode());
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> adapterView) {
+
+            }
+        });
 
 
         frequencyBandSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
@@ -145,8 +161,6 @@ public class WalkieTalkieView extends LinearLayout {
                     receiveButton.setText("STOP RECEPTION");
 
                     startSquelchWatchThread();
-                    Preferences.MISC_PREFERENCE.setDemodulation(Demodulation.DemoType.WFM);
-                    StateHandler.setDemodulationMode(Demodulation.DemoType.WFM);
                     // if we are currently transmitting, we have to wait until that is stopped
                     if(!isTransmitting) {
 
@@ -172,10 +186,7 @@ public class WalkieTalkieView extends LinearLayout {
                         // stop the reception
                         EventBus.getDefault().post(new RequestStateEvent(StateHandler.State.STOPPED));
                     }
-
-
                     // start the transmission
-                    Preferences.MISC_PREFERENCE.setSend_txMode(Modulation.TxMode.FM);
                     EventBus.getDefault().post(new TransmitEvent(TransmitEvent.State.MODULATION, TransmitEvent.Sender.GUI));
                 } else {
                     isTransmitting = false;
@@ -282,7 +293,9 @@ public class WalkieTalkieView extends LinearLayout {
         });
         updateSquelchLabel();
         updateVgaGainLabel();
-
+        miscPreferences.setDemodulation(getCurrentRxMode());
+        miscPreferences.setSend_txMode(getCurrentTxMode());
+        StateHandler.setDemodulationMode(getCurrentRxMode());
 
     }
 
@@ -295,6 +308,37 @@ public class WalkieTalkieView extends LinearLayout {
     private void updateSquelchLabel(){
         TextView squelchLabel = (TextView) this.findViewById(R.id.squelchLabel);
         squelchLabel.setText(String.format("Squelch: %s dB", Preferences.GUI_PREFERENCE.getSquelch()));
+    }
+
+    private Modulation.TxMode getCurrentTxMode(){
+        Spinner txModeSpinner = (Spinner) this.findViewById(R.id.sp_modulation);
+        int idx = txModeSpinner.getSelectedItemPosition();
+
+        switch(idx){
+            case 0:
+                return Modulation.TxMode.FM;
+            case 1:
+                return Modulation.TxMode.USB;
+            case 2:
+                return Modulation.TxMode.LSB;
+            default:
+                return null;
+        }
+    }
+
+    private Demodulation.DemoType getCurrentRxMode(){
+        Spinner rxModeSpinner = (Spinner) this.findViewById(R.id.sp_modulation);
+        int idx = rxModeSpinner.getSelectedItemPosition();
+        switch (idx){
+            case 0:
+                return Demodulation.DemoType.WFM;
+            case 1:
+                return Demodulation.DemoType.USB;
+            case 2:
+                return Demodulation.DemoType.LSB;
+            default:
+                return null;
+        }
     }
 
     private void startSquelchWatchThread(){
