@@ -6,6 +6,6 @@ package de.tu.darmstadt.seemoo.ansian.model.modulation;
 
 public class LSB extends SSB {
     public LSB(int sampleRate) {
-        super(sampleRate);
+        super(sampleRate,false);
     }
 }

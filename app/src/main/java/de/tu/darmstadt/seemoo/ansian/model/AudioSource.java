@@ -14,6 +14,9 @@ import de.tu.darmstadt.seemoo.ansian.tools.ArrayHelper;
 public class AudioSource {
     private static final String LOGTAG = "AudioSource";
     private static final int DEFAULT_BUFFER_SIZE = 8192;
+
+
+
     private static final int AUDIO_SAMPLERATE = 44100;
     private static final int RECORDER_CHANNELS = AudioFormat.CHANNEL_IN_MONO;
     private static final int RECORDER_AUDIO_ENCODING = AudioFormat.ENCODING_PCM_FLOAT;
@@ -51,6 +54,10 @@ public class AudioSource {
         this.recorder = null;
     }
 
+    public SamplePacket getNextSamplePacketUpsampled(){
+        return new SamplePacket(getNextSamplesUpsampled());
+    }
+
     public float[] getNextSamplesUpsampled(){
         float[] buffer = this.getNextSamples();
         if(buffer == null) return null;
@@ -58,10 +65,17 @@ public class AudioSource {
         return upsampled;
     }
 
+    public SamplePacket getNextSamplePacket(){
+        return new SamplePacket(getNextSamples());
+    }
+
     public float[] getNextSamples(){
         if(this.recorder == null) return null;
         float[] buffer = new float[bufferSize];
         this.recorder.read(buffer, 0, buffer.length, AudioRecord.READ_BLOCKING);
         return buffer;
+    }
+    public int getAudioSamplerate() {
+        return AUDIO_SAMPLERATE;
     }
 }

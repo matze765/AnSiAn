@@ -1,5 +1,7 @@
 package de.tu.darmstadt.seemoo.ansian.model;
 
+import de.tu.darmstadt.seemoo.ansian.tools.ArrayHelper;
+
 /**
  * <h1>AnSiAn - Sample Packet</h1>
  *
@@ -62,6 +64,20 @@ public class SamplePacket {
 		this.frequency = 0;
 		this.sampleRate =0;
 		this.size = re.length;
+	}
+
+	/**
+	 * Constructor that uses both a given real and imaginary part. no arrays will be allocated.
+	 * @param re the real part
+	 * @param im the imaginary part
+	 */
+	public SamplePacket(float[] re, float[] im){
+		this.timestamp = System.currentTimeMillis();
+		this.re = re;
+		this.im = im;
+		this.frequency = 0;
+		this.sampleRate = 0;
+		this.size= Math.min(re.length, im.length);
 	}
 
 	/**
@@ -172,5 +188,19 @@ public class SamplePacket {
 		dest.size = this.size;
 		dest.timestamp = this.timestamp;
 		return true;
+	}
+
+	/**
+	 * Upsamples a packet by a int factor
+	 *
+	 * @param factor the factor by which should be upsampled
+	 * @return a freshly allocated sample packet with higher sampling rate
+	 */
+	public SamplePacket upsample(int factor) {
+		float[] re = ArrayHelper.upsample(this.re, factor);
+		float[] im = ArrayHelper.upsample(this.im, factor);
+		SamplePacket newOne = new SamplePacket(re, im);
+		newOne.setSampleRate(this.getSampleRate()*factor);
+		return newOne;
 	}
 }
