@@ -83,6 +83,10 @@
     <string name="cb_antenna_text">Antenna Port Power</string>
     <string name="tv_morseFreqLabel_text">Morse Frequency (Hz)</string>
     <string name="morseWPMLabel_text" formatted = "false">%s WPM - %s ms per Dit</string>
+    <string name="start_reception">START RECEPTION</string>
+    <string name="stop_reception">STOP RECEPTION</string>
+    <string name="stop">STOP</string>
+    <string name="transmit">TRANSMIT</string>
 
 
 </resources>

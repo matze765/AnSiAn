@@ -20,6 +20,8 @@ import android.widget.SeekBar;
 import android.widget.Spinner;
 import android.widget.TextView;
 
+import java.util.Locale;
+
 import de.greenrobot.event.EventBus;
 import de.tu.darmstadt.seemoo.ansian.R;
 import de.tu.darmstadt.seemoo.ansian.control.DataHandler;
@@ -42,6 +44,8 @@ import de.tu.darmstadt.seemoo.ansian.model.preferences.Preferences;
 
 public class WalkieTalkieView extends LinearLayout {
     public static final String LOGTAG = "WalkieTalkieView";
+
+    public enum FREQUENCY_BAND { B80m,B60m, B40m, B30m, B20m, other};
 
     private int selectedFrequencyBand = 0;
     private boolean isTransmitting = false;
@@ -116,7 +120,11 @@ public class WalkieTalkieView extends LinearLayout {
                     frequencySeekbar.setEnabled(true);
                     frequencySeekbar.setMax(frequencyBandsMax[i] - frequencyBandsMin[i]);
                     frequencySeekbar.setProgress(0);
+                    int frequencyHz = frequencyBandsMin[selectedFrequencyBand];
+                    frequenyEditText.setText(String.format(Locale.US, "%d", frequencyHz));
                 }
+
+
             }
             @Override
             public void onNothingSelected(AdapterView<?> adapterView) {
@@ -129,7 +137,7 @@ public class WalkieTalkieView extends LinearLayout {
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
                 int[] frequencyBandsMin = getResources().getIntArray(R.array.frequency_bands_min);
                 int frequencyHz = progress+frequencyBandsMin[selectedFrequencyBand];
-                frequenyEditText.setText(Integer.toString(frequencyHz));
+                frequenyEditText.setText(String.format(Locale.US, "%d", frequencyHz));
             }
 
             @Override
@@ -149,18 +157,35 @@ public class WalkieTalkieView extends LinearLayout {
             public void onClick(View view) {
                 if(isReceiving){
                     isReceiving = false;
-                    receiveButton.setText("START RECEPTION");
+                    receiveButton.setText(R.string.start_reception);
                     killSquelchWatchThread();
+
+
                     // if we are currently trasnmitting, we just need to unset the flag to prevent
-                    // switching to reception mode
+                    // switching to reception mod
                     if(!isTransmitting) {
                         EventBus.getDefault().post(new RequestStateEvent(StateHandler.State.STOPPED));
+                        // re-enable the settings
+                        if(getSelectedFrequencyBand() == FREQUENCY_BAND.other){
+                            enableSettings(true, false);
+                        } else {
+                            enableSettings(false, true);
+                        }
+
                     }
                 } else {
                     isReceiving = true;
-                    receiveButton.setText("STOP RECEPTION");
+                    receiveButton.setText(R.string.stop_reception);
 
                     startSquelchWatchThread();
+
+                    // disable the settings that can not be changed during reception
+                    if(getSelectedFrequencyBand() == FREQUENCY_BAND.other){
+                        disableSettings(false, true);
+                    } else {
+                        disableSettings(true, false);
+                    }
+
                     // if we are currently transmitting, we have to wait until that is stopped
                     if(!isTransmitting) {
 
@@ -181,16 +206,19 @@ public class WalkieTalkieView extends LinearLayout {
 
                 if(!isTransmitting){
                     isTransmitting = true;
-                    transmitButton.setText("STOP");
+                    transmitButton.setText(R.string.stop);
                     if(isReceiving) {
                         // stop the reception
                         EventBus.getDefault().post(new RequestStateEvent(StateHandler.State.STOPPED));
                     }
+                    // disable the settings
+                    disableSettings(true,true);
+
                     // start the transmission
                     EventBus.getDefault().post(new TransmitEvent(TransmitEvent.State.MODULATION, TransmitEvent.Sender.GUI));
                 } else {
                     isTransmitting = false;
-                    transmitButton.setText("TRANSMIT");
+                    transmitButton.setText(R.string.transmit);
 
                     // stop the transmission
                     EventBus.getDefault().post(new TransmitEvent(TransmitEvent.State.TXOFF, TransmitEvent.Sender.GUI));
@@ -199,6 +227,21 @@ public class WalkieTalkieView extends LinearLayout {
                         // start the reception again
                         Preferences.MISC_PREFERENCE.setDemodulation(Demodulation.DemoType.WFM);
                         EventBus.getDefault().post(new RequestStateEvent(StateHandler.State.MONITORING));
+                        // just reenable the frequency change settings
+                        if(getSelectedFrequencyBand() == FREQUENCY_BAND.other){
+                            frequenyEditText.setEnabled(true);
+                        } else {
+                            frequencySeekbar.setEnabled(true);
+                        }
+
+
+                    } else {
+                        // reenable all settings
+                        if(getSelectedFrequencyBand() == FREQUENCY_BAND.other) {
+                            enableSettings(true, false);
+                        } else {
+                            enableSettings(false, true);
+                        }
                     }
 
                 }
@@ -312,6 +355,36 @@ public class WalkieTalkieView extends LinearLayout {
         squelchLabel.setText(String.format("Squelch: %s dB", (int) Preferences.GUI_PREFERENCE.getSquelch()));
     }
 
+    private void disableSettings(boolean disableFrequencyEditText, boolean disableFrequencySeekBar){
+        this.findViewById(R.id.sp_frequencyBands).setEnabled(false);
+        this.findViewById(R.id.sp_modulation).setEnabled(false);
+        this.findViewById(R.id.cb_amp).setEnabled(false);
+        this.findViewById(R.id.cb_antenna).setEnabled(false);
+        this.findViewById(R.id.vgaGainSeekBar).setEnabled(false);
+
+        if(disableFrequencySeekBar) {
+            this.findViewById(R.id.sb_frequencySeekBar).setEnabled(false);
+        }
+        if(disableFrequencyEditText) {
+            this.findViewById(R.id.et_frequency).setEnabled(false);
+        }
+    }
+
+    private void enableSettings(boolean enableFrequencyEditText, boolean enableFrequencySeekBar){
+        this.findViewById(R.id.sp_frequencyBands).setEnabled(true);
+        this.findViewById(R.id.sp_modulation).setEnabled(true);
+        this.findViewById(R.id.cb_amp).setEnabled(true);
+        this.findViewById(R.id.cb_antenna).setEnabled(true);
+        this.findViewById(R.id.vgaGainSeekBar).setEnabled(true);
+
+        if(enableFrequencySeekBar) {
+            this.findViewById(R.id.sb_frequencySeekBar).setEnabled(true);
+        }
+        if(enableFrequencyEditText) {
+            this.findViewById(R.id.et_frequency).setEnabled(true);
+        }
+    }
+
     private Modulation.TxMode getCurrentTxMode(){
         Spinner txModeSpinner = (Spinner) this.findViewById(R.id.sp_modulation);
         int idx = txModeSpinner.getSelectedItemPosition();
@@ -343,6 +416,24 @@ public class WalkieTalkieView extends LinearLayout {
         }
     }
 
+    private FREQUENCY_BAND getSelectedFrequencyBand(){
+        switch(this.selectedFrequencyBand){
+            case 0:
+                return FREQUENCY_BAND.B80m;
+            case 1:
+                return FREQUENCY_BAND.B60m;
+            case 2:
+                return FREQUENCY_BAND.B40m;
+            case 3:
+                return FREQUENCY_BAND.B30m;
+            case 4:
+                return FREQUENCY_BAND.B20m;
+            case 5:
+            default:
+                return FREQUENCY_BAND.other;
+        }
+    }
+
     private void startSquelchWatchThread(){
         Log.d(LOGTAG, "starting squelchWatchThread");
         squelchWatchThread = new Thread(new Runnable() {
@@ -359,7 +450,7 @@ public class WalkieTalkieView extends LinearLayout {
                 }
             }
 
-            public void squelchUpdate() {
+            private void squelchUpdate() {
                 //squelch handling
                 if(StateHandler.isDemodulating()) {
                     GuiPreferences guiPreferences = Preferences.GUI_PREFERENCE;
@@ -379,6 +470,7 @@ public class WalkieTalkieView extends LinearLayout {
         });
         squelchWatchThread.start();
     }
+
 
     private void killSquelchWatchThread(){
         Log.d(LOGTAG, "killing squelch watch thread");
