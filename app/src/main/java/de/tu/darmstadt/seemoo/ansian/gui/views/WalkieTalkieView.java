@@ -207,10 +207,11 @@ public class WalkieTalkieView extends LinearLayout {
         squelchSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int i, boolean b) {
-
-                float squelch = i - 100;
-                Preferences.GUI_PREFERENCE.setSquelch(squelch);
-                updateSquelchLabel();
+                if(b) {
+                    float squelch = i - 100;
+                    Preferences.GUI_PREFERENCE.setSquelch(squelch);
+                    updateSquelchLabel();
+                }
             }
 
             @Override
@@ -306,8 +307,9 @@ public class WalkieTalkieView extends LinearLayout {
     }
 
     private void updateSquelchLabel(){
+        Log.d(LOGTAG, "update label "+Preferences.GUI_PREFERENCE.getSquelch());
         TextView squelchLabel = (TextView) this.findViewById(R.id.squelchLabel);
-        squelchLabel.setText(String.format("Squelch: %s dB", Preferences.GUI_PREFERENCE.getSquelch()));
+        squelchLabel.setText(String.format("Squelch: %s dB", (int) Preferences.GUI_PREFERENCE.getSquelch()));
     }
 
     private Modulation.TxMode getCurrentTxMode(){
