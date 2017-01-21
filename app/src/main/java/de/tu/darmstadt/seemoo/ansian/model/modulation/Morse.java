@@ -36,6 +36,11 @@ public class Morse extends Modulation {
     }
 
     @Override
+    public void stop() {
+        // no nothing
+    }
+
+    @Override
     public SamplePacket getNextSamplePacket() {
         if (currentSymbolIndex >= morseCode.length)
             return null;

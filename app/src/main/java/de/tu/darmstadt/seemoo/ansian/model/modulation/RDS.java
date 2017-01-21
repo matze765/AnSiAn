@@ -156,6 +156,11 @@ public class RDS extends Modulation {
     }
 
 
+    @Override
+    public void stop() {
+        this.recorder.stop();
+        this.recorder = null;
+    }
 
     /**
      * Calculates a new Sample Packet

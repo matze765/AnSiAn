@@ -25,6 +25,11 @@ public class FM  extends Modulation {
     }
 
     @Override
+    public void stop() {
+        audioSource.stopRecording();
+    }
+
+    @Override
     public SamplePacket getNextSamplePacket() {
         Log.d(LOGTAG, "getNextSamplePacket()");
         if(this.audioSource == null) return null;

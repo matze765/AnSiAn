@@ -9,9 +9,10 @@ public abstract class Modulation {
 
     protected int sampleRate;
 
+    public abstract void stop();
 
 
-    public static enum TxMode {
+    public enum TxMode {
         RAWIQ, MORSE, PSK31, RDS, FM, USB, LSB;
     }
 

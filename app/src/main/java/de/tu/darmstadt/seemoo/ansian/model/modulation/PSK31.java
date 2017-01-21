@@ -27,6 +27,11 @@ public class PSK31 extends Modulation {
     }
 
     @Override
+    public void stop() {
+        // do nothing
+    }
+
+    @Override
     public SamplePacket getNextSamplePacket() {
         this.currentSymbol = new SamplePacket(samplesPerSymbol);
         if(currentSymbolIndex >= bits.length)

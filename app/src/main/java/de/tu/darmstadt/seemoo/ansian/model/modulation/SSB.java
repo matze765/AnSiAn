@@ -28,6 +28,12 @@ public class SSB extends Modulation {
             Log.e(LOGTAG, "unable to initalize Audio Recorder");
         }
     }
+
+    @Override
+    public void stop() {
+        audioSource.stopRecording();
+    }
+
     @Override
     public SamplePacket getNextSamplePacket() {
         // get audio samples

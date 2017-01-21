@@ -118,6 +118,7 @@ public class Modulator implements Runnable {
                 // this happens if the Thread is interrupted.
                 // may be caused by a user pressing stop
                 Log.d(LOGTAG, "interupted.");
+                modulationInstance.stop();
             }
         } else {
             Log.d(LOGTAG, "reading IQ file.");
