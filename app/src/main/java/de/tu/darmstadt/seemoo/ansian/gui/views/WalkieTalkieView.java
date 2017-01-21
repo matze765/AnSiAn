@@ -23,6 +23,7 @@ import android.widget.TextView;
 import java.util.Locale;
 
 import de.greenrobot.event.EventBus;
+import de.greenrobot.event.Subscribe;
 import de.tu.darmstadt.seemoo.ansian.R;
 import de.tu.darmstadt.seemoo.ansian.control.DataHandler;
 import de.tu.darmstadt.seemoo.ansian.control.StateHandler;
@@ -30,6 +31,7 @@ import de.tu.darmstadt.seemoo.ansian.control.events.FrequencyEvent;
 import de.tu.darmstadt.seemoo.ansian.control.events.RequestFrequencyEvent;
 import de.tu.darmstadt.seemoo.ansian.control.events.RequestStateEvent;
 import de.tu.darmstadt.seemoo.ansian.control.events.SquelchChangeEvent;
+import de.tu.darmstadt.seemoo.ansian.control.events.StateEvent;
 import de.tu.darmstadt.seemoo.ansian.control.events.morse.TransmitEvent;
 import de.tu.darmstadt.seemoo.ansian.model.FFTSample;
 import de.tu.darmstadt.seemoo.ansian.model.demodulation.Demodulation;
@@ -69,6 +71,7 @@ public class WalkieTalkieView extends LinearLayout {
     protected void init() {
         LayoutInflater inflater = (LayoutInflater) getContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         inflater.inflate(R.layout.walkietalkie_view, this);
+        EventBus.getDefault().register(this);
 
         final MiscPreferences miscPreferences = Preferences.MISC_PREFERENCE;
         final GuiPreferences guiPreferences   = Preferences.GUI_PREFERENCE;
@@ -188,7 +191,6 @@ public class WalkieTalkieView extends LinearLayout {
 
                     // if we are currently transmitting, we have to wait until that is stopped
                     if(!isTransmitting) {
-
                         EventBus.getDefault().post(new RequestStateEvent(StateHandler.State.MONITORING));
                     }
                 }
@@ -271,7 +273,6 @@ public class WalkieTalkieView extends LinearLayout {
 
 
 
-
         // this code is mainly copied over from transmit view
         // TODO: find better solution to avoid code duplication
         vgaGainSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
@@ -343,6 +344,19 @@ public class WalkieTalkieView extends LinearLayout {
         miscPreferences.setSend_txMode(getCurrentTxMode());
         StateHandler.setDemodulationMode(getCurrentRxMode());
 
+    }
+
+    @Subscribe
+    public void onEvent(final StateEvent event){
+        Button receiveButton = (Button) this.findViewById(R.id.receiveButton);
+        switch(event.getState()){
+            case MONITORING:
+                receiveButton.setText(R.string.stop_reception);
+                break;
+            case STOPPED:
+                receiveButton.setText(R.string.start_reception);
+                break;
+        }
     }
 
 
@@ -435,6 +449,7 @@ public class WalkieTalkieView extends LinearLayout {
                 return FREQUENCY_BAND.other;
         }
     }
+
 
     private void startSquelchWatchThread(){
         Log.d(LOGTAG, "starting squelchWatchThread");
