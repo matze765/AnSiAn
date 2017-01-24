@@ -350,7 +350,12 @@ public class TransmitView extends LinearLayout {
     }
 
     private void updateTxModeSpinner() {
-        txModeSpinner.setSelection(Preferences.MISC_PREFERENCE.getSend_txMode().ordinal());
+        int selected = Preferences.MISC_PREFERENCE.getSend_txMode().ordinal();
+        if(selected < 4) {
+            txModeSpinner.setSelection(selected);
+        } else{
+            txModeSpinner.setSelection(0);
+        }
     }
 
     private void updateMorseWPMSeekBar() {

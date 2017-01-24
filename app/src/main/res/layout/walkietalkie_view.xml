@@ -4,44 +4,44 @@
     android:layout_height="match_parent"
     android:layout_margin="@dimen/default_margin">
 
-    <RelativeLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_weight="1"
-        android:orientation="horizontal">
-        <TextView
-            android:id="@+id/tv_frequencyBandsLabel"
-            android:layout_width="wrap_content"
+        <RelativeLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_alignBaseline="@+id/sp_frequencyBands"
-            android:layout_alignParentLeft="true"
-            android:text="Frequency Band" />
+            android:layout_weight="1"
+            android:orientation="horizontal">
+            <TextView
+                android:id="@+id/tv_frequencyBandsLabel"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignBaseline="@+id/sp_frequencyBands"
+                android:layout_alignParentLeft="true"
+                android:text="Frequency Band" />
 
-        <Spinner
-            android:id="@+id/sp_frequencyBands"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentRight="true"
-            android:layout_toRightOf="@+id/tv_frequencyBandsLabel"
-            android:entries="@array/frequency_bands" />
+            <Spinner
+                android:id="@+id/sp_frequencyBands"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentRight="true"
+                android:layout_toRightOf="@+id/tv_frequencyBandsLabel"
+                android:entries="@array/frequency_bands" />
 
-        <TextView
-            android:id="@+id/tv_modulationLabel"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignBaseline="@+id/sp_modulation"
-            android:layout_alignParentLeft="true"
-            android:text="Modulation" />
+            <TextView
+                android:id="@+id/tv_modulationLabel"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignBaseline="@+id/sp_modulation"
+                android:layout_alignParentLeft="true"
+                android:text="Modulation" />
 
-        <Spinner
-            android:id="@+id/sp_modulation"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentRight="true"
-            android:layout_marginTop="20dp"
-            android:layout_below="@id/sp_frequencyBands"
-            android:layout_toEndOf="@+id/tv_modulationLabel"
-            android:entries="@array/modulation_modes" />
+           <Spinner
+                android:id="@+id/sp_modulation"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentRight="true"
+                android:layout_marginTop="20dp"
+                android:layout_below="@id/sp_frequencyBands"
+                android:layout_toEndOf="@+id/tv_modulationLabel"
+                android:entries="@array/modulation_modes" />
 
         <TextView
             android:id="@+id/tv_frequencyLabel"

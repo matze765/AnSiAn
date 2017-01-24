@@ -344,6 +344,13 @@ public class WalkieTalkieView extends LinearLayout {
         miscPreferences.setSend_txMode(getCurrentTxMode());
         StateHandler.setDemodulationMode(getCurrentRxMode());
 
+        miscPreferences.setSend_frequency(30000000);
+        guiPreferences.setDemodFrequency(30000000);
+
+
+
+
+
     }
 
     @Subscribe
