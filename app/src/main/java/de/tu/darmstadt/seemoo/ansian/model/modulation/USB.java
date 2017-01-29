@@ -5,7 +5,7 @@ package de.tu.darmstadt.seemoo.ansian.model.modulation;
  */
 
 public class USB extends SSB {
-    public USB(int sampleRate) {
-        super(sampleRate, true);
+    public USB(int sampleRate, int filterBandWidth) {
+        super(sampleRate, filterBandWidth, true);
     }
 }

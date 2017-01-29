@@ -70,6 +70,7 @@ public class MiscPreferences extends MySharedPreferences {
     private boolean send_antennaPower;
     private int send_sampleRate;
     private int send_frequency;
+    private int filter_cutoff;
     private String send_filename;
 
     // morse transmission
@@ -143,6 +144,9 @@ public class MiscPreferences extends MySharedPreferences {
         morse_wpm = getInt("morse_wpm", 6);
         morse_frequency = getInt("morse_frequency", 1000);
 
+        // ssb filter
+        filter_cutoff = getInt("filter_cutoff", 5000);
+
         // rds transmission
         rds_audio_source = getInt("rds_audio_source",0);
 
@@ -211,7 +215,8 @@ public class MiscPreferences extends MySharedPreferences {
         editor.putInt("morse_wpm", morse_wpm);
         editor.putInt("morse_frequency", morse_frequency);
 
-
+        // ssb filter
+        editor.putInt("filter_cut_off", filter_cutoff);
         // rds
         editor.putInt("rds_audio_source", rds_audio_source);
 
@@ -590,5 +595,13 @@ public class MiscPreferences extends MySharedPreferences {
 
     public void setRds_audio_source(int rds_audio_source) {
         this.rds_audio_source = rds_audio_source;
+    }
+
+    public int getFilter_cutoff() {
+        return filter_cutoff;
+    }
+
+    public void setFilter_cutoff(int filter_cutoff) {
+        this.filter_cutoff = filter_cutoff;
     }
 }

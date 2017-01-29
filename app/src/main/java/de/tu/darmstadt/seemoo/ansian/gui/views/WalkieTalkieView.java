@@ -27,6 +27,7 @@ import de.greenrobot.event.Subscribe;
 import de.tu.darmstadt.seemoo.ansian.R;
 import de.tu.darmstadt.seemoo.ansian.control.DataHandler;
 import de.tu.darmstadt.seemoo.ansian.control.StateHandler;
+import de.tu.darmstadt.seemoo.ansian.control.events.ChangeChannelWidthEvent;
 import de.tu.darmstadt.seemoo.ansian.control.events.FrequencyEvent;
 import de.tu.darmstadt.seemoo.ansian.control.events.RequestFrequencyEvent;
 import de.tu.darmstadt.seemoo.ansian.control.events.RequestStateEvent;
@@ -85,9 +86,11 @@ public class WalkieTalkieView extends LinearLayout {
         CheckBox antennaPowerCheckBox = (CheckBox) findViewById(R.id.cb_antenna);
         SeekBar squelchSeekBar = (SeekBar) this.findViewById(R.id.squelchSeekBar);
         Spinner modulationSpinner = (Spinner) this.findViewById(R.id.sp_modulation);
+        SeekBar filterBandWidthSeekBar = (SeekBar) this.findViewById(R.id.sb_filterBandWidth);
 
         vgaGainSeekBar.setProgress(miscPreferences.getSend_vgaGain());
         squelchSeekBar.setProgress((int)guiPreferences.getSquelch()+100);
+        filterBandWidthSeekBar.setProgress(miscPreferences.getFilter_cutoff());
 
 
         modulationSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
@@ -96,6 +99,7 @@ public class WalkieTalkieView extends LinearLayout {
                 miscPreferences.setDemodulation(getCurrentRxMode());
                 miscPreferences.setSend_txMode(getCurrentTxMode());
                 StateHandler.setDemodulationMode(getCurrentRxMode());
+                updateVisibility(getCurrentTxMode());
             }
 
             @Override
@@ -153,6 +157,26 @@ public class WalkieTalkieView extends LinearLayout {
 
             }
         });
+        filterBandWidthSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int filterBandWidth, boolean b) {
+                miscPreferences.setSend_frequency(filterBandWidth);
+                if(isReceiving && !isTransmitting){
+                    EventBus.getDefault().post(new ChangeChannelWidthEvent(filterBandWidth));
+                }
+                updateBandWidthLabel();
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+
+            }
+        });
 
 
         receiveButton.setOnClickListener(new OnClickListener() {
@@ -160,7 +184,7 @@ public class WalkieTalkieView extends LinearLayout {
             public void onClick(View view) {
                 if(isReceiving){
                     isReceiving = false;
-                    receiveButton.setText(R.string.start_reception);
+                    receiveButton.setText(R.string.start_rx);
                     killSquelchWatchThread();
 
 
@@ -178,7 +202,7 @@ public class WalkieTalkieView extends LinearLayout {
                     }
                 } else {
                     isReceiving = true;
-                    receiveButton.setText(R.string.stop_reception);
+                    receiveButton.setText(R.string.stop_rx);
 
                     startSquelchWatchThread();
 
@@ -211,7 +235,7 @@ public class WalkieTalkieView extends LinearLayout {
 
                 if(!isTransmitting){
                     isTransmitting = true;
-                    transmitButton.setText(R.string.stop);
+                    transmitButton.setText(R.string.stop_tx);
                     if(isReceiving) {
                         // stop the reception
                         EventBus.getDefault().post(new RequestStateEvent(StateHandler.State.STOPPED));
@@ -223,7 +247,7 @@ public class WalkieTalkieView extends LinearLayout {
                     EventBus.getDefault().post(new TransmitEvent(TransmitEvent.State.MODULATION, TransmitEvent.Sender.GUI));
                 } else {
                     isTransmitting = false;
-                    transmitButton.setText(R.string.transmit);
+                    transmitButton.setText(R.string.start_tx);
 
                     // stop the transmission
                     EventBus.getDefault().post(new TransmitEvent(TransmitEvent.State.TXOFF, TransmitEvent.Sender.GUI));
@@ -343,6 +367,7 @@ public class WalkieTalkieView extends LinearLayout {
         });
         updateSquelchLabel();
         updateVgaGainLabel();
+        updateBandWidthLabel();
         miscPreferences.setDemodulation(getCurrentRxMode());
         miscPreferences.setSend_txMode(getCurrentTxMode());
         StateHandler.setDemodulationMode(getCurrentRxMode());
@@ -350,7 +375,7 @@ public class WalkieTalkieView extends LinearLayout {
         miscPreferences.setSend_frequency(30000000);
         guiPreferences.setDemodFrequency(30000000);
 
-
+        updateVisibility(getCurrentTxMode());
 
 
 
@@ -361,10 +386,10 @@ public class WalkieTalkieView extends LinearLayout {
         Button receiveButton = (Button) this.findViewById(R.id.receiveButton);
         switch(event.getState()){
             case MONITORING:
-                receiveButton.setText(R.string.stop_reception);
+                receiveButton.setText(R.string.stop_rx);
                 break;
             case STOPPED:
-                receiveButton.setText(R.string.start_reception);
+                receiveButton.setText(R.string.stop_rx);
                 break;
         }
     }
@@ -381,12 +406,37 @@ public class WalkieTalkieView extends LinearLayout {
         squelchLabel.setText(String.format("Squelch: %s dB", (int) Preferences.GUI_PREFERENCE.getSquelch()));
     }
 
+    private void updateBandWidthLabel(){
+        TextView bandwidthLabel = (TextView) this.findViewById(R.id.tv_filterBandWidth);
+        SeekBar bandWidthSeekBar = (SeekBar) this.findViewById(R.id.sb_filterBandWidth);
+        bandwidthLabel.setText(String.format(getContext().getString(R.string.filter_bandwidth_s), bandWidthSeekBar.getProgress()));
+    }
+
+    private void updateVisibility(Modulation.TxMode mode){
+        SeekBar bandWidthSeekbar = (SeekBar) this.findViewById(R.id.sb_filterBandWidth);
+        TextView bandWidthLabel = (TextView) this.findViewById(R.id.tv_filterBandWidth);
+
+        switch(mode){
+            case FM:
+                bandWidthSeekbar.setVisibility(INVISIBLE);
+                bandWidthLabel.setVisibility(INVISIBLE);
+                break;
+            case USB:
+            case LSB:
+                bandWidthSeekbar.setVisibility(VISIBLE);
+                bandWidthLabel.setVisibility(VISIBLE);
+                updateBandWidthLabel();
+                break;
+        }
+    }
+
     private void disableSettings(boolean disableFrequencyEditText, boolean disableFrequencySeekBar){
         this.findViewById(R.id.sp_frequencyBands).setEnabled(false);
         this.findViewById(R.id.sp_modulation).setEnabled(false);
         this.findViewById(R.id.cb_amp).setEnabled(false);
         this.findViewById(R.id.cb_antenna).setEnabled(false);
         this.findViewById(R.id.vgaGainSeekBar).setEnabled(false);
+        this.findViewById(R.id.sb_filterBandWidth).setEnabled(false);
 
         if(disableFrequencySeekBar) {
             this.findViewById(R.id.sb_frequencySeekBar).setEnabled(false);
@@ -402,6 +452,7 @@ public class WalkieTalkieView extends LinearLayout {
         this.findViewById(R.id.cb_amp).setEnabled(true);
         this.findViewById(R.id.cb_antenna).setEnabled(true);
         this.findViewById(R.id.vgaGainSeekBar).setEnabled(true);
+        this.findViewById(R.id.sb_filterBandWidth).setEnabled(true);
 
         if(enableFrequencySeekBar) {
             this.findViewById(R.id.sb_frequencySeekBar).setEnabled(true);

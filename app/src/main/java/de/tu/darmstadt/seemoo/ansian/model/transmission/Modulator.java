@@ -48,7 +48,7 @@ public class Modulator implements Runnable {
         int sampleRate = Preferences.MISC_PREFERENCE.getSend_sampleRate();
         int rdsAudioSource = Preferences.MISC_PREFERENCE.getRds_audio_source();
 
-
+        int filterBandWidth = Preferences.MISC_PREFERENCE.getFilter_cutoff();
 
 
 
@@ -70,10 +70,10 @@ public class Modulator implements Runnable {
                 modulationInstance = new FM(sampleRate);
                 break;
             case USB:
-                modulationInstance = new USB(sampleRate);
+                modulationInstance = new USB(sampleRate, filterBandWidth);
                 break;
             case LSB:
-                modulationInstance = new LSB(sampleRate);
+                modulationInstance = new LSB(sampleRate, filterBandWidth);
                 break;
             case RAWIQ:
                 // special case

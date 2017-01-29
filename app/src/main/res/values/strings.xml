@@ -83,14 +83,12 @@
     <string name="cb_antenna_text">Antenna Port Power</string>
     <string name="tv_morseFreqLabel_text">Morse Frequency (Hz)</string>
     <string name="morseWPMLabel_text" formatted = "false">%s WPM - %s ms per Dit</string>
-    <string name="start_reception">START RECEPTION</string>
-    <string name="stop_reception">STOP RECEPTION</string>
-    <string name="stop">STOP</string>
-    <string name="transmit">TRANSMIT</string>
     <string name="start_rx">START RX</string>
     <string name="start_tx">START TX</string>
-    <string name="squelch_s">Squelch: %s</string>
-    <string name="filter_bandwidth_s">Filter Bandwidth %s</string>
+    <string name="stop_rx">STOP RX</string>
+    <string name="stop_tx">STOP TX</string>
+    <string name="squelch_s">Squelch: %s dB</string>
+    <string name="filter_bandwidth_s">Filter Bandwidth: %s Hz</string>
     <string name="frequency_hz">Frequency (Hz)</string>
     <string name="modulation">Modulation</string>
     <string name="frequency_band">Frequency Band</string>

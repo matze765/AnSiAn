@@ -18,11 +18,13 @@ public class SSB extends Modulation {
     private AudioSource audioSource;
     private int sampleRate;
     private boolean isUpperSideband;
+    private int filterBandWidth;
 
 
-    public SSB(int sampleRate, boolean isUpperSideBand){
+    public SSB(int sampleRate, int filterBandWidth, boolean isUpperSideBand){
         audioSource = new AudioSource(sampleRate);
         this.sampleRate = sampleRate;
+        this.filterBandWidth = filterBandWidth;
         this.isUpperSideband = isUpperSideBand;
         if(!audioSource.startRecording()){
             Log.e(LOGTAG, "unable to initalize Audio Recorder");
@@ -43,8 +45,8 @@ public class SSB extends Modulation {
 
         // filter out the upper or lower side band
         ComplexFirFilter filter = ComplexFirFilter.createBandPass(1,1, audioSource.getAudioSamplerate(),
-                isUpperSideband ? 0 : -8000,
-                isUpperSideband ? 8000: 0,
+                isUpperSideband ? 0 : -this.filterBandWidth,
+                isUpperSideband ? this.filterBandWidth: 0,
                 audioSource.getAudioSamplerate()*0.01f, 40);
 
         SamplePacket output = new SamplePacket(packet.size());

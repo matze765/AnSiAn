@@ -100,6 +100,11 @@ public class Demodulator extends Thread {
 		preferences = Preferences.MISC_PREFERENCE;
 		demodulation = Demodulation.getDemodulation(type);
 
+
+		if(preferences.getFilter_cutoff() != -1) {
+			demodulation.setUserFilterCutOff(preferences.getFilter_cutoff());
+		}
+
 		// Create internal sample buffers:
 		// Note that we create the buffers for the case that there is no
 		// downsampling necessary
