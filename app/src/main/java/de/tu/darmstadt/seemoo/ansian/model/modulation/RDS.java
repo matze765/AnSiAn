@@ -39,6 +39,8 @@ public class RDS extends Modulation {
     private static final float PILOT_FREQUENCY = 19000;
     private static final float TONE_FREQUENCY = 57000;
     private static final int AUDIO_SAMPLERATE = 44100;
+
+    private static final int RDS_FREQUENCY = 200000;
     private int sampleRate;
 
     private float[] preCalculatedPacket;
@@ -58,6 +60,7 @@ public class RDS extends Modulation {
      */
     public RDS(String stationName, int sampleRate, boolean fileAudioSource) {
         super();
+        Log.d(LOGTAG,"starting precalculation time="+System.currentTimeMillis());
         this.readFromAudioFile = fileAudioSource;
 
 
@@ -94,7 +97,7 @@ public class RDS extends Modulation {
         float cutoff = 2800;
         float transWidth = 300;
         float attenuation = 3;
-        FirFilter filter1 = FirFilter.createLowPass(1, 1, 1000000, cutoff, transWidth, attenuation);
+        FirFilter filter1 = FirFilter.createLowPass(1, 1,RDS_FREQUENCY, cutoff, transWidth, attenuation);
         filter1.filterReal(packetManchester, filteredPacket, 0, preCalculatedPacket.length);
 
         preCalculatedPacket = filteredPacket.getRe();
@@ -103,14 +106,16 @@ public class RDS extends Modulation {
 
         // create pilot and tone
 
-        float[] pilot = this.createTone(PILOT_FREQUENCY, this.sampleRate, this.preCalculatedPacket.length);
-        float[] tone = this.createTone(TONE_FREQUENCY, this.sampleRate, this.preCalculatedPacket.length);
+        float[] pilot = this.createTone(PILOT_FREQUENCY, RDS_FREQUENCY, this.preCalculatedPacket.length);
+        float[] tone = this.createTone(TONE_FREQUENCY, RDS_FREQUENCY, this.preCalculatedPacket.length);
 
         ArrayHelper.packetMultiply(preCalculatedPacket, tone);
 
         ArrayHelper.packetMultiply(preCalculatedPacket, 0.3f);
 
         ArrayHelper.packetAdd(preCalculatedPacket, pilot);
+
+        preCalculatedPacket = ArrayHelper.upsample(preCalculatedPacket, 1000000 / RDS_FREQUENCY);
 
 
         Log.d(LOGTAG, "finished preparing a packet with length=" + preCalculatedPacket.length);
@@ -131,6 +136,8 @@ public class RDS extends Modulation {
             this.audioSource = new AudioSource(1000000, audioBufferSize);
             this.audioSource.startRecording();
         }
+
+        Log.d(LOGTAG,"finished precalculation time="+System.currentTimeMillis());
     }
 
 
@@ -398,7 +405,7 @@ public class RDS extends Modulation {
      * @return the manchester encoded signal at 1 MHz. -1 < signal < +1
      */
     private float[] calculateManchesterEncodingAndUpsampling(byte[] differentialEncoded) {
-        int halfSamplesPerBit = (int) (this.sampleRate / BAUDRATE) / 2;
+        int halfSamplesPerBit = (int) (RDS_FREQUENCY / BAUDRATE) / 2;
         float[] packet = new float[halfSamplesPerBit * 2 * differentialEncoded.length];
 
 

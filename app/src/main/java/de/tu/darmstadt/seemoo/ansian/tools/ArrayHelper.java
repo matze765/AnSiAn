@@ -234,7 +234,7 @@ public class ArrayHelper {
 		float[] result = new float[buffer.length * factor];
 		for (int i = 0; i < buffer.length; i++) {
 			for (int j = 0; j < factor; j++) {
-				result[i * 23 + j] = buffer[i];
+				result[i * factor + j] = buffer[i];
 			}
 		}
 		return result;
