@@ -87,6 +87,14 @@
     <string name="stop_reception">STOP RECEPTION</string>
     <string name="stop">STOP</string>
     <string name="transmit">TRANSMIT</string>
+    <string name="start_rx">START RX</string>
+    <string name="start_tx">START TX</string>
+    <string name="squelch_s">Squelch: %s</string>
+    <string name="filter_bandwidth_s">Filter Bandwidth %s</string>
+    <string name="frequency_hz">Frequency (Hz)</string>
+    <string name="modulation">Modulation</string>
+    <string name="frequency_band">Frequency Band</string>
+    <string name="_30000000">30000000</string>
 
 
 </resources>

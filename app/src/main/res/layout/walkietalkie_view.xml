@@ -1,108 +1,127 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical" android:layout_width="match_parent"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:layout_margin="@dimen/default_margin">
+    android:layout_margin="@dimen/default_margin"
+    android:orientation="vertical">
 
-        <RelativeLayout
-            android:layout_width="match_parent"
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:orientation="horizontal">
+
+        <TextView
+            android:id="@+id/tv_frequencyBandsLabel"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:orientation="horizontal">
-            <TextView
-                android:id="@+id/tv_frequencyBandsLabel"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_alignBaseline="@+id/sp_frequencyBands"
-                android:layout_alignParentLeft="true"
-                android:text="Frequency Band" />
+            android:layout_alignBaseline="@+id/sp_frequencyBands"
+            android:layout_alignParentStart="true"
+            android:text="@string/frequency_band" />
 
-            <Spinner
-                android:id="@+id/sp_frequencyBands"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_alignParentRight="true"
-                android:layout_toRightOf="@+id/tv_frequencyBandsLabel"
-                android:entries="@array/frequency_bands" />
+        <Spinner
+            android:id="@+id/sp_frequencyBands"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true"
+            android:layout_toEndOf="@+id/tv_frequencyBandsLabel"
+            android:entries="@array/frequency_bands" />
 
-            <TextView
-                android:id="@+id/tv_modulationLabel"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_alignBaseline="@+id/sp_modulation"
-                android:layout_alignParentLeft="true"
-                android:text="Modulation" />
+        <TextView
+            android:id="@+id/tv_modulationLabel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignBaseline="@+id/sp_modulation"
+            android:layout_alignParentStart="true"
+            android:text="@string/modulation" />
 
-           <Spinner
-                android:id="@+id/sp_modulation"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_alignParentRight="true"
-                android:layout_marginTop="20dp"
-                android:layout_below="@id/sp_frequencyBands"
-                android:layout_toEndOf="@+id/tv_modulationLabel"
-                android:entries="@array/modulation_modes" />
+        <Spinner
+            android:id="@+id/sp_modulation"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true"
+            android:layout_below="@id/sp_frequencyBands"
+            android:layout_marginTop="20dp"
+            android:layout_toEndOf="@+id/tv_modulationLabel"
+            android:entries="@array/modulation_modes" />
 
         <TextView
             android:id="@+id/tv_frequencyLabel"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignBaseline="@+id/et_frequency"
-            android:text="Frequency (Hz)" />
+            android:text="@string/frequency_hz"
+            android:labelFor="@id/et_frequency"/>
+
         <EditText
             android:id="@+id/et_frequency"
+            android:inputType="number"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_below="@id/sp_modulation"
             android:layout_toEndOf="@+id/tv_frequencyLabel"
-            android:text="30000000" />
+            android:text="@string/_30000000" />
 
-        <LinearLayout
+        <SeekBar
+            android:id="@+id/sb_frequencySeekBar"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_below="@id/et_frequency"
-            android:orientation="vertical">
+            android:max="100"
+            android:progress="40" />
 
-            <SeekBar
-                android:id="@+id/sb_frequencySeekBar"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:max="100"
-                android:progress="40" />
-
-        <RelativeLayout
-            android:layout_width="match_parent"
+        <TextView
+            android:id="@+id/tv_filterBandWidth"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_below="@id/sb_frequencySeekBar"
-            android:layout_weight="1"
-            android:orientation="horizontal">
+            android:text="@string/filter_bandwidth_s" />
 
-            <CheckBox
-                android:id="@+id/cb_amp"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_alignParentLeft="true"
-                android:text="@string/cb_amp_text" />
+        <SeekBar
+            android:id="@+id/sb_filterBandWidth"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/tv_filterBandWidth"
+            android:max="5000"
+            android:progress="5000" />
 
-            <CheckBox
-                android:id="@+id/cb_antenna"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_alignParentRight="true"
-                android:text="@string/cb_antenna_text" />
-
-        </RelativeLayout>
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:orientation="horizontal">
+            android:layout_below="@id/sb_filterBandWidth"
+            android:layout_marginTop="15dp"
+            android:orientation="vertical">
+
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="horizontal">
+
+                <CheckBox
+                    android:id="@+id/cb_amp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentStart="true"
+                    android:text="@string/cb_amp_text" />
+
+                <CheckBox
+                    android:id="@+id/cb_antenna"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentEnd="true"
+                    android:text="@string/cb_antenna_text"
+                    tools:ignore="RelativeOverlap" />
+
+            </RelativeLayout>
+
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
                 android:orientation="vertical">
 
                 <TextView
@@ -117,60 +136,55 @@
                     android:layout_height="match_parent"
                     android:max="100"
                     android:progress="40" />
+
+
             </LinearLayout>
 
-
-        </LinearLayout>
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:orientation="horizontal">
+                android:orientation="vertical">
 
-                <LinearLayout
-                    android:layout_width="match_parent"
+                <TextView
+                    android:id="@+id/squelchLabel"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:orientation="vertical">
+                    android:text="@string/squelch_s" />
 
-                    <TextView
-                        android:id="@+id/squelchLabel"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Squelch: %s" />
-
-                    <SeekBar
-                        android:id="@+id/squelchSeekBar"
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:max="110"
-                        android:progress="40" />
-                </LinearLayout>
-
-
+                <SeekBar
+                    android:id="@+id/squelchSeekBar"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:max="110"
+                    android:progress="40" />
             </LinearLayout>
 
-            <Button
-                android:id="@+id/receiveButton"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_weight="2"
-                android:text="START RECEPTION" />
+
         </LinearLayout>
 
 
     </RelativeLayout>
-    <Button
-        android:id="@+id/transmitButton"
-        android:layout_width="200dp"
-        android:layout_height="100dp"
+
+    <RelativeLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:layout_gravity="center"
-        android:layout_weight="1"
+        android:orientation="vertical">
 
-        android:text="Transmit" />
+        <Button
+            android:id="@+id/receiveButton"
+            android:layout_width="150dp"
+            android:layout_height="100dp"
+            android:text="@string/start_rx" />
 
-
+        <Button
+            android:id="@+id/transmitButton"
+            android:layout_width="150dp"
+            android:layout_height="100dp"
+            android:layout_toEndOf="@+id/receiveButton"
+            android:text="@string/start_tx" />
+    </RelativeLayout>
 
 
 </LinearLayout>
