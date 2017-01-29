@@ -32,7 +32,7 @@ public class IQSink implements Runnable {
      * Defines the time the IQSink waits for data to arrive in the queue.
      * After this time the IQSink kills itself
      */
-    private static final int TIMEOUT_MILLISECONDS = 1000;
+    private static final int TIMEOUT_MILLISECONDS = 5000;
 
     private Hackrf hackrf = null;
     private BlockingQueue<byte[]> hackRFSink = null;
@@ -74,7 +74,7 @@ public class IQSink implements Runnable {
             Log.d(LOGTAG, "ok.\nSetting Antenna Power to " + antennaPower + " ... ");
             hackrf.setAntennaPower(antennaPower);
             Log.d(LOGTAG, "ok.\n\n");
-            this.hackRFSink = this.hackrf.startTX();
+
             EventBus.getDefault().post(new TransmitEvent(TransmitEvent.State.TXACTIVE, TransmitEvent.Sender.TX));
             return true;
         } catch (HackrfUsbException e) {
@@ -94,11 +94,6 @@ public class IQSink implements Runnable {
      */
     @Override
     public void run() {
-        if (this.hackRFSink == null) {
-            Log.e(LOGTAG, "call setup() first to init HackRf");
-            return;
-        }
-
         BlockingQueue<byte[]> source = TxDataHandler.getInstance().getTransmitIQQueue();
         try {
             while (true) {
@@ -107,6 +102,10 @@ public class IQSink implements Runnable {
                     Log.d(LOGTAG, "no more packets left in queue. I'm done.");
                     break;
                 } else {
+                    if(this.hackRFSink == null) {
+                        this.hackRFSink = this.hackrf.startTX();
+                    }
+
                     this.hackRFSink.put(buffer);
                 }
             }
@@ -114,6 +113,8 @@ public class IQSink implements Runnable {
             // this happens if the Thread is interrupted.
             // may be caused by a user pressing stop
             Log.d(LOGTAG, "interupted.");
+        } catch (HackrfUsbException e) {
+            e.printStackTrace();
         }
         Log.d(LOGTAG, "finished to send");
         // notify UI

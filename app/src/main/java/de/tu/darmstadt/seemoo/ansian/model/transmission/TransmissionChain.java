@@ -56,7 +56,11 @@ public class TransmissionChain implements HackrfCallbackInterface {
                 stop();
                 break;
             case MODULATION:
-
+                /*
+                if(event.getSender() == TransmitEvent.Sender.TX) break;
+                EventBus.getDefault().post(new TransmitEvent(TransmitEvent.State.MODULATION, TransmitEvent.Sender.TX));
+                */
+                TxDataHandler.getInstance().clearAll();
                 Context context = MainActivity.instance;
                 iqSink = new IQSink();
                 //iqSink = new FileSink();
@@ -115,7 +119,6 @@ public class TransmissionChain implements HackrfCallbackInterface {
 
         iqSink.setHackrf(hackrf);
         iqSink.setup();
-
         // create threads
         this.modulatorThread = new Thread(modulator);
         this.iqConverterThread = new Thread(new IQConverter(iqSink));

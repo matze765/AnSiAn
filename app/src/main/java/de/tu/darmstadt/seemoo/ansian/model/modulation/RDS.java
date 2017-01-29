@@ -19,6 +19,7 @@ import java.math.BigInteger;
 import java.util.Arrays;
 import java.util.jar.Manifest;
 
+import de.tu.darmstadt.seemoo.ansian.model.AudioSource;
 import de.tu.darmstadt.seemoo.ansian.model.SamplePacket;
 import de.tu.darmstadt.seemoo.ansian.model.filter.FirFilter;
 import de.tu.darmstadt.seemoo.ansian.tools.ArrayHelper;
@@ -37,16 +38,11 @@ public class RDS extends Modulation {
     private static final float BAUDRATE = 1187.5f;
     private static final float PILOT_FREQUENCY = 19000;
     private static final float TONE_FREQUENCY = 57000;
-
     private static final int AUDIO_SAMPLERATE = 44100;
-
-    private static final int MAX_PACKETS = 1;
-
     private int sampleRate;
 
     private float[] preCalculatedPacket;
-    private int packetCtr;
-    private AudioRecord recorder = null;
+    private AudioSource audioSource;
     private BufferedInputStream audioFile = null;
     private boolean readFromAudioFile;
 
@@ -118,7 +114,6 @@ public class RDS extends Modulation {
 
 
         Log.d(LOGTAG, "finished preparing a packet with length=" + preCalculatedPacket.length);
-        this.packetCtr = 0;
 
         if (readFromAudioFile) {
 
@@ -132,34 +127,29 @@ public class RDS extends Modulation {
             }
         } else {
             // init recorder to get audio from microphone
-
-
-            int RECORDER_CHANNELS = AudioFormat.CHANNEL_IN_MONO;
-            int RECORDER_AUDIO_ENCODING = AudioFormat.ENCODING_PCM_FLOAT;
-
-            Log.d(LOGTAG, "min buffer size=" + AudioRecord.getMinBufferSize(AUDIO_SAMPLERATE, RECORDER_CHANNELS, RECORDER_AUDIO_ENCODING));
-
-            this.recorder = new AudioRecord(MediaRecorder.AudioSource.MIC,
-                    AUDIO_SAMPLERATE, RECORDER_CHANNELS,
-                    RECORDER_AUDIO_ENCODING, 7168);
-
-
-            Log.d(LOGTAG, "starting to record");
-
-            if (this.recorder.getState() == AudioRecord.STATE_INITIALIZED) {
-                this.recorder.startRecording();
-            } else {
-                this.recorder = null;
-                Log.e(LOGTAG, "unable to initalize Audio Recorder");
-            }
+            int audioBufferSize = this.preCalculatedPacket.length / (this.sampleRate / AUDIO_SAMPLERATE);
+            this.audioSource = new AudioSource(1000000, audioBufferSize);
+            this.audioSource.startRecording();
         }
     }
 
 
     @Override
     public void stop() {
-        this.recorder.stop();
-        this.recorder = null;
+        if(this.audioSource != null) {
+            this.audioSource.stopRecording();
+            this.audioSource = null;
+        }
+
+
+        if(this.audioFile != null){
+            try {
+                this.audioFile.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            this.audioFile = null;
+        }
     }
 
     /**
@@ -173,7 +163,7 @@ public class RDS extends Modulation {
     public SamplePacket getNextSamplePacket() {
         Log.d(LOGTAG, "getNextSamplePacket()");
 
-        if (this.recorder == null && this.audioFile == null) return null;
+        if (this.audioSource == null && this.audioFile == null) return null;
         float[] upsampled;
         if (readFromAudioFile) {
 
@@ -203,28 +193,15 @@ public class RDS extends Modulation {
             }
 
         } else {
-
-
-            if (packetCtr++ >= MAX_PACKETS) {
-                Log.d(LOGTAG, "stopping to send");
-                this.recorder.release();
-                return null;
-            }
-
-
             int requiredAudioSamples = this.preCalculatedPacket.length / (this.sampleRate / AUDIO_SAMPLERATE);
             Log.d(LOGTAG, "this.preCalculatedPacket.size()=" + this.preCalculatedPacket.length);
             Log.d(LOGTAG, "requiredAudioSamples=" + requiredAudioSamples);
             Log.d(LOGTAG, "AUDIO_SAMPLERATE=" + AUDIO_SAMPLERATE);
             Log.d(LOGTAG, "this.sampleRate=" + this.sampleRate);
-            float[] buffer = new float[requiredAudioSamples];
-
-            this.recorder.read(buffer, 0, buffer.length, AudioRecord.READ_BLOCKING);
-            upsampled = ArrayHelper.upsample(buffer, (int) Math.ceil((float) this.sampleRate / AUDIO_SAMPLERATE));
-
-
+            Log.d(LOGTAG, "now waiting for audio samples");
+            upsampled = this.audioSource.getNextSamplesUpsampled();
+            Log.d(LOGTAG, "finished waiting for audio samples");
             Log.d(LOGTAG, "upsampled_length=" + upsampled.length);
-
             //this.packetNormalize(upsampled);
         }
         // upsampled is a bit too long, so we throw away a few samples here
