@@ -37,7 +37,7 @@ public class AudioSource {
     public boolean startRecording(){
         this.recorder = new AudioRecord(MediaRecorder.AudioSource.MIC,
                 AUDIO_SAMPLERATE, RECORDER_CHANNELS,
-                RECORDER_AUDIO_ENCODING, 7168);
+                RECORDER_AUDIO_ENCODING, 4*this.bufferSize);
         Log.d(LOGTAG, "starting to record");
         if (this.recorder.getState() == AudioRecord.STATE_INITIALIZED) {
             this.recorder.startRecording();

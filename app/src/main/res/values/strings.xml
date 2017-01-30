@@ -91,7 +91,7 @@
     <string name="filter_bandwidth_s">Filter Bandwidth: %s Hz</string>
     <string name="frequency_hz">Frequency (Hz)</string>
     <string name="modulation">Modulation</string>
-    <string name="frequency_band">Frequency Band</string>
+    <string name="frequency_band">Band</string>
     <string name="_30000000">30000000</string>
 
 

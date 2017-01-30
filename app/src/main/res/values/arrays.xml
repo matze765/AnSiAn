@@ -209,11 +209,11 @@
     </string-array>
 
     <string-array name="frequency_bands">
-        <item>80m</item>
-        <item>60m</item>
-        <item>40m</item>
-        <item>30m</item>
-        <item>20m</item>
+        <item>80m (3.5MHz - 3.8MHz)</item>
+        <item>60m (5.3MHz - 5.4MHz)</item>
+        <item>40m (7.0MHz - 7.2MHz)</item>
+        <item>30m (10.1MHz - 10.2MHz)</item>
+        <item>20m (14.0MHz - 14.4MHz)</item>
         <item>other</item>
     </string-array>
 

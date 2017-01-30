@@ -43,6 +43,7 @@ public class SSB extends Modulation {
 
         if(packet == null) return null;
 
+        // TODO: optimization: save the filter, only recreate it if the filterBandwidth changes
         // filter out the upper or lower side band
         ComplexFirFilter filter = ComplexFirFilter.createBandPass(1,1, audioSource.getAudioSamplerate(),
                 isUpperSideband ? 0 : -this.filterBandWidth,
