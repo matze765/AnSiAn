@@ -68,3 +68,49 @@ Table~\ref{tab:alpha:feature1} lists the single tasks for feature 1. We decided 
 	
 	Figure~\ref{fig:agilefant_alpha} gives the distribution of the workload as exported from our tracking tool Agilefant. The workload was not well distributed at the beginning, mainly focused on single weekends with long breaks in between. During the last weeks before the deadline this became slightly more distributed. 
 
+\section{Beta Release: 02.02.2017}
+The (ambitious) goal of this release was to finish all remaining features. This goal was not achieved, due to lack of time. However, we already finished a good portion of the documentation, which was initially planned for the final release. 
+
+\begin{table}
+	\centering
+	\caption{Expected and Actual Workload for Features in Beta Release}
+	\label{tab:beta:features}
+	\begin{tabular}{ l | c | c }
+		& expected  & actual \\ \hline
+		Walkie Talkie & 60h & 65h \\  \hline
+		BPSK Demodulation Improvement & 55h & 0h \\  \hline
+		Documentation & 0h & 13h \\ \hline \hline
+		Bug Fixing of previous features & 0h & 10h \\ \hline \hline 
+		Total & 115h & 88h 
+	\end{tabular}
+\end{table}
+Table~\ref{tab:beta:features} shows the expected and actual time spent implementing the features. The Walkie Talkie was expected to take 60 hours and was completed in 65 hours. The BPSK feature was expected to take 55 hours, but it was decided to exclude this feature, because the benefit of an improved BPSK demodulation implementation is not high enough. 
+Additionally, we spent 13 hours creating this documentation and needed 10 unplanned hours to fix problems in the transmission chain and RDS implementation. In total we have spent 88 hours which is way below the planned value of 115 hours. 
+
+In total we already spent 194 hours (20+86+88) on this project, such that we have 66 hours left. We are planning to use this time to implement \ac{SSTV}, to finalize the documentation and to prepare the final presentation. 
+
+
+	\begin{table}
+	\centering
+	\caption{Expected and Actual Workload for Feature 4: Walkie Talkie}
+	\label{tab:alpha:feature4}
+	\begin{tabular}{ l | c | c }
+		& expected  & actual \\ \hline
+		Task 17: Design and Implement UI& 15h & 19h \\ \hline
+		Task 18: Implementation AM& 15h & 0h  \\ \hline
+		Task 19: Implementation FM& 10h & 18h  \\ \hline
+		Task 20: Implementation SSB& 10h & 14h \\ \hline 
+		Task 21: Testing and Bug Fixing& 10h & 14h \\ \hline \hline
+		Total & 60h & 65h
+	\end{tabular}
+\end{table}
+
+Table~\ref{tab:alpha:feature4} shows the actual time spent on each task in the Walkie Talkie feature. We underestimated every task. The implementation of AM was excluded, because it is not widely used. 
+Figure~\ref{fig:agilefant_beta} shows the distribution of the workload over the time for the beta release. We see that there was no activity during the last week of December and first week of January (other than planned). The weeks after that are roughly evenly distributed. 
+
+\begin{figure}
+	\centering
+	\includegraphics[width=1\linewidth]{gfx/Agilefant_Beta.jpg}
+	\caption{Workload Distribution for Beta Release (23.12.2016-02.02.2017)}
+	\label{fig:agilefant_beta}
+\end{figure}
