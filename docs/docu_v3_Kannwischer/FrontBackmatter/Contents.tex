@@ -49,13 +49,14 @@
     \pdfbookmark[1]{\listtablename}{lot}
     \listoftables
         
-    \vspace*{8ex}
-%   \newpage
+
+   \newpage
     
     %*******************************************************
     % List of Listings
     %*******************************************************      
 	  %\phantomsection 
+	 
     \refstepcounter{dummy}
     %\addcontentsline{toc}{chapter}{\lstlistlistingname}
     \pdfbookmark[1]{\lstlistlistingname}{lol}
@@ -73,7 +74,12 @@
     \markboth{\spacedlowsmallcaps{Acronyms}}{\spacedlowsmallcaps{Acronyms}}
     \chapter*{Acronyms}
     %\glsaddall
-    \printglossary[type=\acronymtype,style=long]
+    %\printglossary
+    \input{acronyms.tex}
+    
+    
+%    \printglossary[type=\acronymtype,style=long]
+
 
 \endgroup
 
