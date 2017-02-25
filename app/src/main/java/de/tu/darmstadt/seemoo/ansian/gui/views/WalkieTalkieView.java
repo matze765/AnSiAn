@@ -1,14 +1,12 @@
 package de.tu.darmstadt.seemoo.ansian.gui.views;
 
 import android.content.Context;
-import android.graphics.Canvas;
 import android.graphics.Color;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.LayoutInflater;
-import android.view.MotionEvent;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.Button;
@@ -28,14 +26,17 @@ import de.tu.darmstadt.seemoo.ansian.R;
 import de.tu.darmstadt.seemoo.ansian.control.DataHandler;
 import de.tu.darmstadt.seemoo.ansian.control.StateHandler;
 import de.tu.darmstadt.seemoo.ansian.control.events.ChangeChannelWidthEvent;
-import de.tu.darmstadt.seemoo.ansian.control.events.FrequencyEvent;
 import de.tu.darmstadt.seemoo.ansian.control.events.RequestFrequencyEvent;
 import de.tu.darmstadt.seemoo.ansian.control.events.RequestStateEvent;
-import de.tu.darmstadt.seemoo.ansian.control.events.SquelchChangeEvent;
 import de.tu.darmstadt.seemoo.ansian.control.events.StateEvent;
-import de.tu.darmstadt.seemoo.ansian.control.events.morse.TransmitEvent;
+import de.tu.darmstadt.seemoo.ansian.control.events.tx.TransmitEvent;
+import de.tu.darmstadt.seemoo.ansian.control.events.tx.TransmitStatusEvent;
+import de.tu.darmstadt.seemoo.ansian.control.events.tx.speech.fm.FMTransmitEvent;
+import de.tu.darmstadt.seemoo.ansian.control.events.tx.speech.lsb.LSBTransmitEvent;
+import de.tu.darmstadt.seemoo.ansian.control.events.tx.speech.usb.USBTransmitEvent;
 import de.tu.darmstadt.seemoo.ansian.model.FFTSample;
 import de.tu.darmstadt.seemoo.ansian.model.demodulation.Demodulation;
+import de.tu.darmstadt.seemoo.ansian.model.demodulation.FM;
 import de.tu.darmstadt.seemoo.ansian.model.modulation.Modulation;
 import de.tu.darmstadt.seemoo.ansian.model.preferences.GuiPreferences;
 import de.tu.darmstadt.seemoo.ansian.model.preferences.MiscPreferences;
@@ -86,7 +87,7 @@ public class WalkieTalkieView extends LinearLayout {
         CheckBox antennaPowerCheckBox = (CheckBox) findViewById(R.id.cb_antenna);
         SeekBar squelchSeekBar = (SeekBar) this.findViewById(R.id.squelchSeekBar);
         Spinner modulationSpinner = (Spinner) this.findViewById(R.id.sp_modulation);
-        SeekBar filterBandWidthSeekBar = (SeekBar) this.findViewById(R.id.sb_filterBandWidth);
+        final SeekBar filterBandWidthSeekBar = (SeekBar) this.findViewById(R.id.sb_filterBandWidth);
 
         vgaGainSeekBar.setProgress(miscPreferences.getSend_vgaGain());
         squelchSeekBar.setProgress((int)guiPreferences.getSquelch()+100);
@@ -243,14 +244,28 @@ public class WalkieTalkieView extends LinearLayout {
                     // disable the settings
                     disableSettings(true,true);
 
+                    TransmitEvent event = null;
+                    switch (getCurrentTxMode()){
+                        case FM:
+                            event = new FMTransmitEvent(TransmitEvent.State.MODULATION, TransmitEvent.Sender.GUI);
+                            break;
+                        case USB:
+                            event = new USBTransmitEvent(TransmitEvent.State.MODULATION, TransmitEvent.Sender.GUI,filterBandWidthSeekBar.getProgress() );
+                            break;
+                        case LSB:
+                            event = new LSBTransmitEvent(TransmitEvent.State.MODULATION, TransmitEvent.Sender.GUI, filterBandWidthSeekBar.getProgress());
+                            break;
+                    }
+
+
                     // start the transmission
-                    EventBus.getDefault().post(new TransmitEvent(TransmitEvent.State.MODULATION, TransmitEvent.Sender.GUI));
+                    if(event != null) EventBus.getDefault().post(event);
                 } else {
                     isTransmitting = false;
                     transmitButton.setText(R.string.start_tx);
 
                     // stop the transmission
-                    EventBus.getDefault().post(new TransmitEvent(TransmitEvent.State.TXOFF, TransmitEvent.Sender.GUI));
+                    EventBus.getDefault().post(new TransmitStatusEvent(TransmitEvent.State.TXOFF, TransmitEvent.Sender.GUI));
 
                     if(isReceiving){
                         // start the reception again

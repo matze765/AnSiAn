@@ -22,7 +22,12 @@ import de.greenrobot.event.EventBus;
 import de.greenrobot.event.Subscribe;
 import de.tu.darmstadt.seemoo.ansian.MainActivity;
 import de.tu.darmstadt.seemoo.ansian.R;
-import de.tu.darmstadt.seemoo.ansian.control.events.morse.TransmitEvent;
+import de.tu.darmstadt.seemoo.ansian.control.events.tx.TransmitEvent;
+import de.tu.darmstadt.seemoo.ansian.control.events.tx.TransmitStatusEvent;
+import de.tu.darmstadt.seemoo.ansian.control.events.tx.data.morse.MorseTransmitEvent;
+import de.tu.darmstadt.seemoo.ansian.control.events.tx.data.psk31.PSK31TransmitEvent;
+import de.tu.darmstadt.seemoo.ansian.control.events.tx.rawiq.RawIQTransmitEvent;
+import de.tu.darmstadt.seemoo.ansian.control.events.tx.data.rds.RDSTransmitEvent;
 import de.tu.darmstadt.seemoo.ansian.model.modulation.Modulation;
 import de.tu.darmstadt.seemoo.ansian.model.preferences.Preferences;
 
@@ -295,10 +300,33 @@ public class TransmitView extends LinearLayout {
         playButton.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (txState == TransmitEvent.State.TXOFF)
-                    EventBus.getDefault().post(new TransmitEvent(TransmitEvent.State.MODULATION, TransmitEvent.Sender.GUI));
-                else
-                    EventBus.getDefault().post(new TransmitEvent(TransmitEvent.State.TXOFF, TransmitEvent.Sender.GUI));
+                if (txState == TransmitEvent.State.TXOFF) {
+                    Modulation.TxMode txMode = Modulation.TxMode.values()[txModeSpinner.getSelectedItemPosition()];
+                    TransmitEvent event = null;
+                    String payload;
+                    switch (txMode){
+                        case RAWIQ:
+                            event = new RawIQTransmitEvent(TransmitEvent.State.MODULATION, TransmitEvent.Sender.GUI);
+                            break;
+                        case MORSE:
+                            int wpm = morseWPMSeekBar.getProgress() + 1;
+                            payload = payloadTextEditText.getText().toString();
+                            event = new MorseTransmitEvent(TransmitEvent.State.MODULATION, TransmitEvent.Sender.GUI,payload, wpm);
+                            break;
+                        case PSK31:
+                            payload = payloadTextEditText.getText().toString();
+                            event = new PSK31TransmitEvent(TransmitEvent.State.MODULATION, TransmitEvent.Sender.GUI, payload);
+                            break;
+                        case RDS:
+                            payload = payloadTextEditText.getText().toString();
+                            int audioSourcePosition = audioSource.getSelectedItemPosition();
+                            event = new RDSTransmitEvent(TransmitEvent.State.MODULATION, TransmitEvent.Sender.GUI, payload, audioSourcePosition == 0);
+                            break;
+                    }
+                    if(event != null) EventBus.getDefault().post(event);
+                } else {
+                    EventBus.getDefault().post(new TransmitStatusEvent(TransmitEvent.State.TXOFF, TransmitEvent.Sender.GUI));
+                }
             }
         });
         updateButtonText();

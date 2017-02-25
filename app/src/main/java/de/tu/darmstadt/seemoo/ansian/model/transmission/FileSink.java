@@ -14,7 +14,8 @@ import java.util.concurrent.TimeUnit;
 
 import de.greenrobot.event.EventBus;
 import de.tu.darmstadt.seemoo.ansian.control.TxDataHandler;
-import de.tu.darmstadt.seemoo.ansian.control.events.morse.TransmitEvent;
+import de.tu.darmstadt.seemoo.ansian.control.events.tx.TransmitEvent;
+import de.tu.darmstadt.seemoo.ansian.control.events.tx.TransmitStatusEvent;
 
 /**
  * same as {@link IQSink}, but samples are not sent to hackrf, but written in a file.
@@ -61,7 +62,7 @@ public class FileSink extends IQSink {
 
         Log.d(LOGTAG, "finished to send");
         // notify UI
-        EventBus.getDefault().post(new TransmitEvent(TransmitEvent.State.TXOFF, TransmitEvent.Sender.TX));
+        EventBus.getDefault().post(new TransmitStatusEvent(TransmitEvent.State.TXOFF, TransmitEvent.Sender.TX));
 
     }
 

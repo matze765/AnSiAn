@@ -1,6 +1,6 @@
 package de.tu.darmstadt.seemoo.ansian.control.events.tx;
 
-public class TransmitEvent {
+public abstract class TransmitEvent {
 
     private State state;
     private Sender sender;

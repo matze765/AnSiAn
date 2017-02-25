@@ -10,7 +10,8 @@ import java.util.concurrent.TimeUnit;
 
 import de.greenrobot.event.EventBus;
 import de.tu.darmstadt.seemoo.ansian.control.TxDataHandler;
-import de.tu.darmstadt.seemoo.ansian.control.events.morse.TransmitEvent;
+import de.tu.darmstadt.seemoo.ansian.control.events.tx.TransmitEvent;
+import de.tu.darmstadt.seemoo.ansian.control.events.tx.TransmitStatusEvent;
 import de.tu.darmstadt.seemoo.ansian.model.preferences.Preferences;
 
 /**
@@ -75,7 +76,7 @@ public class IQSink implements Runnable {
             hackrf.setAntennaPower(antennaPower);
             Log.d(LOGTAG, "ok.\n\n");
 
-            EventBus.getDefault().post(new TransmitEvent(TransmitEvent.State.TXACTIVE, TransmitEvent.Sender.TX));
+            EventBus.getDefault().post(new TransmitStatusEvent(TransmitEvent.State.TXACTIVE, TransmitEvent.Sender.TX));
             return true;
         } catch (HackrfUsbException e) {
             Log.d(LOGTAG, "Error (USB)!\n");
@@ -118,7 +119,7 @@ public class IQSink implements Runnable {
         }
         Log.d(LOGTAG, "finished to send");
         // notify UI
-        EventBus.getDefault().post(new TransmitEvent(TransmitEvent.State.TXOFF, TransmitEvent.Sender.TX));
+        EventBus.getDefault().post(new TransmitStatusEvent(TransmitEvent.State.TXOFF, TransmitEvent.Sender.TX));
     }
 
     public byte[] getBufferFromBufferPool() {

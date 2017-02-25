@@ -14,7 +14,7 @@ import android.widget.LinearLayout;
 import de.greenrobot.event.EventBus;
 import de.greenrobot.event.Subscribe;
 import de.tu.darmstadt.seemoo.ansian.R;
-import de.tu.darmstadt.seemoo.ansian.control.events.ImagePickIntentResultEvent;
+import de.tu.darmstadt.seemoo.ansian.control.events.tx.image.sstv.ImagePickIntentResultEvent;
 
 
 

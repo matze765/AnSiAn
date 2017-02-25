@@ -11,7 +11,8 @@ import de.greenrobot.event.EventBus;
 import de.greenrobot.event.Subscribe;
 import de.tu.darmstadt.seemoo.ansian.MainActivity;
 import de.tu.darmstadt.seemoo.ansian.control.TxDataHandler;
-import de.tu.darmstadt.seemoo.ansian.control.events.morse.TransmitEvent;
+import de.tu.darmstadt.seemoo.ansian.control.events.tx.TransmitEvent;
+import de.tu.darmstadt.seemoo.ansian.control.events.tx.TransmitStatusEvent;
 import de.tu.darmstadt.seemoo.ansian.gui.misc.MyToast;
 
 /**
@@ -64,14 +65,14 @@ public class TransmissionChain implements HackrfCallbackInterface {
                 Context context = MainActivity.instance;
                 iqSink = new IQSink();
                 //iqSink = new FileSink();
-                modulator = new Modulator(iqSink);
+                modulator = new Modulator(iqSink,event);
 
                 // Initialize the HackRF (i.e. open the USB device, which requires the
                 // user to give permissions)
                 Log.d(LOGTAG, "Initializing HackRF");
                 // init HackRF - will call back when it is initialized and ready
                 if (!open()) {
-                    EventBus.getDefault().post(new TransmitEvent(TransmitEvent.State.TXOFF, TransmitEvent.Sender.TX));
+                    EventBus.getDefault().post(new TransmitStatusEvent(TransmitEvent.State.TXOFF, TransmitEvent.Sender.TX));
                     MyToast.makeText("Cannot open HackRF", Toast.LENGTH_LONG);
                 }
                 break;

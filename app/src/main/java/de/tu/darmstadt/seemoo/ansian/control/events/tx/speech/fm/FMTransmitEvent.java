@@ -7,4 +7,8 @@ import de.tu.darmstadt.seemoo.ansian.control.events.tx.speech.SpeechTransmitEven
  */
 
 public class FMTransmitEvent extends SpeechTransmitEvent {
+
+    public FMTransmitEvent(State state, Sender sender) {
+        super(state, sender);
+    }
 }

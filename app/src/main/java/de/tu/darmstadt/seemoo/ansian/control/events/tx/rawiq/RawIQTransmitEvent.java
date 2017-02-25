@@ -7,4 +7,7 @@ import de.tu.darmstadt.seemoo.ansian.control.events.tx.TransmitEvent;
  */
 
 public class RawIQTransmitEvent extends TransmitEvent {
+    public RawIQTransmitEvent(State state, Sender sender){
+        super(state, sender);
+    }
 }

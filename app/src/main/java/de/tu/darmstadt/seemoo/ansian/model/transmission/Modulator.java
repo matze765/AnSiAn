@@ -9,8 +9,15 @@ import java.util.concurrent.BlockingQueue;
 
 import de.greenrobot.event.EventBus;
 import de.tu.darmstadt.seemoo.ansian.control.TxDataHandler;
-import de.tu.darmstadt.seemoo.ansian.control.events.BandwidthEvent;
-import de.tu.darmstadt.seemoo.ansian.control.events.morse.TransmitEvent;
+import de.tu.darmstadt.seemoo.ansian.control.events.tx.TransmitEvent;
+import de.tu.darmstadt.seemoo.ansian.control.events.tx.TransmitStatusEvent;
+import de.tu.darmstadt.seemoo.ansian.control.events.tx.data.morse.MorseTransmitEvent;
+import de.tu.darmstadt.seemoo.ansian.control.events.tx.data.psk31.PSK31TransmitEvent;
+import de.tu.darmstadt.seemoo.ansian.control.events.tx.data.rds.RDSTransmitEvent;
+import de.tu.darmstadt.seemoo.ansian.control.events.tx.rawiq.RawIQTransmitEvent;
+import de.tu.darmstadt.seemoo.ansian.control.events.tx.speech.fm.FMTransmitEvent;
+import de.tu.darmstadt.seemoo.ansian.control.events.tx.speech.lsb.LSBTransmitEvent;
+import de.tu.darmstadt.seemoo.ansian.control.events.tx.speech.usb.USBTransmitEvent;
 import de.tu.darmstadt.seemoo.ansian.model.SamplePacket;
 import de.tu.darmstadt.seemoo.ansian.model.modulation.FM;
 import de.tu.darmstadt.seemoo.ansian.model.modulation.LSB;
@@ -20,6 +27,9 @@ import de.tu.darmstadt.seemoo.ansian.model.modulation.PSK31;
 import de.tu.darmstadt.seemoo.ansian.model.modulation.RDS;
 import de.tu.darmstadt.seemoo.ansian.model.modulation.USB;
 import de.tu.darmstadt.seemoo.ansian.model.preferences.Preferences;
+
+import static android.R.attr.mode;
+import static de.tu.darmstadt.seemoo.ansian.model.modulation.Modulation.TxMode.RAWIQ;
 
 
 /**
@@ -38,57 +48,40 @@ public class Modulator implements Runnable {
      * @param iqSink requires IQSink because it needs to get buffers from the buffer pool.
      *               Using own buffers here is not recommended by the author of the HackRF driver.
      */
-    public Modulator(IQSink iqSink) {
+    public Modulator(IQSink iqSink, TransmitEvent event) {
         this.iqSink = iqSink;
-
-        // get preferences
-        Modulation.TxMode mode = Preferences.MISC_PREFERENCE.getSend_txMode();
-        String payloadString = Preferences.MISC_PREFERENCE.getSend_payloadText();
-        filename = Preferences.MISC_PREFERENCE.getSend_filename();
         int sampleRate = Preferences.MISC_PREFERENCE.getSend_sampleRate();
-        int rdsAudioSource = Preferences.MISC_PREFERENCE.getRds_audio_source();
-
-        int filterBandWidth = Preferences.MISC_PREFERENCE.getFilter_cutoff();
-
-
 
         this.modulationInstance = null;
-
-
-        // determine correct modulation
-        switch (mode) {
-            case MORSE:
-                modulationInstance = new Morse(payloadString, Preferences.MISC_PREFERENCE.getMorse_wpm(), sampleRate);
-                break;
-            case PSK31:
-                modulationInstance = new PSK31(payloadString, sampleRate);
-                break;
-            case RDS:
-                modulationInstance = new RDS(payloadString, sampleRate, rdsAudioSource==0);
-                break;
-            case FM:
-                modulationInstance = new FM(sampleRate);
-                break;
-            case USB:
-                modulationInstance = new USB(sampleRate, filterBandWidth);
-                break;
-            case LSB:
-                modulationInstance = new LSB(sampleRate, filterBandWidth);
-                break;
-            case RAWIQ:
-                // special case
-                // we need to skip the IQConverter step and directly push them to the iq queue
-                // but that is done in the other thread, so do nothing here
-                modulationInstance = null;
-                break;
-
-            default:
-                Log.e(LOGTAG, "modulation: invalid mode: " + mode + "; abort!");
-                EventBus.getDefault().post(new TransmitEvent(TransmitEvent.State.TXOFF, TransmitEvent.Sender.TXCHAIN));
-                return;
+        if(event instanceof MorseTransmitEvent){
+            MorseTransmitEvent mte = (MorseTransmitEvent) event;
+            this.modulationInstance = new Morse(mte.getPayload(), mte.getWPM(), sampleRate);
+        } else if(event instanceof PSK31TransmitEvent){
+            PSK31TransmitEvent pte = (PSK31TransmitEvent) event;
+            this.modulationInstance = new PSK31(pte.getPayload(), sampleRate);
+        } else if(event instanceof RDSTransmitEvent) {
+            RDSTransmitEvent rte = (RDSTransmitEvent) event;
+            this.modulationInstance = new RDS(rte.getPayload(), sampleRate, rte.getFileAudioSource());
+        } else if(event instanceof FMTransmitEvent) {
+            FMTransmitEvent fte = (FMTransmitEvent) event;
+            this.modulationInstance = new FM(sampleRate);
+        } else if(event instanceof USBTransmitEvent) {
+            USBTransmitEvent ute = (USBTransmitEvent) event;
+            this.modulationInstance = new USB(sampleRate, ute.getFilterBandwidth());
+        } else if(event instanceof LSBTransmitEvent) {
+            LSBTransmitEvent lte = (LSBTransmitEvent) event;
+            this.modulationInstance = new LSB(sampleRate, lte.getFilterBandwidth());
+        } else if(event instanceof RawIQTransmitEvent) {
+            // special case
+            // we need to skip the IQConverter step and directly push them to the iq queue
+            // but that is done in the other thread, so do nothing here
+            modulationInstance = null;
+        } else {
+            Log.e(LOGTAG, "modulation: invalid mode: " + mode + "; abort!");
+            EventBus.getDefault().post(new TransmitStatusEvent(TransmitEvent.State.TXOFF, TransmitEvent.Sender.TXCHAIN));
+            return;
         }
-
-    }
+            }
 
 
     /**

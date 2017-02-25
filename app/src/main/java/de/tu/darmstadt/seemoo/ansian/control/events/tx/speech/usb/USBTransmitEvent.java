@@ -7,7 +7,14 @@ import de.tu.darmstadt.seemoo.ansian.control.events.tx.speech.SpeechTransmitEven
  */
 
 public class USBTransmitEvent extends SpeechTransmitEvent {
-    public USBTransmitEvent(State state, Sender sender) {
+    private int filterBandwidth;
+
+    public USBTransmitEvent(State state, Sender sender, int filterBandwidth) {
         super(state, sender);
+        this.filterBandwidth = filterBandwidth;
+    }
+
+    public int getFilterBandwidth() {
+        return filterBandwidth;
     }
 }

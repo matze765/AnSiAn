@@ -11,7 +11,6 @@ import android.os.Bundle;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
-import android.util.EventLog;
 import android.util.Log;
 import android.view.Menu;
 import android.view.View;
@@ -21,9 +20,8 @@ import de.greenrobot.event.Subscribe;
 import de.tu.darmstadt.seemoo.ansian.control.DataHandler;
 import de.tu.darmstadt.seemoo.ansian.control.SourceControl;
 import de.tu.darmstadt.seemoo.ansian.control.StateHandler;
-import de.tu.darmstadt.seemoo.ansian.control.TxDataHandler;
 import de.tu.darmstadt.seemoo.ansian.control.events.DemodulationEvent;
-import de.tu.darmstadt.seemoo.ansian.control.events.ImagePickIntentResultEvent;
+import de.tu.darmstadt.seemoo.ansian.control.events.tx.image.sstv.ImagePickIntentResultEvent;
 import de.tu.darmstadt.seemoo.ansian.gui.misc.AnsianNotification;
 import de.tu.darmstadt.seemoo.ansian.gui.misc.MyToast;
 import de.tu.darmstadt.seemoo.ansian.gui.tabs.MainActivityPagerAdapter;
@@ -36,8 +34,6 @@ import de.tu.darmstadt.seemoo.ansian.model.preferences.Preferences;
 import de.tu.darmstadt.seemoo.ansian.model.sources.RtlsdrSource;
 import de.tu.darmstadt.seemoo.ansian.model.sources.SDRplaySource;
 import de.tu.darmstadt.seemoo.ansian.model.transmission.TransmissionChain;
-
-import static de.tu.darmstadt.seemoo.ansian.gui.views.SSTVView.IMAGE_PICKER_INTENT_RESULT_CODE;
 
 /**
  * <h1>AnSiAn - Main Activity</h1>
