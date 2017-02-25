@@ -93,6 +93,8 @@
     <string name="modulation">Modulation</string>
     <string name="frequency_band">Band</string>
     <string name="_30000000">30000000</string>
+    <string name="image">Image</string>
+    <string name="pickimage">Pick Image</string>
 
 
 </resources>

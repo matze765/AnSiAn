@@ -1,0 +1,168 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_margin="@dimen/default_margin"
+    android:orientation="vertical">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:orientation="horizontal">
+
+        <TextView
+            android:id="@+id/tv_frequencyBandsLabel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignBaseline="@+id/sp_frequencyBands"
+            android:layout_alignParentStart="true"
+            android:text="@string/frequency_band" />
+        <Spinner
+            android:id="@+id/sp_frequencyBands"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true"
+            android:layout_toEndOf="@+id/tv_frequencyBandsLabel"
+            android:entries="@array/frequency_bands" />
+
+
+        <TextView
+            android:id="@+id/tv_imageToTransmit"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignBaseline="@+id/et_imageToTransmit"
+            android:text="@string/image"
+            android:labelFor="@id/et_imageToTransmit"/>
+
+        <EditText
+            android:id="@+id/et_imageToTransmit"
+            android:enabled="false"
+            android:inputType="text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/sp_frequencyBands"
+            android:layout_toEndOf="@+id/tv_imageToTransmit"
+            android:text="blablablablub" />
+
+        <ImageButton
+            android:id="@+id/btn_pickImage"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/sp_frequencyBands"
+            android:layout_alignParentEnd="true"
+            android:src="@drawable/ic_camera_alt_black_24px"
+            android:contentDescription="@string/pickimage" />
+
+        <TextView
+            android:id="@+id/tv_frequencyLabel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignBaseline="@+id/et_frequency"
+            android:text="@string/frequency_hz"
+            android:labelFor="@id/et_frequency"/>
+
+        <EditText
+            android:id="@+id/et_frequency"
+            android:inputType="number"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/et_imageToTransmit"
+            android:layout_toEndOf="@+id/tv_frequencyLabel"
+            android:text="@string/_30000000" />
+
+        <SeekBar
+            android:id="@+id/sb_frequencySeekBar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/et_frequency"
+            android:max="100"
+            android:progress="40" />
+
+
+
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/sb_frequencySeekBar"
+            android:layout_marginTop="15dp"
+            android:orientation="vertical">
+
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="horizontal">
+
+                <CheckBox
+                    android:id="@+id/cb_amp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentStart="true"
+                    android:text="@string/cb_amp_text" />
+
+                <CheckBox
+                    android:id="@+id/cb_antenna"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentEnd="true"
+                    android:text="@string/cb_antenna_text"
+                    tools:ignore="RelativeOverlap" />
+
+            </RelativeLayout>
+
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/vgaGainLabel"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/vga_gain_label" />
+
+                <SeekBar
+                    android:id="@+id/vgaGainSeekBar"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:max="100"
+                    android:progress="40" />
+
+
+            </LinearLayout>
+
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+            </LinearLayout>
+
+
+        </LinearLayout>
+    </RelativeLayout>
+    <RelativeLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:orientation="vertical">
+
+        <Button
+            android:id="@+id/receiveButton"
+            android:layout_width="150dp"
+            android:layout_height="100dp"
+            android:text="@string/start_rx" />
+
+        <Button
+            android:id="@+id/transmitButton"
+            android:layout_width="150dp"
+            android:layout_height="100dp"
+            android:layout_toEndOf="@+id/receiveButton"
+            android:text="@string/start_tx" />
+    </RelativeLayout>
+
+</LinearLayout>

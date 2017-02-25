@@ -6,10 +6,12 @@ import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.media.AudioManager;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
+import android.util.EventLog;
 import android.util.Log;
 import android.view.Menu;
 import android.view.View;
@@ -21,17 +23,21 @@ import de.tu.darmstadt.seemoo.ansian.control.SourceControl;
 import de.tu.darmstadt.seemoo.ansian.control.StateHandler;
 import de.tu.darmstadt.seemoo.ansian.control.TxDataHandler;
 import de.tu.darmstadt.seemoo.ansian.control.events.DemodulationEvent;
+import de.tu.darmstadt.seemoo.ansian.control.events.ImagePickIntentResultEvent;
 import de.tu.darmstadt.seemoo.ansian.gui.misc.AnsianNotification;
 import de.tu.darmstadt.seemoo.ansian.gui.misc.MyToast;
 import de.tu.darmstadt.seemoo.ansian.gui.tabs.MainActivityPagerAdapter;
 import de.tu.darmstadt.seemoo.ansian.gui.tabs.MyViewPager;
 import de.tu.darmstadt.seemoo.ansian.gui.tabs.SlidingTabLayout;
+import de.tu.darmstadt.seemoo.ansian.gui.views.SSTVView;
 import de.tu.darmstadt.seemoo.ansian.model.Logger;
 import de.tu.darmstadt.seemoo.ansian.model.demodulation.Demodulation.DemoType;
 import de.tu.darmstadt.seemoo.ansian.model.preferences.Preferences;
 import de.tu.darmstadt.seemoo.ansian.model.sources.RtlsdrSource;
 import de.tu.darmstadt.seemoo.ansian.model.sources.SDRplaySource;
 import de.tu.darmstadt.seemoo.ansian.model.transmission.TransmissionChain;
+
+import static de.tu.darmstadt.seemoo.ansian.gui.views.SSTVView.IMAGE_PICKER_INTENT_RESULT_CODE;
 
 /**
  * <h1>AnSiAn - Main Activity</h1>
@@ -201,7 +207,7 @@ public class MainActivity extends AppCompatActivity {
 	@Override
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 		super.onActivityResult(requestCode, resultCode, data);
-
+		Log.d(LOGTAG, "onActivityResult");
 		// err_info from RTL2832U:
 		String[] rtlsdrErrInfo = { "permission_denied", "root_required", "no_devices_found", "unknown_error", "replug",
 				"already_running" };
@@ -281,6 +287,14 @@ public class MainActivity extends AppCompatActivity {
 				}
 			}
 			break;
+
+			case SSTVView.IMAGE_PICKER_INTENT_RESULT_CODE:
+				if (resultCode == RESULT_OK) {
+					Uri imageUri = data.getData();
+					EventBus.getDefault().post(new ImagePickIntentResultEvent(imageUri));
+				}
+
+
 		}
 	}
 
