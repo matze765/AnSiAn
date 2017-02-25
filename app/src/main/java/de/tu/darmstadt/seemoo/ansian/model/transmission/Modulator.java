@@ -14,6 +14,7 @@ import de.tu.darmstadt.seemoo.ansian.control.events.tx.TransmitStatusEvent;
 import de.tu.darmstadt.seemoo.ansian.control.events.tx.data.morse.MorseTransmitEvent;
 import de.tu.darmstadt.seemoo.ansian.control.events.tx.data.psk31.PSK31TransmitEvent;
 import de.tu.darmstadt.seemoo.ansian.control.events.tx.data.rds.RDSTransmitEvent;
+import de.tu.darmstadt.seemoo.ansian.control.events.tx.image.sstv.SSTVTransmitEvent;
 import de.tu.darmstadt.seemoo.ansian.control.events.tx.rawiq.RawIQTransmitEvent;
 import de.tu.darmstadt.seemoo.ansian.control.events.tx.speech.fm.FMTransmitEvent;
 import de.tu.darmstadt.seemoo.ansian.control.events.tx.speech.lsb.LSBTransmitEvent;
@@ -25,6 +26,7 @@ import de.tu.darmstadt.seemoo.ansian.model.modulation.Modulation;
 import de.tu.darmstadt.seemoo.ansian.model.modulation.Morse;
 import de.tu.darmstadt.seemoo.ansian.model.modulation.PSK31;
 import de.tu.darmstadt.seemoo.ansian.model.modulation.RDS;
+import de.tu.darmstadt.seemoo.ansian.model.modulation.SSTV;
 import de.tu.darmstadt.seemoo.ansian.model.modulation.USB;
 import de.tu.darmstadt.seemoo.ansian.model.preferences.Preferences;
 
@@ -53,35 +55,38 @@ public class Modulator implements Runnable {
         int sampleRate = Preferences.MISC_PREFERENCE.getSend_sampleRate();
 
         this.modulationInstance = null;
-        if(event instanceof MorseTransmitEvent){
+        if (event instanceof MorseTransmitEvent) {
             MorseTransmitEvent mte = (MorseTransmitEvent) event;
             this.modulationInstance = new Morse(mte.getPayload(), mte.getWPM(), sampleRate);
-        } else if(event instanceof PSK31TransmitEvent){
+        } else if (event instanceof PSK31TransmitEvent) {
             PSK31TransmitEvent pte = (PSK31TransmitEvent) event;
             this.modulationInstance = new PSK31(pte.getPayload(), sampleRate);
-        } else if(event instanceof RDSTransmitEvent) {
+        } else if (event instanceof RDSTransmitEvent) {
             RDSTransmitEvent rte = (RDSTransmitEvent) event;
             this.modulationInstance = new RDS(rte.getPayload(), sampleRate, rte.getFileAudioSource());
-        } else if(event instanceof FMTransmitEvent) {
+        } else if (event instanceof FMTransmitEvent) {
             FMTransmitEvent fte = (FMTransmitEvent) event;
             this.modulationInstance = new FM(sampleRate);
-        } else if(event instanceof USBTransmitEvent) {
+        } else if (event instanceof USBTransmitEvent) {
             USBTransmitEvent ute = (USBTransmitEvent) event;
             this.modulationInstance = new USB(sampleRate, ute.getFilterBandwidth());
-        } else if(event instanceof LSBTransmitEvent) {
+        } else if (event instanceof LSBTransmitEvent) {
             LSBTransmitEvent lte = (LSBTransmitEvent) event;
             this.modulationInstance = new LSB(sampleRate, lte.getFilterBandwidth());
-        } else if(event instanceof RawIQTransmitEvent) {
+        } else if (event instanceof RawIQTransmitEvent) {
             // special case
             // we need to skip the IQConverter step and directly push them to the iq queue
             // but that is done in the other thread, so do nothing here
             modulationInstance = null;
+        } else if (event instanceof SSTVTransmitEvent) {
+            SSTVTransmitEvent ste = (SSTVTransmitEvent) event;
+            this.modulationInstance = new SSTV(sampleRate, ste.getImage(), ste.isRepeat(), ste.isCrop(), ste.getType());
         } else {
             Log.e(LOGTAG, "modulation: invalid mode: " + mode + "; abort!");
             EventBus.getDefault().post(new TransmitStatusEvent(TransmitEvent.State.TXOFF, TransmitEvent.Sender.TXCHAIN));
             return;
         }
-            }
+    }
 
 
     /**
@@ -95,9 +100,9 @@ public class Modulator implements Runnable {
         BlockingQueue<SamplePacket> transmitQueue = TxDataHandler.getInstance().getTransmitPacketQueue();
 
 
-        Log.d(LOGTAG, "starting to modulate "+modulationInstance);
+        Log.d(LOGTAG, "starting to modulate " + modulationInstance);
 
-        if(modulationInstance != null) {
+        if (modulationInstance != null) {
             // main modulation loop. get and enqueue new packets until Modulation does not return more
             // packets or user interrupts the modulation
             try {
@@ -118,7 +123,7 @@ public class Modulator implements Runnable {
             try {
                 BufferedInputStream bufferedInputStream = new BufferedInputStream(new FileInputStream(filename));
                 BlockingQueue<byte[]> transmitIQQueue = TxDataHandler.getInstance().getTransmitIQQueue();
-                while(true) {
+                while (true) {
                     byte[] packet = this.iqSink.getBufferFromBufferPool();
                     if (bufferedInputStream.read(packet, 0, packet.length) != packet.length) {
                         Log.d(LOGTAG, "Reached End of File. Stop.\n");

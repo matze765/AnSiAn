@@ -3,19 +3,36 @@ package de.tu.darmstadt.seemoo.ansian.gui.views;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Color;
+import android.net.Uri;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
+import android.widget.SeekBar;
+import android.widget.TextView;
+import android.widget.Toast;
+
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
 
 import de.greenrobot.event.EventBus;
 import de.greenrobot.event.Subscribe;
 import de.tu.darmstadt.seemoo.ansian.R;
+import de.tu.darmstadt.seemoo.ansian.control.events.tx.TransmitEvent;
+import de.tu.darmstadt.seemoo.ansian.control.events.tx.TransmitStatusEvent;
 import de.tu.darmstadt.seemoo.ansian.control.events.tx.image.sstv.ImagePickIntentResultEvent;
-
+import de.tu.darmstadt.seemoo.ansian.control.events.tx.image.sstv.SSTVTransmitEvent;
+import de.tu.darmstadt.seemoo.ansian.model.modulation.SSTV;
+import de.tu.darmstadt.seemoo.ansian.model.preferences.Preferences;
 
 
 /**
@@ -24,6 +41,11 @@ import de.tu.darmstadt.seemoo.ansian.control.events.tx.image.sstv.ImagePickInten
 
 public class SSTVView extends LinearLayout {
     public static final int IMAGE_PICKER_INTENT_RESULT_CODE = 42;
+
+    private static final String LOGTAG = "SSTVView";
+    private boolean isTransmitting = false;
+    private boolean isReceiving = false;
+    private Uri imageUri;
 
     public SSTVView(Context context) {
         this(context, null);
@@ -44,7 +66,12 @@ public class SSTVView extends LinearLayout {
         LayoutInflater inflater = (LayoutInflater) getContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         inflater.inflate(R.layout.sstv_view, this);
         EventBus.getDefault().register(this);
+
         ImageButton ib_pickImage = (ImageButton) this.findViewById(R.id.btn_pickImage);
+        SeekBar vgaGainSeekBar = (SeekBar) this.findViewById(R.id.vgaGainSeekBar);
+
+        Button startRxButton = (Button) this.findViewById(R.id.transmitButton);
+
 
         ib_pickImage.setOnClickListener(new OnClickListener() {
             @Override
@@ -55,12 +82,121 @@ public class SSTVView extends LinearLayout {
                 ((Activity) context).startActivityForResult(photoPickerIntent, IMAGE_PICKER_INTENT_RESULT_CODE);
             }
         });
+
+        startRxButton.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if(!isTransmitting){
+                    startTX();
+                } else {
+                    stopTX();
+                }
+            }
+        });
+
+
+
+        // this code is mainly copied over from transmit view
+        // TODO: find better solution to avoid code duplication
+        vgaGainSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+            }
+
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                updateVgaGainLabel();
+            }
+
+
+        });
+
+        updateVgaGainLabel();
+    }
+
+    private void updateVgaGainLabel() {
+        TextView vgaGainLabel = (TextView) this.findViewById(R.id.vgaGainLabel);
+        SeekBar vgaSeekBar = (SeekBar) this.findViewById(R.id.vgaGainSeekBar);
+        vgaGainLabel.setText(String.format(getContext().getString(R.string.vga_gain_label), vgaSeekBar.getProgress()));
+    }
+
+    private void startTX(){
+
+        if(this.imageUri == null){
+            Toast.makeText(this.getContext(), "No Image selected", Toast.LENGTH_LONG).show();
+            return;
+        }
+
+        Button txBtn = (Button) this.findViewById(R.id.transmitButton);
+
+
+        Button rxBtn = (Button) this.findViewById(R.id.receiveButton);
+
+
+        if(!isTransmitting && !isReceiving) {
+
+            boolean crop = true;
+            boolean repeat = false;
+            SSTV.SSTV_TYPE type = SSTV.SSTV_TYPE.ROBOT_SSTV_BW_120;
+            try {
+                final InputStream imageStream = getContext().getContentResolver().openInputStream(imageUri);
+                final Bitmap selectedImage = BitmapFactory.decodeStream(imageStream);
+                imageStream.close();
+                EventBus.getDefault().post(new SSTVTransmitEvent(TransmitEvent.State.MODULATION, TransmitEvent.Sender.GUI, selectedImage, crop, repeat, type));
+                isTransmitting = true;
+                txBtn.setText(R.string.stop_rx);
+                rxBtn.setEnabled(false);
+
+            }  catch (FileNotFoundException e) {
+                Toast.makeText(this.getContext(), "Image not found", Toast.LENGTH_LONG).show();
+            } catch (IOException e) {
+                Toast.makeText(this.getContext(), "IO Exception", Toast.LENGTH_LONG).show();
+            }
+        }
+
+    }
+
+    private void stopTX(){
+        Button txBtn = (Button) this.findViewById(R.id.transmitButton);
+        txBtn.setText(R.string.start_tx);
+
+        Button rxBtn = (Button) this.findViewById(R.id.receiveButton);
+        rxBtn.setEnabled(true);
+        if(isTransmitting){
+            isTransmitting = false;
+            EventBus.getDefault().post(new TransmitStatusEvent(TransmitEvent.State.TXOFF, TransmitEvent.Sender.GUI));
+        }
     }
 
     @Subscribe
     public void onEvent(final ImagePickIntentResultEvent event){
         EditText et = (EditText) this.findViewById(R.id.et_imageToTransmit);
-        et.setText(event.getFile().toString());
+        this.imageUri = event.getFile();
+        Log.d(LOGTAG, this.imageUri.toString());
 
+        String[] parts = this.imageUri.toString().split("/");
+        et.setText(parts[parts.length-1]);
+
+    }
+
+    @Subscribe
+    public void onEvent(final TransmitStatusEvent event){
+        if(event.getSender() != TransmitEvent.Sender.GUI){
+            switch(event.getState()){
+                case TXOFF:
+                    stopTX();
+                    break;
+                case TXACTIVE:
+                    break;
+                case MODULATION:
+                    break;
+            }
+
+        }
     }
 }

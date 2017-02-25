@@ -7,6 +7,7 @@ import android.graphics.Color;
 import android.graphics.ColorMatrix;
 import android.graphics.ColorMatrixColorFilter;
 import android.graphics.Paint;
+import android.net.Uri;
 
 import java.io.File;
 import java.io.IOException;
@@ -49,7 +50,7 @@ public class SSTV  extends  Modulation{
      * @param repeat should the transmission be repeated, if false: only send once
      * @param crop crop the input image to required 256x120, if false: image is scaled to 256x120
      */
-    public SSTV(int outputSamplingRate, File image, boolean repeat, boolean crop, SSTV_TYPE type){
+    public SSTV(int outputSamplingRate, Bitmap image, boolean repeat, boolean crop, SSTV_TYPE type){
         this.samplingRate = outputSamplingRate;
         this.repeat = repeat;
         // -1 -> start with frame sync
@@ -118,8 +119,7 @@ public class SSTV  extends  Modulation{
             array[offset+i] = value;
         }
     }
-    private int[] readImageAndConvertToGrayScale(File image, boolean crop) throws IOException {
-        Bitmap source = BitmapFactory.decodeFile(image.getPath());
+    private int[] readImageAndConvertToGrayScale(Bitmap source, boolean crop) throws IOException {
         Bitmap scaled;
         // scale or crop
         if(crop){ // crop
