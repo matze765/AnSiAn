@@ -1,4 +1,4 @@
-package de.tu.darmstadt.seemoo.ansian.control.events;
+package de.tu.darmstadt.seemoo.ansian.control.events.tx.image.sstv;
 
 import android.net.Uri;
 

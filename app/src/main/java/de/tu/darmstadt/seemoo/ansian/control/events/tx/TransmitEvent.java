@@ -1,10 +1,9 @@
-package de.tu.darmstadt.seemoo.ansian.control.events.morse;
+package de.tu.darmstadt.seemoo.ansian.control.events.tx;
 
 public class TransmitEvent {
 
     private State state;
     private Sender sender;
-    private String iqFile;
 
     public enum Sender {
         GUI, TX, TXCHAIN;
@@ -23,13 +22,6 @@ public class TransmitEvent {
         return state;
     }
 
-    public String getIqFile() {
-        return iqFile;
-    }
-
-    public void setIqFile(String iqFile) {
-        this.iqFile = iqFile;
-    }
 
     public Sender getSender() {
         return sender;
