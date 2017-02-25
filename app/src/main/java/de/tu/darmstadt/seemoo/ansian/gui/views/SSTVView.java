@@ -149,7 +149,7 @@ public class SSTVView extends LinearLayout {
                 imageStream.close();
                 EventBus.getDefault().post(new SSTVTransmitEvent(TransmitEvent.State.MODULATION, TransmitEvent.Sender.GUI, selectedImage, crop, repeat, type));
                 isTransmitting = true;
-                txBtn.setText(R.string.stop_rx);
+                txBtn.setText(R.string.stop_tx);
                 rxBtn.setEnabled(false);
 
             }  catch (FileNotFoundException e) {
@@ -186,10 +186,18 @@ public class SSTVView extends LinearLayout {
 
     @Subscribe
     public void onEvent(final TransmitStatusEvent event){
+
         if(event.getSender() != TransmitEvent.Sender.GUI){
             switch(event.getState()){
                 case TXOFF:
-                    stopTX();
+                    Activity activity = (Activity) getContext();
+                    activity.runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            stopTX();
+                        }
+                    });
+
                     break;
                 case TXACTIVE:
                     break;
