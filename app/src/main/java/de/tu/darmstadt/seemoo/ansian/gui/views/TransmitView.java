@@ -29,6 +29,7 @@ import de.tu.darmstadt.seemoo.ansian.control.events.tx.data.psk31.PSK31TransmitE
 import de.tu.darmstadt.seemoo.ansian.control.events.tx.rawiq.RawIQTransmitEvent;
 import de.tu.darmstadt.seemoo.ansian.control.events.tx.data.rds.RDSTransmitEvent;
 import de.tu.darmstadt.seemoo.ansian.model.modulation.Modulation;
+import de.tu.darmstadt.seemoo.ansian.model.preferences.MiscPreferences;
 import de.tu.darmstadt.seemoo.ansian.model.preferences.Preferences;
 
 public class TransmitView extends LinearLayout {
@@ -89,7 +90,6 @@ public class TransmitView extends LinearLayout {
             @Override
             public void onItemSelected(AdapterView<?> adapterView, View view, int position, long l) {
                 Modulation.TxMode txMode = Modulation.TxMode.values()[txModeSpinner.getSelectedItemPosition()];
-                Preferences.MISC_PREFERENCE.setSend_txMode(txMode);
                 switch (txMode) {
                     case RAWIQ:
                         payloadTextEditText.setEnabled(false);
@@ -142,120 +142,6 @@ public class TransmitView extends LinearLayout {
             }
         });
 
-        audioSource.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-
-            @Override
-            public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
-                Preferences.MISC_PREFERENCE.setRds_audio_source(audioSource.getSelectedItemPosition());
-            }
-
-            @Override
-            public void onNothingSelected(AdapterView<?> adapterView) {
-
-            }
-        });
-
-
-
-
-        payloadTextEditText.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-
-            }
-
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-
-            }
-
-            @Override
-            public void afterTextChanged(Editable s) {
-                Preferences.MISC_PREFERENCE.setSend_payloadText(s.toString());
-            }
-        });
-
-
-        sampleRateEditText.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-
-            }
-
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-
-            }
-
-            @Override
-            public void afterTextChanged(Editable s) {
-                try {
-                    int i = Integer.parseInt(s.toString());
-                    Preferences.MISC_PREFERENCE.setSend_sampleRate(i);
-                } catch (NumberFormatException e) {
-                    // not an integer; ignore
-                }
-            }
-        });
-
-        morseFrequencyEditText.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-
-            }
-
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-
-            }
-
-            @Override
-            public void afterTextChanged(Editable s) {
-                try {
-                    int i = Integer.parseInt(s.toString());
-                    Preferences.MISC_PREFERENCE.setMorse_frequency(i);
-                } catch (NumberFormatException e) {
-                    // not an integer; ignore
-                }
-            }
-        });
-
-        frequencyEditText.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-
-            }
-
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-
-            }
-
-            @Override
-            public void afterTextChanged(Editable s) {
-                try {
-                    int i = Integer.parseInt(s.toString());
-                    Preferences.MISC_PREFERENCE.setSend_frequency(i);
-                } catch (NumberFormatException e) {
-                    // not an integer; ignore
-                }
-            }
-        });
-
-        amplifierCheckBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                Preferences.MISC_PREFERENCE.setSend_amplifier(isChecked);
-            }
-        });
-
-        antennaPowerCheckBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                Preferences.MISC_PREFERENCE.setSend_antennaPower(isChecked);
-            }
-        });
-
         vgaGainSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
 
             @Override
@@ -268,9 +154,6 @@ public class TransmitView extends LinearLayout {
 
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                if (fromUser) {
-                    Preferences.MISC_PREFERENCE.setSend_vgaGain(progress);
-                }
                 updateVgaGainLabel();
             }
         });
@@ -289,14 +172,9 @@ public class TransmitView extends LinearLayout {
 
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                if (fromUser) {
-                    int wpm = progress + 1;
-                    Preferences.MISC_PREFERENCE.setMorse_wpm(wpm);
-                }
-                updateWPMLabel();
+              updateWPMLabel();
             }
         });
-
         playButton.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -304,26 +182,46 @@ public class TransmitView extends LinearLayout {
                     Modulation.TxMode txMode = Modulation.TxMode.values()[txModeSpinner.getSelectedItemPosition()];
                     TransmitEvent event = null;
                     String payload;
-                    switch (txMode){
+
+                    int sampleRate = Integer.parseInt(sampleRateEditText.getText().toString());
+                    long frequency = Long.parseLong(frequencyEditText.getText().toString());
+                    boolean isAmp = amplifierCheckBox.isChecked();
+                    boolean isAntennaPower = antennaPowerCheckBox.isChecked();
+                    int vgaGain = vgaGainSeekBar.getProgress();
+
+                    switch (txMode) {
                         case RAWIQ:
-                            event = new RawIQTransmitEvent(TransmitEvent.State.MODULATION, TransmitEvent.Sender.GUI);
+                            String fileName = Preferences.MISC_PREFERENCE.getSend_fileName();
+                            event = new RawIQTransmitEvent(TransmitEvent.State.MODULATION,
+                                    TransmitEvent.Sender.GUI, sampleRate, frequency, isAmp,
+                                    isAntennaPower, vgaGain, fileName);
                             break;
                         case MORSE:
                             int wpm = morseWPMSeekBar.getProgress() + 1;
+                            int morseFrequency = Integer.parseInt(morseFrequencyEditText.getText().toString());
                             payload = payloadTextEditText.getText().toString();
-                            event = new MorseTransmitEvent(TransmitEvent.State.MODULATION, TransmitEvent.Sender.GUI,payload, wpm);
+                            event = new MorseTransmitEvent(TransmitEvent.State.MODULATION,
+                                    TransmitEvent.Sender.GUI, sampleRate, frequency, isAmp,
+                                    isAntennaPower, vgaGain,
+                                    payload, wpm, morseFrequency);
                             break;
                         case PSK31:
                             payload = payloadTextEditText.getText().toString();
-                            event = new PSK31TransmitEvent(TransmitEvent.State.MODULATION, TransmitEvent.Sender.GUI, payload);
+                            event = new PSK31TransmitEvent(TransmitEvent.State.MODULATION,
+                                    TransmitEvent.Sender.GUI, sampleRate, frequency, isAmp,
+                                    isAntennaPower, vgaGain,
+                                    payload);
                             break;
                         case RDS:
                             payload = payloadTextEditText.getText().toString();
                             int audioSourcePosition = audioSource.getSelectedItemPosition();
-                            event = new RDSTransmitEvent(TransmitEvent.State.MODULATION, TransmitEvent.Sender.GUI, payload, audioSourcePosition == 0);
+                            event = new RDSTransmitEvent(TransmitEvent.State.MODULATION,
+                                    TransmitEvent.Sender.GUI, sampleRate, frequency, isAmp,
+                                    isAntennaPower, vgaGain,
+                                    payload, audioSourcePosition == 0);
                             break;
                     }
-                    if(event != null) EventBus.getDefault().post(event);
+                    if (event != null) EventBus.getDefault().post(event);
                 } else {
                     EventBus.getDefault().post(new TransmitStatusEvent(TransmitEvent.State.TXOFF, TransmitEvent.Sender.GUI));
                 }
@@ -333,66 +231,24 @@ public class TransmitView extends LinearLayout {
         update();
     }
 
-    private void updateWPMLabel() {
-        morseWPMLabel.setText(String.format(getContext().getString(R.string.morseWPMLabel_text),
-                Preferences.MISC_PREFERENCE.getMorse_wpm(), Preferences.MISC_PREFERENCE.getMorse_DitDuration()));
-    }
+
 
     public void update() {
         updateWPMLabel();
-        updateAmplifierCheckbox();
-        updateAntennaPowerCheckbox();
         updateVgaGainLabel();
-        updateSampleRateEditText();
-        updateFrequencyEditText();
-        updatePayloadTextEditText();
-        updateTxModeSpinner();
-        updateMorseWPMSeekBar();
-        updateMorseFrequencyEditText();
-        vgaGainSeekBar.setProgress(Preferences.MISC_PREFERENCE.getSend_vgaGain());
-        audioSource.setSelection(Preferences.MISC_PREFERENCE.getRds_audio_source());
     }
 
     private void updateVgaGainLabel() {
-        vgaGainLabel.setText(String.format(getContext().getString(R.string.vga_gain_label), Preferences.MISC_PREFERENCE.getSend_vgaGain()));
+        vgaGainLabel.setText(String.format(getContext().getString(R.string.vga_gain_label), vgaGainSeekBar.getProgress()));
     }
 
-    private void updateAmplifierCheckbox() {
-        amplifierCheckBox.setChecked(Preferences.MISC_PREFERENCE.isSend_amplifier());
+    private void updateWPMLabel() {
+        int wpm = morseWPMSeekBar.getProgress()+1;
+        int ditDuration = (int) Math.round(1200d / wpm);
+        morseWPMLabel.setText(String.format(getContext().getString(R.string.morseWPMLabel_text),
+                wpm, ditDuration));
     }
 
-    private void updateAntennaPowerCheckbox() {
-        antennaPowerCheckBox.setChecked(Preferences.MISC_PREFERENCE.isSend_antennaPower());
-    }
-
-    private void updateSampleRateEditText() {
-        sampleRateEditText.setText(Integer.toString(Preferences.MISC_PREFERENCE.getSend_sampleRate()));
-    }
-
-    private void updateFrequencyEditText() {
-        frequencyEditText.setText(Integer.toString(Preferences.MISC_PREFERENCE.getSend_frequency()));
-    }
-
-    private void updatePayloadTextEditText() {
-        payloadTextEditText.setText(Preferences.MISC_PREFERENCE.getSend_payloadText());
-    }
-
-    private void updateTxModeSpinner() {
-        int selected = Preferences.MISC_PREFERENCE.getSend_txMode().ordinal();
-        if(selected < 4) {
-            txModeSpinner.setSelection(selected);
-        } else{
-            txModeSpinner.setSelection(0);
-        }
-    }
-
-    private void updateMorseWPMSeekBar() {
-        morseWPMSeekBar.setProgress(Preferences.MISC_PREFERENCE.getMorse_wpm() - 1);
-    }
-
-    private void updateMorseFrequencyEditText() {
-        morseFrequencyEditText.setText(Integer.toString(Preferences.MISC_PREFERENCE.getMorse_frequency()));
-    }
 
     private void updateButtonText() {
         switch (txState) {

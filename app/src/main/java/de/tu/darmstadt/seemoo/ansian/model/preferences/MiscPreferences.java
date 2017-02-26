@@ -61,25 +61,9 @@ public class MiscPreferences extends MySharedPreferences {
     private long fileSourceFrequency;
 
     private int fileSourceSampleRate;
-
-    // tranmission
-    private Modulation.TxMode send_txMode;
-    private String send_payloadText;
-    private int send_vgaGain;
-    private boolean send_amplifier;
-    private boolean send_antennaPower;
-    private int send_sampleRate;
-    private int send_frequency;
     private int filter_cutoff;
+
     private String send_filename;
-
-    // morse transmission
-    private int morse_wpm;
-    private int morse_frequency;
-
-    //rds
-    private int rds_audio_source;
-
     /**
      * Will check if any preference conflicts with the current state of the app
      * and fix it
@@ -129,28 +113,11 @@ public class MiscPreferences extends MySharedPreferences {
         logging = getBoolean("logging", false);
         logfile = getString("logfile", "");
         showLog = getBoolean("show_log", false);
-
-        // transmission
-        send_txMode = Modulation.TxMode.values()[getInt("send_tx_mode", 0)];
-        send_payloadText = getString("send_payload_text", "Hello World");
-        send_vgaGain = getInt("send_vga_gain", 40);
-        send_amplifier = getBoolean("send_amplifier", false);
-        send_antennaPower = getBoolean("send_antenna_power", false);
-        send_sampleRate = getInt("send_sample_rate", 1000000);
-        send_frequency = getInt("send_frequency", 97000000);
-        send_filename = getString("send_file_name", Environment.getExternalStorageDirectory().getAbsolutePath() + "/samples.iq");
-
-        // morse transmission
-        morse_wpm = getInt("morse_wpm", 6);
-        morse_frequency = getInt("morse_frequency", 1000);
-
         // ssb filter
         filter_cutoff = getInt("filter_cutoff", 5000);
 
-        // rds transmission
-        rds_audio_source = getInt("rds_audio_source",0);
-
-
+        // transmit iq file
+        send_filename = getString("send_file_name", Environment.getExternalStorageDirectory().getAbsolutePath() + "/samples.iq");
     }
 
     public void savePreference() {
@@ -201,24 +168,11 @@ public class MiscPreferences extends MySharedPreferences {
         editor.putBoolean("show_log", showLog);
         editor.putBoolean("show_debug_information", showDebugInformation);
 
-        // transmission
-        editor.putInt("send_tx_mode", send_txMode.ordinal());
-        editor.putString("send_payload_text", send_payloadText);
-        editor.putInt("send_vga_gain", send_vgaGain);
-        editor.putBoolean("send_amplifier", send_amplifier);
-        editor.putBoolean("send_antenna_power", send_antennaPower);
-        editor.putString("send_file_name", send_filename);
-        editor.putInt("send_sample_rate", send_sampleRate);
-        editor.putInt("send_frequency", send_frequency);
-
-        // morse transmission
-        editor.putInt("morse_wpm", morse_wpm);
-        editor.putInt("morse_frequency", morse_frequency);
-
         // ssb filter
         editor.putInt("filter_cut_off", filter_cutoff);
-        // rds
-        editor.putInt("rds_audio_source", rds_audio_source);
+
+        // iq file 
+        editor.putString("send_file_name", send_filename);
 
         Log.d(LOGTAG, "Preferences saved: " + editor.commit());
     }
@@ -505,98 +459,6 @@ public class MiscPreferences extends MySharedPreferences {
         return fftAveraging;
     }
 
-    public int getSend_vgaGain() {
-        return send_vgaGain;
-    }
-
-    public void setSend_vgaGain(int send_vgaGain) {
-        this.send_vgaGain = send_vgaGain;
-    }
-
-    public boolean isSend_amplifier() {
-        return send_amplifier;
-    }
-
-    public void setSend_amplifier(boolean send_amplifier) {
-        this.send_amplifier = send_amplifier;
-    }
-
-    public boolean isSend_antennaPower() {
-        return send_antennaPower;
-    }
-
-    public void setSend_antennaPower(boolean send_antennaPower) {
-        this.send_antennaPower = send_antennaPower;
-    }
-
-    public int getSend_frequency() {
-        return send_frequency;
-    }
-
-    public void setSend_frequency(int send_frequency) {
-        this.send_frequency = send_frequency;
-    }
-
-    public int getSend_sampleRate() {
-        return send_sampleRate;
-    }
-
-    public void setSend_sampleRate(int send_sampleRate) {
-        this.send_sampleRate = send_sampleRate;
-    }
-
-    public String getSend_filename() {
-        return send_filename;
-    }
-
-    public void setSend_filename(String send_filename) {
-        this.send_filename = send_filename;
-    }
-
-    public Modulation.TxMode getSend_txMode() {
-        return send_txMode;
-    }
-
-    public void setSend_txMode(Modulation.TxMode send_txMode) {
-        this.send_txMode = send_txMode;
-    }
-
-    public String getSend_payloadText() {
-        return send_payloadText;
-    }
-
-    public void setSend_payloadText(String send_payloadText) {
-        this.send_payloadText = send_payloadText;
-    }
-
-    public int getMorse_frequency() {
-        return morse_frequency;
-    }
-
-    public int getMorse_wpm() {
-        return morse_wpm;
-    }
-
-    public int getMorse_DitDuration() {
-        return (int) Math.round(1200d / morse_wpm);
-    }
-
-    public void setMorse_frequency(int morse_frequency) {
-        this.morse_frequency = morse_frequency;
-    }
-
-    public void setMorse_wpm(int morse_wpm) {
-        this.morse_wpm = morse_wpm;
-    }
-
-    public int getRds_audio_source() {
-        return rds_audio_source;
-    }
-
-    public void setRds_audio_source(int rds_audio_source) {
-        this.rds_audio_source = rds_audio_source;
-    }
-
     public int getFilter_cutoff() {
         return filter_cutoff;
     }
@@ -604,4 +466,12 @@ public class MiscPreferences extends MySharedPreferences {
     public void setFilter_cutoff(int filter_cutoff) {
         this.filter_cutoff = filter_cutoff;
     }
+
+    public void setSend_filename(String send_filename) {
+        this.send_filename = send_filename;
+    }
+    public String getSend_fileName(){
+        return this.send_filename;
+    }
+
 }

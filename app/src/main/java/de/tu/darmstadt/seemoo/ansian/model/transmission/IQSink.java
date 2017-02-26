@@ -34,10 +34,23 @@ public class IQSink implements Runnable {
      * After this time the IQSink kills itself
      */
     private static final int TIMEOUT_MILLISECONDS = 5000;
+    private final int sampRate;
+    private final long frequency;
+    private final boolean amp;
+    private final boolean antennaPower;
+    private int vgaGain;
 
     private Hackrf hackrf = null;
     private BlockingQueue<byte[]> hackRFSink = null;
 
+
+    public IQSink(int sampRate, long frequency, boolean amp, boolean antennaPower, int vgaGain){
+        this.sampRate = sampRate;
+        this.frequency = frequency;
+        this.amp = amp;
+        this.antennaPower = antennaPower;
+        this.vgaGain = vgaGain;
+    }
 
     /**
      * Sets the required parameters of the HackRF like sampleRate, frequency, gain, etc.
@@ -48,14 +61,6 @@ public class IQSink implements Runnable {
      * @return true if HackRF parameters are successfully set, false otherwise
      */
     public boolean setup() {
-        // get the preferences
-        // TODO: don't do this in here. This makes this module very dependent of the app
-        int sampRate = Preferences.MISC_PREFERENCE.getSend_sampleRate();
-        int frequency = Preferences.MISC_PREFERENCE.getSend_frequency();
-        boolean amp = Preferences.MISC_PREFERENCE.isSend_amplifier();
-        boolean antennaPower = Preferences.MISC_PREFERENCE.isSend_antennaPower();
-        int vgaGain = Preferences.MISC_PREFERENCE.getSend_vgaGain();
-
         // vgaGain is still a value from 0-100; scale it to the right range:
         vgaGain = (vgaGain * 47) / 100;
 

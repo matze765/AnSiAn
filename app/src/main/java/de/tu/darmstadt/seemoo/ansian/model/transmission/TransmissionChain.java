@@ -63,9 +63,10 @@ public class TransmissionChain implements HackrfCallbackInterface {
                 */
                 TxDataHandler.getInstance().clearAll();
                 Context context = MainActivity.instance;
-                iqSink = new IQSink();
+                iqSink = new IQSink(event.getTransmissionSampleRate(), event.getTransmissionFrequency(),
+                        event.isAmplifier(), event.isAntennaPowerPort(), event.getVgaGain());
                 //iqSink = new FileSink();
-                modulator = new Modulator(iqSink,event);
+                modulator = new Modulator(iqSink,event, event.getTransmissionSampleRate());
 
                 // Initialize the HackRF (i.e. open the USB device, which requires the
                 // user to give permissions)

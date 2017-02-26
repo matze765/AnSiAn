@@ -50,14 +50,13 @@ public class Modulator implements Runnable {
      * @param iqSink requires IQSink because it needs to get buffers from the buffer pool.
      *               Using own buffers here is not recommended by the author of the HackRF driver.
      */
-    public Modulator(IQSink iqSink, TransmitEvent event) {
+    public Modulator(IQSink iqSink, TransmitEvent event, int sampleRate) {
         this.iqSink = iqSink;
-        int sampleRate = Preferences.MISC_PREFERENCE.getSend_sampleRate();
 
         this.modulationInstance = null;
         if (event instanceof MorseTransmitEvent) {
             MorseTransmitEvent mte = (MorseTransmitEvent) event;
-            this.modulationInstance = new Morse(mte.getPayload(), mte.getWPM(), sampleRate);
+            this.modulationInstance = new Morse(mte.getPayload(), mte.getWPM(), sampleRate, mte.getMorseFrequency());
         } else if (event instanceof PSK31TransmitEvent) {
             PSK31TransmitEvent pte = (PSK31TransmitEvent) event;
             this.modulationInstance = new PSK31(pte.getPayload(), sampleRate);
@@ -77,7 +76,9 @@ public class Modulator implements Runnable {
             // special case
             // we need to skip the IQConverter step and directly push them to the iq queue
             // but that is done in the other thread, so do nothing here
+            RawIQTransmitEvent rte = (RawIQTransmitEvent) event;
             modulationInstance = null;
+            filename = rte.getTransmitFileName();
         } else if (event instanceof SSTVTransmitEvent) {
             SSTVTransmitEvent ste = (SSTVTransmitEvent) event;
             this.modulationInstance = new SSTV(sampleRate, ste.getImage(), ste.isRepeat(), ste.isCrop(), ste.getType());

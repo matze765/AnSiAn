@@ -14,6 +14,7 @@ import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.LinearLayout;
+import android.widget.ProgressBar;
 import android.widget.SeekBar;
 import android.widget.Spinner;
 import android.widget.TextView;
@@ -80,16 +81,15 @@ public class WalkieTalkieView extends LinearLayout {
         final EditText frequenyEditText = (EditText) this.findViewById(R.id.et_frequency);
         final SeekBar frequencySeekbar = (SeekBar) this.findViewById(R.id.sb_frequencySeekBar);
         Spinner frequencyBandSpinner = (Spinner) this.findViewById(R.id.sp_frequencyBands);
-        SeekBar vgaGainSeekBar = (SeekBar) this.findViewById(R.id.vgaGainSeekBar);
+        final SeekBar vgaGainSeekBar = (SeekBar) this.findViewById(R.id.vgaGainSeekBar);
         final Button receiveButton = (Button) this.findViewById(R.id.receiveButton);
         final Button transmitButton = (Button) this.findViewById(R.id.transmitButton);
-        CheckBox amplifierCheckBox = (CheckBox) findViewById(R.id.cb_amp);
-        CheckBox antennaPowerCheckBox = (CheckBox) findViewById(R.id.cb_antenna);
+        final CheckBox amplifierCheckBox = (CheckBox) findViewById(R.id.cb_amp);
+        final CheckBox antennaPowerCheckBox = (CheckBox) findViewById(R.id.cb_antenna);
         SeekBar squelchSeekBar = (SeekBar) this.findViewById(R.id.squelchSeekBar);
         Spinner modulationSpinner = (Spinner) this.findViewById(R.id.sp_modulation);
         final SeekBar filterBandWidthSeekBar = (SeekBar) this.findViewById(R.id.sb_filterBandWidth);
 
-        vgaGainSeekBar.setProgress(miscPreferences.getSend_vgaGain());
         squelchSeekBar.setProgress((int)guiPreferences.getSquelch()+100);
         filterBandWidthSeekBar.setProgress(miscPreferences.getFilter_cutoff());
 
@@ -98,7 +98,6 @@ public class WalkieTalkieView extends LinearLayout {
             @Override
             public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
                 miscPreferences.setDemodulation(getCurrentRxMode());
-                miscPreferences.setSend_txMode(getCurrentTxMode());
                 StateHandler.setDemodulationMode(getCurrentRxMode());
                 updateVisibility(getCurrentTxMode());
             }
@@ -161,7 +160,6 @@ public class WalkieTalkieView extends LinearLayout {
         filterBandWidthSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int filterBandWidth, boolean b) {
-                miscPreferences.setSend_frequency(filterBandWidth);
                 if(isReceiving && !isTransmitting){
                     EventBus.getDefault().post(new ChangeChannelWidthEvent(filterBandWidth));
                 }
@@ -245,15 +243,27 @@ public class WalkieTalkieView extends LinearLayout {
                     disableSettings(true,true);
 
                     TransmitEvent event = null;
+
+                    int sampleRate = 1_000_000;
+                    long frequency = Long.parseLong(frequenyEditText.getText().toString());
+                    boolean isAmp = amplifierCheckBox.isChecked();
+                    boolean isAntennaPower = antennaPowerCheckBox.isChecked();
+                    int vgaGain = vgaGainSeekBar.getProgress();
+
                     switch (getCurrentTxMode()){
                         case FM:
-                            event = new FMTransmitEvent(TransmitEvent.State.MODULATION, TransmitEvent.Sender.GUI);
+                            event = new FMTransmitEvent(TransmitEvent.State.MODULATION, TransmitEvent.Sender.GUI,
+                                    sampleRate, frequency, isAmp, isAntennaPower, vgaGain);
                             break;
                         case USB:
-                            event = new USBTransmitEvent(TransmitEvent.State.MODULATION, TransmitEvent.Sender.GUI,filterBandWidthSeekBar.getProgress() );
+                            event = new USBTransmitEvent(TransmitEvent.State.MODULATION, TransmitEvent.Sender.GUI,
+                                    sampleRate, frequency, isAmp,isAntennaPower,vgaGain,
+                                    filterBandWidthSeekBar.getProgress() );
                             break;
                         case LSB:
-                            event = new LSBTransmitEvent(TransmitEvent.State.MODULATION, TransmitEvent.Sender.GUI, filterBandWidthSeekBar.getProgress());
+                            event = new LSBTransmitEvent(TransmitEvent.State.MODULATION, TransmitEvent.Sender.GUI,
+                                    sampleRate, frequency, isAmp,isAntennaPower,vgaGain,
+                                    filterBandWidthSeekBar.getProgress());
                             break;
                     }
 
@@ -329,29 +339,12 @@ public class WalkieTalkieView extends LinearLayout {
 
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                if (fromUser) {
-                    Preferences.MISC_PREFERENCE.setSend_vgaGain(progress);
-                }
                 updateVgaGainLabel();
             }
 
 
         });
 
-
-        amplifierCheckBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                Preferences.MISC_PREFERENCE.setSend_amplifier(isChecked);
-            }
-        });
-
-        antennaPowerCheckBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                Preferences.MISC_PREFERENCE.setSend_antennaPower(isChecked);
-            }
-        });
 
         frequenyEditText.addTextChangedListener(new TextWatcher() {
             @Override
@@ -368,8 +361,6 @@ public class WalkieTalkieView extends LinearLayout {
             public void afterTextChanged(Editable s) {
                 try {
                     int i = Integer.parseInt(s.toString());
-                    // set transmit frequency
-                    Preferences.MISC_PREFERENCE.setSend_frequency(i);
                     // set receive frequency
                     if(isReceiving) {
                         EventBus.getDefault().post(new RequestFrequencyEvent(i - 100000));
@@ -384,10 +375,7 @@ public class WalkieTalkieView extends LinearLayout {
         updateVgaGainLabel();
         updateBandWidthLabel();
         miscPreferences.setDemodulation(getCurrentRxMode());
-        miscPreferences.setSend_txMode(getCurrentTxMode());
         StateHandler.setDemodulationMode(getCurrentRxMode());
-
-        miscPreferences.setSend_frequency(30000000);
         guiPreferences.setDemodFrequency(30000000);
 
         updateVisibility(getCurrentTxMode());
@@ -411,8 +399,9 @@ public class WalkieTalkieView extends LinearLayout {
 
 
     private void updateVgaGainLabel() {
+        SeekBar vgaSeekBar = (SeekBar) this.findViewById(R.id.vgaGainSeekBar);
         TextView vgaGainLabel = (TextView) this.findViewById(R.id.vgaGainLabel);
-        vgaGainLabel.setText(String.format(getContext().getString(R.string.vga_gain_label), Preferences.MISC_PREFERENCE.getSend_vgaGain()));
+        vgaGainLabel.setText(String.format(getContext().getString(R.string.vga_gain_label), vgaSeekBar.getProgress()));
     }
 
     private void updateSquelchLabel(){

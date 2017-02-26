@@ -12,9 +12,11 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
+import android.widget.ProgressBar;
 import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -133,21 +135,33 @@ public class SSTVView extends LinearLayout {
         }
 
         Button txBtn = (Button) this.findViewById(R.id.transmitButton);
-
-
         Button rxBtn = (Button) this.findViewById(R.id.receiveButton);
 
+        EditText etFrequency = (EditText) this.findViewById(R.id.et_frequency);
+        CheckBox cbAmp = (CheckBox) this.findViewById(R.id.cb_amp);
+        CheckBox cbAntennaPower = (CheckBox) this.findViewById(R.id.cb_antenna);
+        SeekBar sbVgaGain = (SeekBar) this.findViewById(R.id.vgaGainSeekBar);
 
         if(!isTransmitting && !isReceiving) {
 
             boolean crop = true;
             boolean repeat = false;
+            int sampleRate = 1_000_000;
+            long frequency =  Long.parseLong(etFrequency.getText().toString());
+            boolean isAmplifier = cbAmp.isChecked();
+            boolean isAntennaPower = cbAntennaPower.isChecked();
+            int vgaGain = sbVgaGain.getProgress();
+
+
+
             SSTV.SSTV_TYPE type = SSTV.SSTV_TYPE.ROBOT_SSTV_BW_120;
             try {
                 final InputStream imageStream = getContext().getContentResolver().openInputStream(imageUri);
                 final Bitmap selectedImage = BitmapFactory.decodeStream(imageStream);
                 imageStream.close();
-                EventBus.getDefault().post(new SSTVTransmitEvent(TransmitEvent.State.MODULATION, TransmitEvent.Sender.GUI, selectedImage, crop, repeat, type));
+                TransmitEvent transmitEvent = new SSTVTransmitEvent(TransmitEvent.State.MODULATION, TransmitEvent.Sender.GUI,
+                        sampleRate, frequency, isAmplifier, isAntennaPower,vgaGain, selectedImage, crop, repeat, type);
+                EventBus.getDefault().post(transmitEvent);
                 isTransmitting = true;
                 txBtn.setText(R.string.stop_tx);
                 rxBtn.setEnabled(false);
@@ -197,7 +211,6 @@ public class SSTVView extends LinearLayout {
                             stopTX();
                         }
                     });
-
                     break;
                 case TXACTIVE:
                     break;

@@ -26,8 +26,10 @@ public class SSTVTransmitEvent extends TransmitEvent{
      * @param repeat true, if the transmission should be repeated until it is aborted
      * @param type SSTV type
      */
-    public SSTVTransmitEvent(State state, Sender sender, Bitmap image, boolean crop, boolean repeat, SSTV.SSTV_TYPE type){
-        super(state, sender);
+    public SSTVTransmitEvent(State state, Sender sender,int transmissionSampleRate,
+                             long transmissionFrequency, boolean amplifier, boolean antennaPowerPort,
+                             int vgaGain, Bitmap image, boolean crop, boolean repeat, SSTV.SSTV_TYPE type){
+        super(state, sender,transmissionSampleRate,transmissionFrequency,amplifier,antennaPowerPort, vgaGain);
         this.image = image;
         this.crop = crop;
         this.repeat = repeat;

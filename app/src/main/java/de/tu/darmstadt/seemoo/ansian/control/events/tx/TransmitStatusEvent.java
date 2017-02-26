@@ -6,6 +6,6 @@ package de.tu.darmstadt.seemoo.ansian.control.events.tx;
 
 public class TransmitStatusEvent extends TransmitEvent {
     public TransmitStatusEvent(State state, Sender sender){
-        super(state, sender);
+        super(state, sender,0,0,false, false,0);
     }
 }

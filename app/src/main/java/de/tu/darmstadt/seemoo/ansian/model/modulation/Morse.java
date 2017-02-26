@@ -13,7 +13,8 @@ import de.tu.darmstadt.seemoo.ansian.tools.morse.Encoder;
  */
 public class Morse extends Modulation {
     private static final String LOGTAG = "Morse";
-    private String payloadString;
+    private final int morseFrequency;
+
     private char[] morseCode;
     private int currentSymbolIndex;
     private SamplePacket currentSymbol;
@@ -22,10 +23,10 @@ public class Morse extends Modulation {
     private float[] sine;
     private float[] cosine;
 
-    public Morse(String payload, int wpm, int samplerate) {
-        this.payloadString = payload;
+    public Morse(String payload, int wpm, int samplerate, int morseFrequency) {
         this.wpm = wpm;
         this.sampleRate = samplerate;
+        this.morseFrequency = morseFrequency;
         Encoder morseEncoder = new Encoder();
         String morseEncoded = "/" + morseEncoder.encode(payload) + "/";
         //String morseEncoded = "//./";
@@ -84,7 +85,7 @@ public class Morse extends Modulation {
         this.samplesPerDit = (int) (1200f / wpm * sampleRate / 1000);
         this.sine = new float[3 * samplesPerDit];
         this.cosine = new float[3 * samplesPerDit];
-        long frequency = Preferences.MISC_PREFERENCE.getMorse_frequency();
+        long frequency = morseFrequency;
         for (int i = 0; i < sine.length; i++) {
             sine[i] = (float) Math.sin(2 * Math.PI * frequency * i / (float) sampleRate) * 0.999f;
             cosine[i] = (float) Math.cos(2 * Math.PI * frequency * i / (float) sampleRate) * 0.999f;

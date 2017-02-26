@@ -9,8 +9,10 @@ import de.tu.darmstadt.seemoo.ansian.control.events.tx.data.DataTransmitEvent;
 
 public class RDSTransmitEvent extends DataTransmitEvent {
     private boolean fileAudioSource;
-    public RDSTransmitEvent(State state,Sender sender, String stationName, boolean fileAudioSource){
-        super(state, sender, stationName);
+    public RDSTransmitEvent(State state,Sender sender,int transmissionSampleRate,
+                            long transmissionFrequency, boolean amplifier, boolean antennaPowerPort,
+                            int vgaGain, String stationName, boolean fileAudioSource){
+        super(state, sender,transmissionSampleRate, transmissionFrequency, amplifier, antennaPowerPort, vgaGain, stationName);
         this.fileAudioSource = fileAudioSource;
     }
 

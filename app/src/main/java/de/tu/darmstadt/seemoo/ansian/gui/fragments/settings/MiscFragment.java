@@ -130,7 +130,6 @@ public class MiscFragment extends MyPreferenceFragment {
                         if (filepath != null) {
                             ((EditTextPreference) findPreference("send_file_name")).setText(filepath);
                             Preferences.MISC_PREFERENCE.setSend_filename(filepath);
-                            updateTransmissionPrefs(filepath);
                             getPreferenceManager().findPreference("send_file_name").setSummary(String.format(getResources().getString(R.string.send_file_name_summ), filepath));
                         } else {
                             Toast.makeText(MiscFragment.this.getActivity(),
@@ -176,29 +175,6 @@ public class MiscFragment extends MyPreferenceFragment {
 
     }
 
-    private void updateTransmissionPrefs(String filename) {
-
-        // Sample Rate. Search for pattern XXXXXXXSps
-        if (filename.matches(".*(_|-|\\s)([0-9]+)(sps|Sps|SPS).*"))
-            Preferences.MISC_PREFERENCE.setSend_sampleRate(
-                    Integer.valueOf(filename.replaceFirst(".*(_|-|\\s)([0-9]+)(sps|Sps|SPS).*", "$2")));
-        if (filename.matches(".*(_|-|\\s)([0-9]+)(msps|Msps|MSps|MSPS).*"))
-            Preferences.MISC_PREFERENCE.setSend_sampleRate(
-                    Integer.valueOf(filename.replaceFirst(".*(_|-|\\s)([0-9]+)(msps|Msps|MSps|MSPS).*", "$2"))
-                            * 1000000);
-
-        // Frequency. Search for pattern XXXXXXXHz
-        if (filename.matches(".*(_|-|\\s)([0-9]+)(hz|Hz|HZ).*"))
-            Preferences.MISC_PREFERENCE.setSend_frequency(
-                    Integer.valueOf(filename.replaceFirst(".*(_|-|\\s)([0-9]+)(hz|Hz|HZ).*", "$2")));
-
-        if (filename.matches(".*(_|-|\\s)([0-9]+)(mhz|Mhz|MHz|MHZ).*"))
-            Preferences.MISC_PREFERENCE.setSend_frequency(
-                    Integer.valueOf(filename.replaceFirst(".*(_|-|\\s)([0-9]+)(mhz|Mhz|MHz|MHZ).*", "$2")) * 1000000);
-
-        Preferences.MISC_PREFERENCE.savePreference();
-
-    }
 
 
 }

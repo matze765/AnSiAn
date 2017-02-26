@@ -7,7 +7,16 @@ import de.tu.darmstadt.seemoo.ansian.control.events.tx.TransmitEvent;
  */
 
 public class RawIQTransmitEvent extends TransmitEvent {
-    public RawIQTransmitEvent(State state, Sender sender){
-        super(state, sender);
+    private String transmitFileName;
+
+    public RawIQTransmitEvent(State state, Sender sender, int transmissionSampleRate,
+                              long transmissionFrequency, boolean amplifier, boolean antennaPowerPort,
+                              int vgaGain, String transmitFileName){
+        super(state, sender,transmissionSampleRate, transmissionFrequency, amplifier, antennaPowerPort, vgaGain);
+        this.transmitFileName = transmitFileName;
+    }
+
+    public String getTransmitFileName() {
+        return transmitFileName;
     }
 }

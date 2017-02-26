@@ -28,6 +28,9 @@ public class FileSink extends IQSink {
     private static final String LOGTAG = "FileSink";
     private Hackrf hackrf;
 
+    public FileSink(){
+        super(0,0,false,false,0);
+    }
     @Override
     public void run() {
         BlockingQueue<byte[]> source = TxDataHandler.getInstance().getTransmitIQQueue();
@@ -74,7 +77,6 @@ public class FileSink extends IQSink {
 
     @Override
     public boolean setup() {
-        //do nothing
         return true;
     }
 }
