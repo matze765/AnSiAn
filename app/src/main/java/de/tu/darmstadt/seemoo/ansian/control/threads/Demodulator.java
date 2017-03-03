@@ -99,6 +99,7 @@ public class Demodulator extends Thread {
 					   int packetSize, DemoType type) {
 		preferences = Preferences.MISC_PREFERENCE;
 		demodulation = Demodulation.getDemodulation(type);
+		Log.d(LOGTAG, "DemoType="+type.toString());
 
 
 		if(preferences.getFilter_cutoff() != -1) {

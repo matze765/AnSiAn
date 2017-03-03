@@ -29,10 +29,14 @@ import java.io.InputStream;
 import de.greenrobot.event.EventBus;
 import de.greenrobot.event.Subscribe;
 import de.tu.darmstadt.seemoo.ansian.R;
+import de.tu.darmstadt.seemoo.ansian.control.StateHandler;
+import de.tu.darmstadt.seemoo.ansian.control.events.RequestFrequencyEvent;
+import de.tu.darmstadt.seemoo.ansian.control.events.RequestStateEvent;
 import de.tu.darmstadt.seemoo.ansian.control.events.tx.TransmitEvent;
 import de.tu.darmstadt.seemoo.ansian.control.events.tx.TransmitStatusEvent;
 import de.tu.darmstadt.seemoo.ansian.control.events.tx.image.sstv.ImagePickIntentResultEvent;
 import de.tu.darmstadt.seemoo.ansian.control.events.tx.image.sstv.SSTVTransmitEvent;
+import de.tu.darmstadt.seemoo.ansian.model.demodulation.Demodulation;
 import de.tu.darmstadt.seemoo.ansian.model.modulation.SSTV;
 import de.tu.darmstadt.seemoo.ansian.model.preferences.Preferences;
 
@@ -72,7 +76,8 @@ public class SSTVView extends LinearLayout {
         ImageButton ib_pickImage = (ImageButton) this.findViewById(R.id.btn_pickImage);
         SeekBar vgaGainSeekBar = (SeekBar) this.findViewById(R.id.vgaGainSeekBar);
 
-        Button startRxButton = (Button) this.findViewById(R.id.transmitButton);
+        Button startTxButton = (Button) this.findViewById(R.id.transmitButton);
+        Button startRxButton = (Button) this.findViewById(R.id.receiveButton);
 
 
         ib_pickImage.setOnClickListener(new OnClickListener() {
@@ -85,7 +90,7 @@ public class SSTVView extends LinearLayout {
             }
         });
 
-        startRxButton.setOnClickListener(new OnClickListener() {
+        startTxButton.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View view) {
                 if(!isTransmitting){
@@ -95,6 +100,18 @@ public class SSTVView extends LinearLayout {
                 }
             }
         });
+        startRxButton.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if(!isReceiving){
+                    startRx();
+                } else {
+                    stopRx();
+                }
+            }
+        });
+
+
 
 
 
@@ -125,6 +142,37 @@ public class SSTVView extends LinearLayout {
         TextView vgaGainLabel = (TextView) this.findViewById(R.id.vgaGainLabel);
         SeekBar vgaSeekBar = (SeekBar) this.findViewById(R.id.vgaGainSeekBar);
         vgaGainLabel.setText(String.format(getContext().getString(R.string.vga_gain_label), vgaSeekBar.getProgress()));
+    }
+
+    private void stopRx(){
+        Button txBtn = (Button) this.findViewById(R.id.transmitButton);
+        Button rxBtn = (Button) this.findViewById(R.id.receiveButton);
+        if(isReceiving) {
+            isReceiving = false;
+            txBtn.setEnabled(true);
+            rxBtn.setText(R.string.start_rx);
+            EventBus.getDefault().post(new RequestStateEvent(StateHandler.State.STOPPED));
+        }
+    }
+    private void startRx(){
+
+        Button txBtn = (Button) this.findViewById(R.id.transmitButton);
+        Button rxBtn = (Button) this.findViewById(R.id.receiveButton);
+        EditText frequencyEditText = (EditText) this.findViewById(R.id.et_frequency);
+        if(!isTransmitting && !isReceiving){
+            int frequency = Integer.parseInt(frequencyEditText.getText().toString());
+            Preferences.GUI_PREFERENCE.setDemodFrequency(frequency);
+            Preferences.MISC_PREFERENCE.setDemodulation(Demodulation.DemoType.SSTV);
+            StateHandler.setDemodulationMode(Demodulation.DemoType.SSTV);
+            EventBus.getDefault().post(new RequestFrequencyEvent(frequency - 100000));
+            EventBus.getDefault().post(new RequestStateEvent(StateHandler.State.MONITORING));
+
+
+            isReceiving = true;
+            txBtn.setEnabled(false);
+            rxBtn.setText(R.string.stop_rx);
+        }
+
     }
 
     private void startTX(){

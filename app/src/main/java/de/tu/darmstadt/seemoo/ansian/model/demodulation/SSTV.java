@@ -11,6 +11,14 @@ import de.tu.darmstadt.seemoo.ansian.model.SamplePacket;
 public class SSTV extends Demodulation {
     private static final String LOGTAG = "SSTV";
 
+    private static final int QUADRATURE_RATE = 50_000;
+
+    public SSTV(){
+        Log.d(LOGTAG, "SSTV started");
+    }
+
+
+
     @Override
     public void demodulate(SamplePacket input, SamplePacket output) {
         Log.d(LOGTAG, "sample_rate="+input.getSampleRate());
@@ -19,7 +27,17 @@ public class SSTV extends Demodulation {
     }
 
     @Override
+    public int getQuadratureRate() {
+        return QUADRATURE_RATE;
+    }
+
+    @Override
     public DemoType getType() {
         return DemoType.SSTV;
+    }
+
+    @Override
+    public boolean needsUserFilter() {
+        return false;
     }
 }

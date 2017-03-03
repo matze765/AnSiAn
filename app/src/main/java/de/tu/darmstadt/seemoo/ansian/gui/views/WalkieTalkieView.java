@@ -216,7 +216,7 @@ public class WalkieTalkieView extends LinearLayout {
                     if(!isTransmitting) {
                         int frequency = Integer.parseInt(frequenyEditText.getText().toString());
                         guiPreferences.setDemodFrequency(frequency);
-                        EventBus.getDefault().post(frequency - 100000);
+                        EventBus.getDefault().post(new RequestFrequencyEvent(frequency - 100000));
                         EventBus.getDefault().post(new RequestStateEvent(StateHandler.State.MONITORING));
                     }
                 }
