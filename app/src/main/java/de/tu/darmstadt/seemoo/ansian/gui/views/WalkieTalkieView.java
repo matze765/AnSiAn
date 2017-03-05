@@ -392,7 +392,7 @@ public class WalkieTalkieView extends LinearLayout {
                 receiveButton.setText(R.string.stop_rx);
                 break;
             case STOPPED:
-                receiveButton.setText(R.string.stop_rx);
+                receiveButton.setText(R.string.start_rx);
                 break;
         }
     }

@@ -31,7 +31,7 @@ public class SSTV  extends  Modulation{
     // c.f. https://en.wikipedia.org/wiki/Slow-scan_television
     private final static float SYNC_FREQUENCY = 1200;
     private final static float BLACK_FREQUENCY = 1500;
-    private final static float WHITE_FREQUNCY = 2300;
+    private final static float WHITE_FREQUENCY = 2300;
     private final static int NUM_LINES = 120;
     private final static int NUM_PIXELS_PER_LINE = 256;
     private final static float LINE_SYNC_SECONDS = 0.005f;
@@ -83,7 +83,7 @@ public class SSTV  extends  Modulation{
                 // 0 <= pixel <= 255, 0= black, 255 = white
                 int pixel = this.imageData[this.currentLineIdx*NUM_PIXELS_PER_LINE+i];
 
-                float interpolatedFrequency = BLACK_FREQUENCY + (WHITE_FREQUNCY-BLACK_FREQUENCY)* (pixel/255.0f);
+                float interpolatedFrequency = BLACK_FREQUENCY + (WHITE_FREQUENCY-BLACK_FREQUENCY)* (pixel/255.0f);
                 insertConstant(samples, interpolatedFrequency,i*samplesPerPixel, samplesPerPixel);
             }
             // insert line sync
@@ -91,14 +91,14 @@ public class SSTV  extends  Modulation{
         }
 
         // normalize;  0 <= sample <= 1
-        ArrayHelper.packetMultiply(samples, 1/WHITE_FREQUNCY);
+        ArrayHelper.packetMultiply(samples, 1/WHITE_FREQUENCY);
 
         // upsample
         if(this.samplingRate != INTERNAL_SAMPLING_RATE){
             samples = ArrayHelper.upsample(samples, Math.round(this.samplingRate/ (float)INTERNAL_SAMPLING_RATE));
         }
 
-        SamplePacket fm = FM.fmmod(samples, this.samplingRate, WHITE_FREQUNCY);
+        SamplePacket fm = FM.fmmod(samples, this.samplingRate, WHITE_FREQUENCY);
 
         this.currentLineIdx++;
         if(this.currentLineIdx == NUM_LINES){

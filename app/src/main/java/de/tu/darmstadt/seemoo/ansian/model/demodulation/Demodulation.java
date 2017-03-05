@@ -12,7 +12,7 @@ import de.tu.darmstadt.seemoo.ansian.model.SamplePacket;
 public abstract class Demodulation {
 
     public static enum DemoType {
-        OFF, AM, NFM, WFM, LSB, USB, MORSE, SSTV;
+        OFF, AM, NFM, WFM, LSB, USB, MORSE;
     }
 
     private static Demodulation[] demodulations;
@@ -69,8 +69,7 @@ public abstract class Demodulation {
 
             case MORSE:
                 return new Morse();
-            case SSTV:
-                return new SSTV();
+
 
             default:
                 return new OFF();

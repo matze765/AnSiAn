@@ -125,12 +125,6 @@
         android:orientation="vertical">
 
         <Button
-            android:id="@+id/receiveButton"
-            android:layout_width="150dp"
-            android:layout_height="100dp"
-            android:text="@string/start_rx" />
-
-        <Button
             android:id="@+id/transmitButton"
             android:layout_width="150dp"
             android:layout_height="100dp"

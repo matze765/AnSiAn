@@ -50,7 +50,7 @@ public class SSTVView extends LinearLayout {
 
     private static final String LOGTAG = "SSTVView";
     private boolean isTransmitting = false;
-    private boolean isReceiving = false;
+
     private Uri imageUri;
 
     public SSTVView(Context context) {
@@ -77,7 +77,7 @@ public class SSTVView extends LinearLayout {
         SeekBar vgaGainSeekBar = (SeekBar) this.findViewById(R.id.vgaGainSeekBar);
 
         Button startTxButton = (Button) this.findViewById(R.id.transmitButton);
-        Button startRxButton = (Button) this.findViewById(R.id.receiveButton);
+
 
 
         ib_pickImage.setOnClickListener(new OnClickListener() {
@@ -97,16 +97,6 @@ public class SSTVView extends LinearLayout {
                     startTX();
                 } else {
                     stopTX();
-                }
-            }
-        });
-        startRxButton.setOnClickListener(new OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if(!isReceiving){
-                    startRx();
-                } else {
-                    stopRx();
                 }
             }
         });
@@ -144,36 +134,6 @@ public class SSTVView extends LinearLayout {
         vgaGainLabel.setText(String.format(getContext().getString(R.string.vga_gain_label), vgaSeekBar.getProgress()));
     }
 
-    private void stopRx(){
-        Button txBtn = (Button) this.findViewById(R.id.transmitButton);
-        Button rxBtn = (Button) this.findViewById(R.id.receiveButton);
-        if(isReceiving) {
-            isReceiving = false;
-            txBtn.setEnabled(true);
-            rxBtn.setText(R.string.start_rx);
-            EventBus.getDefault().post(new RequestStateEvent(StateHandler.State.STOPPED));
-        }
-    }
-    private void startRx(){
-
-        Button txBtn = (Button) this.findViewById(R.id.transmitButton);
-        Button rxBtn = (Button) this.findViewById(R.id.receiveButton);
-        EditText frequencyEditText = (EditText) this.findViewById(R.id.et_frequency);
-        if(!isTransmitting && !isReceiving){
-            int frequency = Integer.parseInt(frequencyEditText.getText().toString());
-            Preferences.GUI_PREFERENCE.setDemodFrequency(frequency);
-            Preferences.MISC_PREFERENCE.setDemodulation(Demodulation.DemoType.SSTV);
-            StateHandler.setDemodulationMode(Demodulation.DemoType.SSTV);
-            EventBus.getDefault().post(new RequestFrequencyEvent(frequency - 100000));
-            EventBus.getDefault().post(new RequestStateEvent(StateHandler.State.MONITORING));
-
-
-            isReceiving = true;
-            txBtn.setEnabled(false);
-            rxBtn.setText(R.string.stop_rx);
-        }
-
-    }
 
     private void startTX(){
 
@@ -183,14 +143,13 @@ public class SSTVView extends LinearLayout {
         }
 
         Button txBtn = (Button) this.findViewById(R.id.transmitButton);
-        Button rxBtn = (Button) this.findViewById(R.id.receiveButton);
 
         EditText etFrequency = (EditText) this.findViewById(R.id.et_frequency);
         CheckBox cbAmp = (CheckBox) this.findViewById(R.id.cb_amp);
         CheckBox cbAntennaPower = (CheckBox) this.findViewById(R.id.cb_antenna);
         SeekBar sbVgaGain = (SeekBar) this.findViewById(R.id.vgaGainSeekBar);
 
-        if(!isTransmitting && !isReceiving) {
+        if(!isTransmitting) {
 
             boolean crop = true;
             boolean repeat = false;
@@ -212,7 +171,6 @@ public class SSTVView extends LinearLayout {
                 EventBus.getDefault().post(transmitEvent);
                 isTransmitting = true;
                 txBtn.setText(R.string.stop_tx);
-                rxBtn.setEnabled(false);
 
             }  catch (FileNotFoundException e) {
                 Toast.makeText(this.getContext(), "Image not found", Toast.LENGTH_LONG).show();
@@ -227,8 +185,6 @@ public class SSTVView extends LinearLayout {
         Button txBtn = (Button) this.findViewById(R.id.transmitButton);
         txBtn.setText(R.string.start_tx);
 
-        Button rxBtn = (Button) this.findViewById(R.id.receiveButton);
-        rxBtn.setEnabled(true);
         if(isTransmitting){
             isTransmitting = false;
             EventBus.getDefault().post(new TransmitStatusEvent(TransmitEvent.State.TXOFF, TransmitEvent.Sender.GUI));
