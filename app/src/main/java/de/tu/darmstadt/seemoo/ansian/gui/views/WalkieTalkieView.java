@@ -215,9 +215,9 @@ public class WalkieTalkieView extends LinearLayout {
                     // if we are currently transmitting, we have to wait until that is stopped
                     if(!isTransmitting) {
                         int frequency = Integer.parseInt(frequenyEditText.getText().toString());
-                        guiPreferences.setDemodFrequency(frequency);
-                        EventBus.getDefault().post(new RequestFrequencyEvent(frequency - 100000));
                         EventBus.getDefault().post(new RequestStateEvent(StateHandler.State.MONITORING));
+                        EventBus.getDefault().post(new RequestFrequencyEvent(frequency - 100000));
+                        guiPreferences.setDemodFrequency(frequency);
                     }
                 }
 
@@ -376,7 +376,7 @@ public class WalkieTalkieView extends LinearLayout {
         updateBandWidthLabel();
         miscPreferences.setDemodulation(getCurrentRxMode());
         StateHandler.setDemodulationMode(getCurrentRxMode());
-        guiPreferences.setDemodFrequency(30000000);
+        guiPreferences.setDemodFrequency(3500000);
 
         updateVisibility(getCurrentTxMode());
 
