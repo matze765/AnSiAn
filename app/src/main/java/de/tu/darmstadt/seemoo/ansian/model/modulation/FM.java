@@ -71,7 +71,7 @@ public class FM  extends Modulation {
      * @param re the array that will be summed up
      * @return newly allocated array containing the sums
      */
-    private static float[] cumsum(float[] re) {
+    public static float[] cumsum(float[] re) {
         float[] sum = new float[re.length];
         sum[0] = re[0];
         for(int i=1;i<re.length;i++){

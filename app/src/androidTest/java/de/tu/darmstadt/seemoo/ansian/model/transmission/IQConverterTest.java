@@ -282,7 +282,7 @@ public class IQConverterTest extends ApplicationTestCase<Application> {
 
     private class IQSinkFake extends IQSink{
         public IQSinkFake(){
-            super();
+            super(0,0,false,false,0);
         }
 
         public byte[] getBufferFromBufferPool() {
