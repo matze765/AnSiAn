@@ -7,6 +7,7 @@ import android.os.Environment;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.util.Pools;
 import android.util.Log;
+import android.widget.Toast;
 
 import java.io.BufferedInputStream;
 import java.io.DataInputStream;
@@ -19,6 +20,10 @@ import java.math.BigInteger;
 import java.util.Arrays;
 import java.util.jar.Manifest;
 
+import de.greenrobot.event.EventBus;
+import de.tu.darmstadt.seemoo.ansian.control.events.tx.TransmitEvent;
+import de.tu.darmstadt.seemoo.ansian.control.events.tx.TransmitStatusEvent;
+import de.tu.darmstadt.seemoo.ansian.gui.misc.MyToast;
 import de.tu.darmstadt.seemoo.ansian.model.AudioSource;
 import de.tu.darmstadt.seemoo.ansian.model.SamplePacket;
 import de.tu.darmstadt.seemoo.ansian.model.filter.FirFilter;
@@ -129,6 +134,9 @@ public class RDS extends Modulation {
                 this.audioFile = new BufferedInputStream(new FileInputStream(file));
             } catch (FileNotFoundException e) {
                 e.printStackTrace();
+                MyToast.makeText("AnSiAn/audio.iq could not be read", Toast.LENGTH_LONG);
+                this.audioFile = null;
+                EventBus.getDefault().post(new TransmitStatusEvent(TransmitEvent.State.TXOFF, TransmitEvent.Sender.TX));
             }
         } else {
             // init recorder to get audio from microphone
