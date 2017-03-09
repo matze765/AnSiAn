@@ -28,6 +28,7 @@ public class MiscPreferences extends MySharedPreferences {
     private boolean rtlsdrManualGain;
     private boolean recordingStopAfter;
     private boolean autostart;
+    private boolean debug_transmission;
 
     private int filesourceFileFormat;
     private int rtlsdrPort;
@@ -118,6 +119,8 @@ public class MiscPreferences extends MySharedPreferences {
 
         // transmit iq file
         send_filename = getString("send_file_name", Environment.getExternalStorageDirectory().getAbsolutePath() + "/samples.iq");
+
+        debug_transmission = getBoolean("debug_transmission", false);
     }
 
     public void savePreference() {
@@ -173,6 +176,8 @@ public class MiscPreferences extends MySharedPreferences {
 
         // iq file 
         editor.putString("send_file_name", send_filename);
+
+        editor.putBoolean("debug_transmission", debug_transmission);
 
         Log.d(LOGTAG, "Preferences saved: " + editor.commit());
     }
@@ -474,4 +479,11 @@ public class MiscPreferences extends MySharedPreferences {
         return this.send_filename;
     }
 
+    public boolean isDebug_transmission() {
+        return debug_transmission;
+    }
+
+    public void setDebug_transmission(boolean debug_transmission) {
+        this.debug_transmission = debug_transmission;
+    }
 }

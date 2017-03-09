@@ -149,7 +149,12 @@
             android:summary="@string/send_file_name_summ"
             android:title="@string/send_file_name_title" />
 
-
+        <SwitchPreference
+            android:defaultValue="false"
+            android:key="debug_transmission"
+            android:summaryOff="Transmit via HackRF"
+            android:summaryOn="Write to file (fakeiqsink.iq)c"
+            android:title="Write samples to file instead of transmiting " />
     </PreferenceCategory>
 
 </PreferenceScreen>

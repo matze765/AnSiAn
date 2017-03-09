@@ -14,6 +14,7 @@ import de.tu.darmstadt.seemoo.ansian.control.TxDataHandler;
 import de.tu.darmstadt.seemoo.ansian.control.events.tx.TransmitEvent;
 import de.tu.darmstadt.seemoo.ansian.control.events.tx.TransmitStatusEvent;
 import de.tu.darmstadt.seemoo.ansian.gui.misc.MyToast;
+import de.tu.darmstadt.seemoo.ansian.model.preferences.Preferences;
 
 /**
  * Representation of the entire transmission chain. It is responsible for listening to TransmitEvents
@@ -63,9 +64,13 @@ public class TransmissionChain implements HackrfCallbackInterface {
                 */
                 TxDataHandler.getInstance().clearAll();
                 Context context = MainActivity.instance;
-                iqSink = new IQSink(event.getTransmissionSampleRate(), event.getTransmissionFrequency(),
-                        event.isAmplifier(), event.isAntennaPowerPort(), event.getVgaGain());
-                //iqSink = new FileSink();
+                if(Preferences.MISC_PREFERENCE.isDebug_transmission()){
+                    iqSink = new FileSink();
+                } else {
+                    iqSink = new IQSink(event.getTransmissionSampleRate(), event.getTransmissionFrequency(),
+                            event.isAmplifier(), event.isAntennaPowerPort(), event.getVgaGain());
+                }
+
                 modulator = new Modulator(iqSink,event, event.getTransmissionSampleRate());
 
                 // Initialize the HackRF (i.e. open the USB device, which requires the
