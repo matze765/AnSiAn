@@ -393,8 +393,10 @@ Therefore, we decided to use a filter to get rid of the other sideband. Listing~
 
 Note: The AudioSource does return a real signal, not a complex signal, i.e. all imaginary parts are zero. However, the filter does correct this, such that the output signal does contain both a real and an imaginary part.
 
+\newpage
 \section{Feature 4: Slow-scan Television (SSTV)}
-
+\label{sec:impl:sstv}
+Having implemented a text and a speech mode of AnSiAn, we decided to also add a modulation schema capable of transmitting images. One amateur radio scheme for transmitting images is \ac{SSTV}. It is used to transmit single images using a very small bandwidth and thus over a relatively long period of time. Depending on the mode used, SSTV transmits images in 8 to over 400 seconds using less than 3 kHz of bandwidth, while \ac{ATV} (also known as \ac{FSTV}) uses multiple MHz of bandwidth but is capable of a much higher frame rate. 
 \begin{figure}
 	\centering
 	\includegraphics[width=\linewidth]{gfx/sstv_intro.png}
@@ -402,7 +404,50 @@ Note: The AudioSource does return a real signal, not a complex signal, i.e. all 
 	\label{fig:impl:sstv:intro}
 \end{figure}
 
+The idea of \ac{SSTV} is illustrated in Figure~\ref{fig:impl:sstv:intro}. It shows the frequency domain of a SSTV signal. SSTV transmits the lines of an image one after the other. There exist multiple modes of SSTV with different resolutions, frame lengths, image types (black/white or RGB) and slightly different modulations. We concentrate on the basic black/white mode with a frame length of 8 seconds and 120 lines per frame.  
+
+A SSTV mode defines three frequencies: 
+
+\begin{itemize}
+	\item A \textbf{sync frequency}, used for finding the start of a frame (frame sync) and the start of each individual line of the image. This usually is 1200 Hz. 
+	\item A \textbf{black frequency}, the frequency that represents a black pixel. (here: 1500 Hz)
+	\item A \textbf{white frequency}, the frequency that represents a white pixel. (here: 2300 Hz)
+\end{itemize}
+
+The frequencies between the black and white frequency are used to linearly interpolate gray-scale pixels. For example, when a pixel is represented as a byte, where 0 is black and 255 is white, a gray value of 128 would be 1902 Hz (1500 Hz + 128*(2300 Hz-1500 Hz)/255). 
+
+An SSTV frame consists of the following parts:
+\begin{itemize}
+	\item \textbf{Frame sync}: Each image/frame starts with a frame sync sequence. For the B/W 8s mode the frame sync has a length of 30ms. 
+	\item \textbf{For each line:} (120 lines for B/W 8s)
+	\begin{itemize}
+		\item \textbf{Line data}: Starting with the left-most pixel, each pixel is modulated as a sine of the interpolated frequency successively. In B/W 8s a line has a length of 61.6ms (excluding line sync). However, the number of pixels per line is not fixed. The transmitter and receiver can decide which horizontal resolution to use. Typical values are 128 and 256 (i.e. each pixel lasts 0.48ms or 0.24ms). 
+		\item \textbf{Line sync}: At the end of each line a synchronization sequence is inserted. For B/W 8s this sequence has a length of 5ms. This sequence is used by the receiver to sync exactly to the beginning of the next line.
+	\end{itemize}
+\end{itemize}
+
+
+We are going to implement the B/W 8s mode in AnSiAn, which can be summarized as follows \cite{pritchard2016newnes}:
+\begin{itemize}
+	\item \textbf{Sync frequency}: 1200 Hz
+	\item \textbf{Black frequency}: 1500 Hz
+	\item \textbf{White frequency}: 2300 Hz
+	\item \textbf{Frame Sync}: 30ms
+	\item \textbf{Line length}: 1/15 s = 66.6ms
+	\begin{itemize}
+		\item \textbf{Line data}: 61.6ms
+		\item \textbf{Line sync}: 5ms
+	\end{itemize}
+
+	\item \textbf{Frame length}: 8s = 120*66.6ms
+\end{itemize}
+
+
+To integrate \ac{SSTV} into \ac{AnSiAn} we need to add 3 components: First, we need add an additional view that enables the user to access the feature. We decided to add another tab into AnSiAn, since this feature is different from the previous features. Then, we need to extend the transmission chain for an additional modulation, that implements the signal synthesis described above. The last step is to extend the reception chain with an SSTV demodulation. However, we did not manage to complete the demodulation part. We have a first version of a demodulation class, but it is still having some problems. Therefore, we only describe our approach and the problems we faced. 
+
+
 \subsection{User Interface}
+\label{subsec:impl:sstv:ui}
 
 \begin{figure}
 	\centering
@@ -411,8 +456,31 @@ Note: The AudioSource does return a real signal, not a complex signal, i.e. all 
 	\label{fig:impl:sstv:gui}
 \end{figure}
 
-\subsection{Implementation}
-\subsubsection{Modulation}
+The user interface for SSTV is added as an additional tab and is kept very simple. It is shown in Figure~\ref{fig:impl:sstv:gui}. The user can chose an image from his gallery, adjust the HackRF transmission settings (frequency and gain settings) and then start transmitting the image. Since the demodulation is not working yet, we did not include it into the UI. 
+
+\subsection{Modulation}
+\label{subsubsec:impl:sstv:mod}
+
+The SSTV modulation is done in the model.modulation.SSTV class which is a subclass of Modulation. Before we can start creating the signal, we need to convert the image, which is probably a png or jpg, to a suitable format. Luckily, the Android SDK contains a Bitmap class that is capable of parsing such an image, scaling/cropping it to a suitable size (120x256 in our case) and converting it to gray scale pixels (bytes). 
+
+To implemented the SSTV modulation, we decided to reuse the fmmod from Section~\ref{sec:impl:feature2}. To do so, we first create a float array containing the frequencies we want to create, then scale it to a value between 0 and 1 and finally call the fmmod with a frequency deviation of 2300 Hz. For example, for creating a frame sync at a sampling rate of 1 MHz, we create an array of length 30000 and set each value to 1200. 
+
+\begin{figure}
+	\centering
+	\includegraphics[width=1.0\linewidth]{gfx/sstv_timedomain.png}
+	\caption{Time domain of the transmitted signal - start of a frame (frame sync, line, line sync, line) }
+	\label{fig:impl:sstv:sstvtime}
+\end{figure}
+
+The time domain of a modulated signal recorded at the transmitter (i.e. perfect signal) is shown in Figure~\ref{fig:impl:sstv:sstvtime}. We can see the start of a frame. First, there is a frame sync, i.e. a sine at 1200 Hz for 30ms. This frame sync is followed by the first line, which lasts 61.6ms. This first line consists of white pixels only, i.e. the frequency is constant at 2300 Hz. It is followed by a line sync (5ms) and the second line. 
+
+For an good implementation took into account the findings from the previous sections:
+\begin{itemize}
+	\item \textbf{Modulate small portions, instead of an entire frame}: To start transmission as fast as possible, we need to pass SamplePackets down the transmission chain as soon as possible. Therefore, we modulate each line into one SamplePacket. 
+	\item \textbf{Use a low sampling rate}: Since our signals use only very low frequencies, it would be a waste of resources to do the modulation with a sampling rate of 1 MHz. Thus, we use a much lower internal sampling rate (e.g. 50 kHz) and upsample at the end.
+\end{itemize}
+
+
 \begin{figure}
 	\centering
 	\includegraphics[width=1.0\linewidth]{gfx/screenshot_rxsstv.png}
@@ -420,19 +488,49 @@ Note: The AudioSource does return a real signal, not a complex signal, i.e. all 
 	\label{fig:impl:sstv:rxsstv}
 \end{figure}
 
-\subsubsection{Demodulation}
+For validating that our modulation is indeed correct, we used a free SSTV decoder \cite{rxsstv}. We recorded the transmitted signal and replayed it on a PC. 
+Note: Since, RX-SSTV expects the samples from an audio input device, we imported our signal to audacity and played it there. Then, we forwarded the audio output to an input device using the "Stereo Mix" feature. 
+In Figure~\ref{fig:impl:sstv:rxsstv} we see the SEEMOO logo that is correctly demodulated by the RX-SSTV software. This implies that our implementation is correct.
+
+
+\subsection{Demodulation}
+\label{subsubsec:impl:sstv:demod}
+
+We didn't manage to finish the implementation of the SSTV demodulation due to lack of time. However, the we sketch the approach that is required to demodulate SSTV: 
+
+\begin{enumerate}
+	\item \textbf{Frequency demodulation}: First, we need to invert the frequency modulation to convert the time domain to the frequency domain. This could be done using a \ac{FFT}, but that is computational expensive. As an alternative, Dennis Mantz implemented a approximative version of this for the FM demodulation (see model.demodulation.FM) that can hopefully be reused. 
+	\item \textbf{Find sync sequences}: Next, we need to find the sync pulses to calculate the start of each line. 
+	\item \textbf{Correct frequency shift}: The sync pulses can be used to correct a potential frequency shift
+	\item \textbf{Remove outliers}: Since our frequency demodulation is approximative, sometimes we get very large or very small values. Since we now the maximum and minimum frequencies in our signal, we can remove them easily. 
+	\item \textbf{Decode}: Convert each pixel by taking the average frequency in this time frame and using this formula: $byte = 255*(frequency-1500)/800$. 
+\end{enumerate}
+
+
+\subsubsection{Problems}
 
 \begin{figure}
 	\centering
 	\includegraphics[width=1.0\linewidth]{gfx/sstv_nice.jpg}
-	\caption{Frequency domain of the transmitted signal - showing the start of a frame (frame sync, line, line sync, line, line sync, line)}
+	\caption{Frequency domain of the transmitted signal - start of a frame (frame sync, line, line sync, line, line sync, line)}
 	\label{fig:impl:sstv:spectro_tx}
 \end{figure}
+
+
+When we tried to implement the SSTV demodulation in the last days of our project, we faced a couple of problems, which we want to document here. First, we used the generated signal (i.e. perfect signal - no noise, no attenuation, no shift) to implement the demodulation. The approximative frequency modulation works perfectly and it is easy to find the sync pulses. However, when this signal is transmitted and then received over an HackRF this looks differently. For illustration, we used the Matlab spectrogram function to plot the frequency domain of a signal over time. Figure~\ref{fig:impl:sstv:spectro_tx} shows the spectrogram of a perfect sstv signal. We can clearly differentiate the sync and the pixel frequencies, even with a low resolution. There are very few other frequencies in the signal. 
 
 \begin{figure}
 	\centering
 	\includegraphics[width=1.0\linewidth]{gfx/sstv_rxside.jpg}
-	\caption{Frequency domain of the received signal - showing the start of a frame (frame sync, line, line sync, line, line sync, line)}
+	\caption{Frequency domain of the received signal - start of a frame (frame sync, line, line sync, line, line sync, line)}
 	\label{fig:impl:sstv:spectro_rx}
 \end{figure}
+
+Figure~\ref{fig:impl:sstv:spectro_tx} shows the same signal recorded on the receiver side. We can still see the sync sequences, but we see two problems: 
+\begin{itemize}
+	\item \textbf{The frequencies are shifted}: The sync pulses are a little bit over 2kHz, although both HackRFs are tuned to the exact same frequency. This is not a huge problem, because we can correct that offset later. Depending on hardware and channel conditions this offset can be smaller or bigger. 
+	\item \textbf{There are other frequencies}: The signal contains other frequencies as well (although there were no other signals), especially low frequencies (<= 1KHz). 
+\end{itemize}
+
+These problems cause the approximate frequency demodulation to produce bad results. Actually, the results look pretty random to us. Maybe, this can be corrected by applying a well designed bandpass to the signal. 
 
