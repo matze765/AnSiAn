@@ -393,3 +393,46 @@ Therefore, we decided to use a filter to get rid of the other sideband. Listing~
 
 Note: The AudioSource does return a real signal, not a complex signal, i.e. all imaginary parts are zero. However, the filter does correct this, such that the output signal does contain both a real and an imaginary part.
 
+\section{Feature 4: Slow-scan Television (SSTV)}
+
+\begin{figure}
+	\centering
+	\includegraphics[width=\linewidth]{gfx/sstv_intro.png}
+	\caption{Modulation of \ac{SSTV}  signals - frequency domain of sync and line sequences \cite[p. 239]{pritchard2016newnes}}
+	\label{fig:impl:sstv:intro}
+\end{figure}
+
+\subsection{User Interface}
+
+\begin{figure}
+	\centering
+	\includegraphics[width=0.4\linewidth]{gfx/screenshot_gui_sstv.png}
+	\caption{AnSiAn \ac{SSTV} View - Tx only}
+	\label{fig:impl:sstv:gui}
+\end{figure}
+
+\subsection{Implementation}
+\subsubsection{Modulation}
+\begin{figure}
+	\centering
+	\includegraphics[width=1.0\linewidth]{gfx/screenshot_rxsstv.png}
+	\caption{Validation of our modulation using a free SSTV decoder \cite{rxsstv}}
+	\label{fig:impl:sstv:rxsstv}
+\end{figure}
+
+\subsubsection{Demodulation}
+
+\begin{figure}
+	\centering
+	\includegraphics[width=1.0\linewidth]{gfx/sstv_nice.jpg}
+	\caption{Frequency domain of the transmitted signal - showing the start of a frame (frame sync, line, line sync, line, line sync, line)}
+	\label{fig:impl:sstv:spectro_tx}
+\end{figure}
+
+\begin{figure}
+	\centering
+	\includegraphics[width=1.0\linewidth]{gfx/sstv_rxside.jpg}
+	\caption{Frequency domain of the received signal - showing the start of a frame (frame sync, line, line sync, line, line sync, line)}
+	\label{fig:impl:sstv:spectro_rx}
+\end{figure}
+
