@@ -11,7 +11,7 @@ This chapter reviews the progress throughout the project. At the each release we
 
 The goal was to implement feature 1 (Transmission Chain) and feature 2 (RDS Transmission). This goal has been achieved. Additionally we started to document the implementation, which was initially planned to be done at the end of the project. 
 
-\begin{table}
+\begin{table}[!htbp]
 \centering
 \caption{Expected and Actual Workload for Features in Alpha Release}
 \label{tab:alpha:features}
@@ -26,7 +26,7 @@ The goal was to implement feature 1 (Transmission Chain) and feature 2 (RDS Tran
 
 Table~\ref{tab:alpha:features} shows the total workloads that were required to implement the features. We can see that we overestimated the transmission chain feature and underestimated the RDS feature. In total the required time is roughly as expected. 
 
-\begin{table}
+\begin{table}[!htbp]
 	\centering
 	\caption{Expected and Actual Workload for Feature 1: Transmission Chain}
 	\label{tab:alpha:feature1}
@@ -44,7 +44,7 @@ Table~\ref{tab:alpha:features} shows the total workloads that were required to i
 
 Table~\ref{tab:alpha:feature1} lists the single tasks for feature 1. We decided to leave out the interpolator at first (see Section~\ref{sec:impl:feature1}). All other tasks were much easier as expected. Even the integration and testing with the already existing transmission modes went very well. 
 	
-	\begin{table}
+	\begin{table}[!htbp]
 		\centering
 		\caption{Expected and Actual Workload for Feature 2: RDS Transmission}				\label{tab:alpha:feature2}
 		\begin{tabular}{ l | c | c }
@@ -59,7 +59,7 @@ Table~\ref{tab:alpha:feature1} lists the single tasks for feature 1. We decided 
 	
 	Table~\ref{tab:alpha:feature2} evaluates the required time for the tasks in feature 2. Tasks 7, 8 and 9 were nearly completed within the expected time, while the testing and debugging took much longer than expected. We highly underestimated the complexity of finding bugs in signal processing code on Android. Since we are dependent on the HackRF hardware and driver, most of the testing needs to be done on the actual smartphone. This means that it requires a lot of manual work - although we tried to implement some automated testing (see \ref{sec:impl:feature2}). 
 	
-	\begin{figure}
+	\begin{figure}[!htbp]
 		\centering
 		\includegraphics[width=1\linewidth]{gfx/Agilefant_Alpha.jpg}
 		\caption{Workload Distribution for Alpha Release (04.11.2016-22.12.2016)}
@@ -71,7 +71,7 @@ Table~\ref{tab:alpha:feature1} lists the single tasks for feature 1. We decided 
 \section{Beta Release: 02.02.2017}
 The (ambitious) goal of this release was to finish all remaining features. This goal was not achieved, due to lack of time. However, we already finished a good portion of the documentation, which was initially planned for the final release. 
 
-\begin{table}
+\begin{table}[!htbp]
 	\centering
 	\caption{Expected and Actual Workload for Features in Beta Release}
 	\label{tab:beta:features}
@@ -90,7 +90,7 @@ Additionally, we spent 13 hours creating this documentation and needed 10 unplan
 In total we already spent 194 hours (20+86+88) on this project, such that we have 66 hours left. We are planning to use this time to implement \ac{SSTV}, to finalize the documentation and to prepare the final presentation. 
 
 
-	\begin{table}
+	\begin{table}[!htbp]
 	\centering
 	\caption{Expected and Actual Workload for Feature 4: Walkie Talkie}
 	\label{tab:alpha:feature4}
@@ -108,7 +108,7 @@ In total we already spent 194 hours (20+86+88) on this project, such that we hav
 Table~\ref{tab:alpha:feature4} shows the actual time spent on each task in the Walkie Talkie feature. We underestimated every task. The implementation of AM was excluded, because it is not widely used. 
 Figure~\ref{fig:agilefant_beta} shows the distribution of the workload over the time for the beta release. We see that there was no activity during the last week of December and first week of January (other than planned). The weeks after that are roughly evenly distributed. 
 
-\begin{figure}
+\begin{figure}[!htbp]
 	\centering
 	\includegraphics[width=1\linewidth]{gfx/Agilefant_Beta.jpg}
 	\caption{Workload Distribution for Beta Release (23.12.2016-02.02.2017)}
@@ -117,7 +117,7 @@ Figure~\ref{fig:agilefant_beta} shows the distribution of the workload over the 
 
 \section{Final Release: 09.03.2017}
 
-\begin{table}
+\begin{table}[!htbp]
 	\centering
 	\caption{Expected and Actual Workload for Features in final Release}
 	\label{tab:final:features}
@@ -133,7 +133,7 @@ Figure~\ref{fig:agilefant_beta} shows the distribution of the workload over the 
 
 In this final release, we completed the documentation and prepared the final presentation. Other than initially planned, we decided after the beta release to implement \ac{SSTV} instead of improving \ac{BPSK} and implementing \ac{QAM}. Therefore, the expected workloads for those features became irrelevant. We estimated that we would be able to implement the SSTV feature in 50 hours. Table~\ref{tab:final:features} shows the actual workload for this release. We see that we spent 58 hours on the SSTV feature and there are still parts that are currently not working properly. The documentation and presentation have been completed in the expected time, but other than initially planned we spent a good amount on the documentation in the previous releases. Therefore, the total documentation time is higher than expected. 
 
-\begin{figure}
+\begin{figure}[!htbp]
 	\centering
 	\includegraphics[width=1\linewidth]{gfx/Agilefant_Final.jpg}
 	\caption{Workload Distribution for Final Release (03.02.2017-17.03.2017)}

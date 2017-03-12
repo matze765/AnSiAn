@@ -223,7 +223,7 @@ To keep the upsampling step easy (both from implementation and computational vie
 	\end{tabular}
 \end{table}
 
-We performed experiments on how the sampling rate affects the execution time. The results are shown in Table~\ref{tab:rds_optimization}. Since the experiments are performed on physical devices, the processor might also be busy with other computations. Therefore, we repeated the experiment five times for each sampling rate and device and used the mean value (the variance was small for all measurements).  We see that the sampling rate drastically affects the performance. We have been able to reduce the computation time from 4840 ms on the Galaxy S6 (or 5684 ms on the Nexus 6p) to 339 ms (340 ms). This is a performance gain of 1328\% (1572\%).  
+We performed experiments on how the sampling rate affects the execution time. The results are shown in Table~\ref{tab:rds_optimization}. Since the experiments are performed on physical devices, the processor might also be busy with other computations. Therefore, we repeated the experiment five times for each sampling rate and device and used the mean value (the variance was small for all measurements).  We see that the sampling rate drastically affects the performance. We have been able to reduce the computation time from 4840 ms on the Galaxy S6 (or 5684 ms on the Nexus 6p) to 339 ms (340 ms), i.e. the optimized version only needed 7\% (6\%) of execution time.
 With the optimized implementation we could in theory do the modulation in real time and ahead of the transmission start. However, since we also need to do other computation and we do not want to unnecessarily strain the smartphone, we did not change that part. 
 
 \section{Feature 3: Walkie Talkie} 
@@ -287,7 +287,7 @@ Since the reception of FM, USB and LSB was already implemented in the last versi
 
 The start of the reception is then initiated by posting a RequestStateEvent to the EventBus (which is a publish/subscribe library by greenrobot). The communication within AnSiAn is mainly based on such events. For greater details on the large variety of available events in AnSiAn, we again refer to \cite{Kreis2015}. The only change required in the reception chain was to extend the preferences, such that a custom filter bandwidth can be specified for the LSB and USB demodulation. 
 
-The most changes for this feature were required in the transmission chain. Firstly, we needed to generalize the recording of audio from the microphone from the RDS feature. Additionally, we implemented the three Modulation schemes FM, LSB and USB. FM was already used for RDS, so we just needed to generalize the implementation and exclude the RDS signals. LSB and USB are newly added. The following sections describe some key aspects in greater detail. 
+The most changes for this feature were required in the transmission chain. Firstly, we needed to generalize the recording of audio from the microphone from the RDS feature. Additionally, we implemented the three modulation schemes FM, LSB and USB. FM was already used for RDS, so we just needed to generalize the implementation and exclude the RDS signals. LSB and USB are newly added. The following sections describe some key aspects in greater detail. 
 
 \subsubsection{AudioSource}
 
@@ -348,7 +348,7 @@ public SamplePacket getNextSamplePacket() {
 }
 \end{lstlisting}
 
-Listing~\ref{lst:javafm} shows the basic steps. Firstly, the audio samples are retrieved from the AudioSource (l. 4). This might block until enough samples are available. Since this audio is sampled with 44100 Hz, we need to upsample the signal to 1MHz. This is already integrated in the AudioSource class with the getNextSamplesUpsampled(). If an error occurs during the retrieval of the samples, null is returned and we also return null to the Modulator (l. 5). This will cause the transmission to stop. Otherwise we pass the upsampled signal to fmmod, which implements the frequency modulation (l. 6). 
+Listing~\ref{lst:javafm} shows the basic steps. It retrieves the audio samples from the AudioSource (l. 4). This might block until enough samples are available. Since this audio is sampled with 44100 Hz, we need to upsample the signal to 1MHz. This is already integrated in the AudioSource class with the getNextSamplesUpsampled(). If an error occurs during the retrieval of the samples, null is returned and we also return null to the Modulator (l. 5). This will cause the transmission to stop. Otherwise we pass the upsampled signal to fmmod, which implements the frequency modulation (l. 6). 
 
 \subsubsection{LSB/USB}
 \label{subsubsec:lsbusb}
@@ -360,7 +360,7 @@ Listing~\ref{lst:javafm} shows the basic steps. Firstly, the audio samples are r
 \end{figure}
 
 
-In amateur radio the most widely used modulation schemes is single side band modulation, which is a advancement of amplitude modulation. Figure~\ref{fig:impl:f3ssb} illustrates why this is done. It contains the time and frequency domains of a modulated audio signal (to be more exact: the Star Wars Imperial March). Subplot 1 contains the time domain of the source signal. Subplot 2 shows the frequency domain of this signal. Since we are working with complex signals, we have positive and negative frequencies which are mirrored at 0 Hz. This is no problem in the baseband (red), but when upmixing this signal to the carrier frequency (green), we see that both sidebands are upmixed. This has two disadvantages: Firstly, it is a waste of transmission power, since the second sideband does not contain additional information. Secondly, our signal occupies more bandwidth, which is a very rare resource. 
+In amateur radio the most widely used modulation scheme is \ac{SSB}, which is a advancement of amplitude modulation. Figure~\ref{fig:impl:f3ssb} illustrates why this is done. It contains the time and frequency domains of a modulated audio signal (to be more exact: the Star Wars Imperial March). Subplot 1 contains the time domain of the source signal. Subplot 2 shows the frequency domain of this signal. Since we are working with complex signals, we have positive and negative frequencies which are mirrored at 0 Hz. This is no problem in the baseband (red), but when upmixing this signal to the carrier frequency (green), we see that both sidebands are upmixed. This has two disadvantages: Firstly, it is a waste of transmission power, since the second sideband does not contain additional information. Secondly, our signal occupies more bandwidth, which is a very rare resource. 
 This problem is solved by SSB. We either use the upper sideband (positive frequencies) or the lower sideband (negative frequencies). The ideal frequency domains are shown in Subplot 2 and 3. 
 
 There are multiple ways to implement SSB modulation. The plots in Figure~\ref{fig:impl:f3ssb} are generated in Matlab using the Hilbert transformation to create a complex signal and then multiplying the imaginary part by either i (USB) or -i (LSB). However, this requires both the implementation of the Hilbert transformation and the complex multiplication, both is currently not available in AnSiAn. 
@@ -389,7 +389,7 @@ public SamplePacket getNextSamplePacket() {
 \end{lstlisting}
 
 
-Therefore, we decided to use a filter to get rid of the other sideband. Listing~\ref{lst:javassb} shows the implementation of the SSB in AnSiAn. Firstly, we retrieve the next audio samples from the AudioSource (l. 4). Then, we filter out the band we want using a ComplexFirFilter (the arguments are similar to the FirFilter used in Section~\ref{sec:impl:feature2}). When using USB, the pass band of the filter is from 0 Hz to the user defined filter bandwidth, e.g. 3000Hz. When using LSB this would be -3000Hz to 0 Hz. The resulting packet is then upsampled to 1MHz and returned to the modulator. 
+Therefore, we decided to use a filter to get rid of the other sideband. Listing~\ref{lst:javassb} shows the implementation of the SSB in AnSiAn. We retrieve the next audio samples from the AudioSource (l. 4). Then, we filter out the band we want using a ComplexFirFilter (the arguments are similar to the FirFilter used in Section~\ref{sec:impl:feature2}). When using USB, the pass band of the filter is from 0 Hz to the user defined filter bandwidth, e.g. 3000Hz. When using LSB this would be -3000Hz to 0 Hz. The resulting packet is then upsampled to 1MHz and returned to the modulator. 
 
 Note: The AudioSource does return a real signal, not a complex signal, i.e. all imaginary parts are zero. However, the filter does correct this, such that the output signal does contain both a real and an imaginary part.
 
