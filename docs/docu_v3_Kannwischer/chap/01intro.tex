@@ -1,69 +1,71 @@
 \chapter{Introduction}
-	\ac{AnSiAn} is an Android application that has been initially developed by Steffen Kreis and Markus Grau at the Secure Mobile Network Lab (SEEMOO) in 2015. It has been extended and improved by Dennis Mantz and Max Engelhardt in summer 2016. The application is designed to allow the user the explore, capture, demodulate and decode radio frequency signals on a broad range of frequencies easily. It supports low cost receive-only RTL-SDR dongles, but also more advanced devices like HackRF One, rad1o and SDR Play which are capable of receiving and transmitting signals.
+	\ac{AnSiAn} is an Android application that has been initially developed by Steffen Kreis and Markus Grau at the Secure Mobile Network Lab (SEEMOO) in 2015 and was based on the RFAnalyzer for Android  \cite{RFAnalyzer} of Dennis Mantz. AnSiAn has been extended and improved by Dennis Mantz and Max Engelhardt in summer 2016. The application is designed to allow the user the explore, capture, demodulate and decode radio frequency signals on a broad range of frequencies. It supports low cost receive-only RTL-SDR dongles, but also more advanced devices like HackRF One, rad1o and SDR Play which are capable of receiving and transmitting signals.
 	
 	
 \section{Motivation}
-	This project further extends and improves the current implementation of \ac{AnSiAn}. Since some of the supported devices are capable of transmitting signals, the focus of this project is to properly implement the transmission of signals. The most recent version of \ac{AnSiAn} does implement some prototyped transmission of Morse Signals, but there are still some issues that need to be addressed and the implementation of the transmission chain is currently very limited and needs to be generalized for the transmission of more complex signals. Additionally this projects tries to further improve the performance of \ac{AnSiAn} and to fix existing issues. 
+	This project further extends and improves the current implementation of \ac{AnSiAn}. Since some of the supported devices are capable of transmitting signals, the focus of this project is to properly implement the transmission of signals. The most recent version of \ac{AnSiAn} does implement some prototyped transmission of Morse signals, but there are still some issues that need to be addressed.  The implementation of the transmission chain is currently rudimentary and needs to be generalized for the transmission of more complex signals. Additionally, this projects tries to further improve the performance of \ac{AnSiAn} and to fix existing issues. 
 
 \section{Feature Planning}
-	The project is implemented by only one developer and therefore the feature scope needs to be defined accordingly. Since signal processing on Android often causes unforeseen issues, it has been decided to separate required features and optional (stretch) features to be able to plan enough time buffer for unplanned activities without failing to implement crucial functionality. \\
+	The project is implemented by only one developer, and therefore the feature scope needs to be defined accordingly. Since signal processing on Android often causes unforeseen issues, it has been decided to separate required features and optional (stretch) features to be able to plan enough time buffer for unplanned activities without failing to implement crucial functionality. 
+	
+	Note: This planning was created at the beginning of the project. It was decided to adjust the planning after the beta release, and thus features 3 and 5 have not been realized. See Section~\ref{sec:progress:final} for the adjusted planning.
 	
 	The following features are currently planned to be implemented during this project:
 	
 	\begin{enumerate}
-		\item \textbf{Implement Transmission Chain}: Currently \ac{AnSiAn} only implements a DummyTransmissionChain with very limited functionality. The conclusion of the previous project documentation stated that it is required to entirely reimplement the transmission chain to enable various use cases and modulations to use it \cite{Mantz2016}. 
+		\item \textbf{Implement transmission chain}: Currently \ac{AnSiAn} only implements a DummyTransmissionChain with very limited functionality. The conclusion of the previous \ac{AnSiAn} documentation stated that it is required to entirely re-implement the transmission chain to enable various use cases and modulations to use it \cite{Mantz2016}. 
 		
-		\item \textbf{\ac{RDS} Transmission}: \ac{RDS} is a specification on how to transmit additional information (like the stations name) alongside conventional FM radio broadcasts. The current version of \ac{AnSiAn} already supports the demodulation and decoding of RDS signals. This functionality should be extended to being able to transmit own RDS data packets together with an FM modulated audio signal. 
+		\item \textbf{\ac{RDS} transmission}: \ac{RDS} is a specification on how to transmit additional information (like the stations name) alongside conventional FM radio broadcasts. The current version of \ac{AnSiAn} already supports the demodulation and decoding of RDS signals. This functionality should be extended to being able to transmit own RDS data packets together with an FM modulated audio signal. 
 		
-		\item \textbf{\ac{BPSK} Demodulation Improvements}: \ac{AnSiAn} is capable of demodulating \ac{BPSK} signals, which is already used for \ac{RDS} and PSK31. However the developers faced some performance issues with the current implementation and suggested that this should be fixed in future releases. The improvement alternatives should be evaluated and implemented as a part of this project.
+		\item \textbf{\acs{BPSK} demodulation improvements}: \ac{AnSiAn} is capable of demodulating \ac{BPSK} signals, which is already used for \ac{RDS} and PSK31. However, the developers faced some performance issues with the current implementation and suggested that this should be fixed in future releases. The improvement alternatives should be evaluated and implemented as a part of this project.
 		
-		\item \textbf{Walkie-Talkie-Mode}: The \ac{AnSiAn} should be extended for an Walkie-Talkie functionality. It should be possible to use two smartphones with \ac{AnSiAn} and a HackRF each as Walkie-Talkies. Therefore \ac{AnSiAn} should constantly receive and demodulate on a specified frequency and the user should then be able to quickly switch into transmission mode to send an own audio signal recorded from the included microphone. The time to switch to transmission mode and then back to reception mode should be as short as possible. 
+		\item \textbf{Walkie-Talkie mode}: \ac{AnSiAn} should be extended for an Walkie-Talkie functionality. It should be possible to use two smartphones with \ac{AnSiAn} and a HackRF each as Walkie-Talkies. Therefore, \ac{AnSiAn} should constantly receive and demodulate on a specified frequency and the user should then be able to quickly switch into transmission mode to send an own audio signal recorded from the included microphone. The time to switch to transmission mode and then back to reception mode should be as short as possible. 
 		
-		\item \textbf{Optional: \ac{QAM} Demodulation}: \ac{AnSiAn} already implements BPSK, which is a special case of \ac{QAM}. If there is time left at the end of this project this implementation could be extended to support 4-\ac{QAM}, 16-\ac{QAM}, 64-\ac{QAM} and 256-\ac{QAM}. This could for example be used to implement 802.11 in the future. 
+		\item \textbf{Optional: \acs{QAM} demodulation}: \ac{AnSiAn} already implements BPSK, which is a special case of \ac{QAM}. If there is time left at the end of this project this implementation could be extended to support 4-\ac{QAM}, 16-\ac{QAM}, 64-\ac{QAM} and 256-\ac{QAM}. This could for example be used to implement 802.11 in the future. 
 	\end{enumerate}
 	
 
 \section{Sprint Planning}
-The project will be implemented by a single developer. Therefore the time available is 270 hours distributed over the entire winter term. We tried to estimate the required time for all features by splitting each feature up into consecutive tasks:
+The project will be implemented by a single developer. Therefore, the time available is 270 hours distributed over the entire winter term. We tried to estimate the required time for all features by splitting each feature up into consecutive tasks:
 \begin{itemize}
-\item \textbf{Project Initiation Phase [20h]}
+\item \textbf{Project initiation phase [20h]}
 \item \textbf{Meetings with supervisor, final presentation [10h]}
-\item \textbf{Feature 1: Implement Transmission Chain [50h]}
+\item \textbf{Feature 1: Implement transmission chain [50h]}
 \begin{itemize}
-\item Task 1: Investigation of Existing Code [5h] 
-\item Task 2: Rewrite Modulator [10h]
-\item Task 3: Implementation Interpolator [10h]
-\item Task 4: Refactor Existing Code and Finalize [5h]
+\item Task 1: Investigation of existing code [5h] 
+\item Task 2: Rewrite modulator [10h]
+\item Task 3: Implementation interpolator [10h]
+\item Task 4: Refactor existing code and finalize [5h]
 \item Task 5: Integration with already implemented transmission modes [10h]
-\item Task 6: Regression Testing [10h]
+\item Task 6: Regression testing [10h]
 \end{itemize}
-\item \textbf{Feature 2: \ac{RDS} Transmission [35h]}
+\item \textbf{Feature 2: \ac{RDS} transmission [35h]}
 \begin{itemize}
-\item Task 7: Investigation of Existing Code and Specification [5h]
+\item Task 7: Investigation of existing code [5h]
 \item Task 8: Implementation in MATLAB [5h]
 \item Task 9: Portation to Java [15h]
-\item Task 10: Testing and Bug Fixing [10h]
+\item Task 10: Testing and bugfixing [10h]
 \end{itemize}
-\item \textbf{Feature 3: \ac{BPSK} Demodulation Improvements [55h]}
+\item \textbf{Feature 3: \ac{BPSK} demodulation improvements [55h]}
 \begin{itemize}
-\item Task 11: Investigate Existing Code [5h]
-\item Task 12: Research Improvement Alternatives [5h]
-\item Task 13: Implement Improvement [15h]
-\item Task 14: Analyze Performance Increase [15h]
-\item Task 15: Testing and Bug Fixing [10h]
-\item Task 16: Regression Testing [5h]
+\item Task 11: Investigate existing code [5h]
+\item Task 12: Research improvement alternatives [5h]
+\item Task 13: Implement improvement [15h]
+\item Task 14: Analyze performance increase [15h]
+\item Task 15: Testing and bug fixing [10h]
+\item Task 16: Regression testing [5h]
 \end{itemize}
-\item \textbf{Feature 4: Walkie-Talkie-Mode [60h]}
+\item \textbf{Feature 4: Walkie-Talkie mode [60h]}
 \begin{itemize}
 \item Task 17: Design and implement UI [15h]
 \item Task 18: Implement AM [15h]
 \item Task 19: Implement FM [10h]
 \item Task 20: Implement SSB [10h]
-\item Task 21: Testing and Bug Fixing [10h]
+\item Task 21: Testing and bug fixing [10h]
 \end{itemize}
-\item \textbf{Optional: Feature 5: \ac{QAM} Demodulation [ca. 50h]}
+\item \textbf{Optional: Feature 5: \ac{QAM} demodulation [ca. 50h]}
 \item \textbf{Documentation [25h]}
-\item \textbf{Presentation Preparation [15h]}
+\item \textbf{Presentation preparation [15h]}
 
 \end{itemize}
 
@@ -92,9 +94,9 @@ Excluding the optional feature this sums up to 270 hours. To distribute the work
 
 \section{Detailed Project Plan}
 
-In this project we try to apply agile software development methods to reduce organizational and planning overhead. Therefore we decompose each submission into 3 sprints of 2 to 3 weeks. After each sprint the achieved progress should be reviewed and the the plans for the next sprints should be adjusted. 
+In this project we try to apply agile software development methods to reduce organizational and planning overhead. Therefore, we decompose each submission into 3 sprints of 2 to 3 weeks. After each sprint the achieved progress should be reviewed and the the plans for the next sprints should be adjusted. 
 
-We tried to assign each task to one of the sprints. However this is not a static assignment and it must be reviewed and adjusted regularly. The preliminary planning currently is: 
+We tried to assign each task to one of the sprints. However, this is not a static assignment and it must be reviewed and adjusted regularly. The preliminary planning currently is: 
 
 
 \noindent\textbf{Sprint 1 04.11.2016-20.11.2016 [2,5 weeks]} 
@@ -133,6 +135,6 @@ For development we use a git repository on \cite{ANSIAN_GitHub} which has been f
 
 \section{Testing}
 
-Testing is done on a Samsung Galaxy S6 and a Samsung Galaxy S6 Edge with Android 6.0.1. 
-Additionally SEEMOO provided an Nexus 6p with Android 7.0. 
+Testing is done on a Samsung Galaxy S6 and a Samsung Galaxy S6 Edge with Android 6.0.1. Additionally, \ac{SEEMOO} provided a Nexus 6p with Android 7.1.1. 
 For transmission and reception we use two HackRF Ones connected to either one of the smartphones or a linux computer with gqrx. For regression tests we will also use a RTL-SDR (RTL2832U).
+
